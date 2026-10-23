@@ -1,0 +1,202 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+  push:
+    branches:
+      - main
+
+# Cancel in-progress runs for the same PR / branch
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  # ─────────────────────────────────────────────────────────────
+  # Job 1: Python syntax, import, and style checks
+  # ─────────────────────────────────────────────────────────────
+  python-lint:
+    name: Python Lint & Syntax
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.14
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install linters
+        run: pip install ruff flake8
+
+      - name: Check for Python syntax errors
+        run: python -m compileall -f apps/helpdesk apps/nxerp
+
+      - name: Check for merge conflict markers
+        run: |
+          if grep -rl --include="*.py" "^<<<<<<< " apps/; then
+            echo "Merge conflict markers found"
+            exit 1
+          fi
+
+      - name: Ruff (lint + style)
+        run: ruff check apps/helpdesk apps/nxerp
+
+  # ─────────────────────────────────────────────────────────────
+  # Job 2: Frontend lint and theme-token check
+  # ─────────────────────────────────────────────────────────────
+  frontend-lint:
+    name: Frontend Lint & Theme Tokens
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "yarn"
+          cache-dependency-path: apps/helpdesk/yarn.lock
+
+      - name: Install desk dependencies
+        run: cd apps/helpdesk/desk && yarn install --frozen-lockfile --ignore-scripts
+
+      - name: ESLint
+        run: cd apps/helpdesk/desk && yarn lint
+
+      - name: Theme token check (generated files fresh, contrast passing)
+        run: cd apps/helpdesk/desk && yarn theme:check
+
+      - name: No hardcoded colours
+        run: cd apps/helpdesk/desk && yarn theme:audit
+
+  # ─────────────────────────────────────────────────────────────
+  # Job 3: Server tests (Frappe + MariaDB)
+  # ─────────────────────────────────────────────────────────────
+  server-tests:
+    name: Python Server Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    services:
+      mysql:
+        image: mariadb:10.6
+        env:
+          MARIADB_ROOT_PASSWORD: "root"
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mariadb-admin ping"
+          --health-interval=5s
+          --health-timeout=2s
+          --health-retries=3
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.14
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Install Yarn
+        run: npm install -g yarn
+
+      - name: Add test site to /etc/hosts
+        run: echo "127.0.0.1 test_site" | sudo tee -a /etc/hosts
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('apps/**/*requirements.txt', 'apps/**/pyproject.toml') }}
+          restore-keys: ${{ runner.os }}-pip-
+
+      - name: Get yarn cache dir
+        id: yarn-cache-dir
+        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache yarn
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.yarn-cache-dir.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('apps/helpdesk/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn-
+
+      - name: Install bench and set up Frappe
+        run: |
+          pip install frappe-bench
+          bench init --skip-redis-config-generation \
+            --frappe-branch version-16 \
+            ~/nxerp-bench
+        env:
+          CI: true
+
+      - name: Install apps
+        run: |
+          cd ~/nxerp-bench
+          bench get-app telephony
+          bench get-app helpdesk $GITHUB_WORKSPACE/apps/helpdesk
+          bench get-app nxerp $GITHUB_WORKSPACE/apps/nxerp
+          bench new-site test_site \
+            --mariadb-root-password root \
+            --admin-password admin \
+            --no-mariadb-socket
+          bench --site test_site install-app erpnext || true
+          bench --site test_site install-app telephony
+          bench --site test_site install-app helpdesk
+          bench --site test_site install-app nxerp
+
+      - name: Run Helpdesk server tests
+        run: |
+          cd ~/nxerp-bench
+          bench --site test_site run-tests --app helpdesk --coverage
+        env:
+          CI: true
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: ~/nxerp-bench/sites/coverage.xml
+
+  # ─────────────────────────────────────────────────────────────
+  # Job 4: Commit message lint (on PRs only)
+  # ─────────────────────────────────────────────────────────────
+  commit-lint:
+    name: Conventional Commits
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Check commit messages
+        run: |
+          npm install @commitlint/cli @commitlint/config-conventional
+          npx commitlint \
+            --verbose \
+            --from ${{ github.event.pull_request.base.sha }} \
+            --to ${{ github.event.pull_request.head.sha }}

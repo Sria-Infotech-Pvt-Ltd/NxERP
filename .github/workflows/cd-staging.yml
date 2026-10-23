@@ -1,0 +1,143 @@
+name: CD — Staging Deploy
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PREREQUISITE: This workflow requires the following GitHub Actions secrets
+# to be configured in the repository settings before it will work:
+#
+#   STAGING_SSH_KEY      — Private key for SSH access to the staging server
+#   STAGING_HOST         — Hostname or IP of the staging server
+#   STAGING_USER         — SSH username on the staging server
+#   STAGING_SITE         — Frappe site name on the staging server (e.g. staging.nxerp.nxsys.in)
+#   STAGING_BENCH_PATH   — Absolute path to the bench directory on the staging server
+#
+# Production deployment is intentionally NOT automated here.
+# Production requires a tagged release and manual approval.
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  # Staging: deploy automatically when main is pushed (after CI passes)
+  push:
+    branches:
+      - main
+
+  # Manual trigger for any branch (e.g. feature branches for QA)
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        default: "staging"
+        type: choice
+        options:
+          - staging
+      branch:
+        description: "Branch to deploy (leave blank for current)"
+        required: false
+        default: ""
+
+# Prevent overlapping deployments to the same environment
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: false   # never cancel an in-progress deploy; queue instead
+
+permissions:
+  contents: read
+  deployments: write
+
+jobs:
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: staging
+      url: https://staging.nxerp.nxsys.in  # update when staging URL is confirmed
+
+    # Only deploy when CI has passed (use branch protection to enforce this)
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.STAGING_SSH_KEY }}
+
+      - name: Deploy to staging server
+        run: |
+          ssh -o StrictHostKeyChecking=no \
+            ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }} \
+            "bash -s" << 'ENDSSH'
+
+          set -euo pipefail
+          BENCH="${{ secrets.STAGING_BENCH_PATH }}"
+          SITE="${{ secrets.STAGING_SITE }}"
+
+          echo "=== NXERP Staging Deployment $(date -u) ==="
+
+          # 1. Pull latest code for all company apps
+          echo "--- Pulling helpdesk ---"
+          cd "$BENCH/apps/helpdesk" && git fetch origin && git reset --hard origin/main
+
+          echo "--- Pulling nxerp ---"
+          cd "$BENCH/apps/nxerp" && git fetch origin && git reset --hard origin/main
+
+          # 2. Install any new Python dependencies
+          cd "$BENCH"
+          ./env/bin/pip install -e apps/helpdesk -e apps/nxerp --quiet
+
+          # 3. Build frontend assets
+          cd "$BENCH/apps/helpdesk/desk"
+          yarn install --frozen-lockfile --silent
+          cd "$BENCH" && bench build --app helpdesk --production
+
+          # 4. Run database migrations
+          echo "--- Running migrations ---"
+          bench --site "$SITE" migrate
+
+          # 5. Clear cache
+          bench --site "$SITE" clear-cache
+
+          # 6. Restart workers
+          sudo supervisorctl restart all 2>/dev/null || bench restart || true
+
+          echo "=== Deployment complete ==="
+          ENDSSH
+
+      - name: Staging health check
+        run: |
+          sleep 15  # Allow server to restart
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            "https://staging.nxerp.nxsys.in/api/method/ping" \
+            --max-time 30)
+          if [ "$STATUS" != "200" ]; then
+            echo "Health check FAILED: HTTP $STATUS"
+            exit 1
+          fi
+          echo "Health check PASSED: HTTP $STATUS"
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "Staging deployment FAILED. Manual intervention required."
+          echo "Check the staging server logs:"
+          echo "  ssh ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }}"
+          echo "  tail -f ${{ secrets.STAGING_BENCH_PATH }}/logs/*.log"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PRODUCTION DEPLOYMENT (not automated — template only)
+#
+# To deploy to production:
+# 1. Create a versioned tag: git tag v2026.10.1 && git push origin v2026.10.1
+# 2. Create a GitHub Release from that tag
+# 3. A separate protected workflow (cd-production.yml) can be enabled once
+#    the production server details are configured and the deployment process
+#    has been tested end-to-end on staging.
+#
+# Required additional secrets for production:
+#   PROD_SSH_KEY, PROD_HOST, PROD_USER, PROD_SITE, PROD_BENCH_PATH
+#
+# Production workflow MUST require:
+#   - Manual approval in a "production" GitHub Environment
+#   - At least one named approver from the ops team
+#   - A verified database backup before migrating
+# ─────────────────────────────────────────────────────────────────────────────
