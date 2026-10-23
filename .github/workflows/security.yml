@@ -1,0 +1,155 @@
+name: Security
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+  push:
+    branches:
+      - main
+  schedule:
+    # Run weekly on Monday at 06:00 UTC to catch newly published CVEs
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+  security-events: write   # for SARIF upload
+  pull-requests: read
+
+jobs:
+  # ─────────────────────────────────────────────────────────────
+  # Job 1: Secret scanning
+  # ─────────────────────────────────────────────────────────────
+  secret-scan:
+    name: Secret Detection (Gitleaks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history for historical scan
+
+      - name: Scan for secrets with Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # GITLEAKS_LICENSE is not required for public repos
+          # For private repos add it as a repo secret if needed
+
+  # ─────────────────────────────────────────────────────────────
+  # Job 2: Python dependency vulnerability audit
+  # ─────────────────────────────────────────────────────────────
+  python-audit:
+    name: Python Dependency Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install pip-audit
+        run: pip install pip-audit
+
+      - name: Audit helpdesk dependencies
+        run: |
+          python -m pip install -e apps/helpdesk -e apps/nxerp
+          pip-audit --desc
+
+  # ─────────────────────────────────────────────────────────────
+  # Job 3: Node/Yarn dependency audit
+  # ─────────────────────────────────────────────────────────────
+  node-audit:
+    name: Node Dependency Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Install Yarn Classic
+        run: npm install --global yarn@1.22.22
+
+      - name: Yarn audit (helpdesk desk)
+        run: |
+          cd apps/helpdesk/desk
+          yarn audit --level high || {
+            echo "WARNING: yarn audit found high/critical issues"
+            exit 1
+          }
+
+  # ─────────────────────────────────────────────────────────────
+  # Job 4: Semgrep static analysis (Frappe security rules)
+  # ─────────────────────────────────────────────────────────────
+  semgrep:
+    name: Semgrep (Frappe Security Rules)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Run on PRs and main pushes; skip if no Python files changed for speed
+    if: github.actor != 'dependabot[bot]'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install Semgrep
+        run: pip install semgrep
+
+      - name: Download Frappe Semgrep rules
+        run: git clone --depth 1 https://github.com/frappe/semgrep-rules.git frappe-semgrep-rules
+
+      - name: Run Semgrep
+        run: |
+          semgrep scan \
+            --config ./frappe-semgrep-rules/rules \
+            --config r/python.lang.correctness \
+            --error \
+            apps/helpdesk/helpdesk \
+            apps/nxerp/nxerp
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+
+  # ─────────────────────────────────────────────────────────────
+  # Job 5: Validate that no secrets are in environment files
+  # ─────────────────────────────────────────────────────────────
+  env-check:
+    name: Environment File Safety Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ensure no .env files with real content are committed
+        run: |
+          # Fail if any .env file (not .env.example) is tracked and non-empty
+          if git ls-files | grep -E '^\.env$|/\.env$'; then
+            echo "ERROR: .env file is tracked by Git. Remove it and use .env.example."
+            exit 1
+          fi
+
+      - name: Ensure no site_config.json with passwords
+        run: |
+          if git ls-files | grep -E 'site_config\.json'; then
+            echo "ERROR: site_config.json is tracked by Git. This file may contain database passwords."
+            exit 1
+          fi
+
+      - name: Ensure no private keys committed
+        run: |
+          if grep -rl "BEGIN.*PRIVATE KEY" --include="*.pem" --include="*.key" . 2>/dev/null; then
+            echo "ERROR: Private key file found."
+            exit 1
+          fi

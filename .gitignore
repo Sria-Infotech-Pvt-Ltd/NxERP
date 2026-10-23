@@ -1,0 +1,68 @@
+# NXERP Integration Repository — .gitignore
+
+# ─── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.Python
+*.pyo
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# ─── Node ─────────────────────────────────────────────────────────────────────
+node_modules/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ─── Frappe Bench build artifacts ─────────────────────────────────────────────
+erpnext-source/
+frappe-source/
+apps/frappe/
+apps/erpnext/
+apps/telephony/
+apps/helpdesk/helpdesk/public/desk/
+apps/nxerp/nxerp/public/dist/
+
+# ─── Frappe site config (CONTAINS CREDENTIALS — never commit) ─────────────────
+sites/*/site_config.json
+sites/*/private/
+sites/*/locks/
+common_site_config.json
+
+# ─── Environment / Secrets ────────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+id_rsa
+id_ed25519
+*.p12
+
+# ─── IDE / OS ─────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── Test / Coverage ──────────────────────────────────────────────────────────
+coverage.xml
+htmlcov/
+.coverage
+*.cover
+
+# ─── Temporary ────────────────────────────────────────────────────────────────
+*.tmp
+*.bak
+*.orig
