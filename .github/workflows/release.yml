@@ -34,14 +34,19 @@ jobs:
       - name: Create GitHub Release
         uses: actions/github-script@v7
         with:
+          body: ${{ steps.notes.outputs.body }}
           script: |
             const tag = context.ref.replace('refs/tags/', '');
+            if (!/^v\d+\.\d+\.\d+(?:-(?:rc|beta)\.\d+)?$/.test(tag)) {
+              core.setFailed(`Invalid release tag: ${tag}`);
+              return;
+            }
             await github.rest.repos.createRelease({
               owner: context.repo.owner,
               repo: context.repo.repo,
               tag_name: tag,
               name: `NXERP ${tag}`,
-              body: `${{ steps.notes.outputs.body }}`,
+              body: core.getInput('body'),
               draft: false,
               prerelease: tag.includes('-rc') || tag.includes('-beta'),
             });

@@ -23,6 +23,11 @@ yarn-debug.log*
 yarn-error.log*
 
 # ─── Frappe Bench build artifacts ─────────────────────────────────────────────
+erpnext-source/
+frappe-source/
+apps/frappe/
+apps/erpnext/
+apps/telephony/
 apps/helpdesk/helpdesk/public/desk/
 apps/nxerp/nxerp/public/dist/
 

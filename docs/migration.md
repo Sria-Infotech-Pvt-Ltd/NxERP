@@ -112,7 +112,7 @@ bench --site nxerp.localhost migrate
 
 ### Staging / Production
 
-Follow the [deployment guide](deployment.md). Migrations are part of step 6 of the production deployment procedure.
+The deployment procedure is not verified. Do not run staging or production migrations using this repository alone. Have the operations owner provide the approved site, backup, run, and rollback commands first.
 
 ---
 
@@ -121,7 +121,7 @@ Follow the [deployment guide](deployment.md). Migrations are part of step 6 of t
 - [ ] Database backup taken and verified (see below)
 - [ ] Patch tested on a copy of the database
 - [ ] Patch registered in `patches.txt`
-- [ ] PR reviewed by a senior backend engineer (CODEOWNERS enforcement)
+- [ ] PR reviewed by a designated senior backend engineer (CODEOWNERS enforcement is not configured)
 - [ ] Staged: migration tested on staging environment
 - [ ] Rollback plan documented if the migration cannot complete
 
@@ -129,13 +129,7 @@ Follow the [deployment guide](deployment.md). Migrations are part of step 6 of t
 
 ## Taking a Database Backup
 
-```bash
-# On the server
-bench --site nxerp.nxsys.in backup --with-files
-
-# Backup file location
-ls -lh ~/nxerp-bench/sites/nxerp.nxsys.in/private/backups/
-```
+Run backup examples only against a disposable or confirmed staging site, using its verified Bench path and site name. No production backup command or path is documented here because the live architecture is unverified.
 
 Verify the backup:
 
@@ -153,8 +147,8 @@ Store backups in a location separate from the server (S3, Google Cloud Storage, 
 ### If migrate fails mid-way
 
 ```bash
-# Check what ran
-bench --site nxerp.nxsys.in console
+# Check what ran on the disposable/staging site
+bench --site <staging-site> console
 # In the console:
 frappe.get_all("Patch Log", filters={"patched": 1}, fields=["name", "modified"], order_by="modified desc", limit=10)
 ```
@@ -162,10 +156,12 @@ frappe.get_all("Patch Log", filters={"patched": 1}, fields=["name", "modified"],
 ### Database restore (last resort)
 
 ```bash
-# Restore from the pre-migration backup
+# Restore from the pre-migration backup on the staging clone only
 # WARNING: All data changes since the backup will be lost
-bench --site nxerp.nxsys.in restore /path/to/YYYY-MM-DD_backup.sql.gz
+bench --site <staging-site> restore /path/to/YYYY-MM-DD_backup.sql.gz
 ```
+
+Never restore a backup to the live production site without an approved incident/change procedure and explicit authorization.
 
 After restoring, revert the code to the pre-migration commit and redeploy.
 
@@ -187,7 +183,7 @@ These operations require explicit senior / DevOps approval:
 
 ## Patch Review Requirements
 
-Patches that touch these areas require the `@Sria-Infotech-Pvt-Ltd/senior-backend` code owners:
+Patches that touch these areas require a designated senior backend reviewer; assign reviewers manually until actual GitHub owners are confirmed:
 
 - `helpdesk/patches/`
 - `helpdesk/patches.txt`

@@ -177,7 +177,7 @@ git push origin v2026.10.2
 - Never alter a table directly with raw SQL in production
 - Patches go in `helpdesk/patches/` and must be registered in `patches.txt`
 - Patches must be idempotent (safe to re-run)
-- All patches require a senior review (see CODEOWNERS)
+- All patches require a senior review; assign an authorized reviewer manually until real CODEOWNERS are configured
 - Test patches on a copy of the production database before merging
 
 ---
@@ -191,7 +191,7 @@ Any change that affects:
 - CSRF or CORS configuration
 - File upload handling
 
-…requires approval from the **security** code owners (see CODEOWNERS).
+…requires approval from a designated security reviewer. Assign that reviewer manually until real CODEOWNERS are configured.
 
 ---
 

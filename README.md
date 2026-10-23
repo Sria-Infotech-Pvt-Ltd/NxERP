@@ -2,7 +2,6 @@
 
 > **Frappe / ERPNext + customized Helpdesk** — integrated, branded, and maintained by Sria Infotech Pvt. Ltd.
 
-[![CI — Lint](https://github.com/Sria-Infotech-Pvt-Ltd/NxERP/actions/workflows/lint.yml/badge.svg)](https://github.com/Sria-Infotech-Pvt-Ltd/NxERP/actions/workflows/lint.yml)
 [![CI — Tests](https://github.com/Sria-Infotech-Pvt-Ltd/NxERP/actions/workflows/ci.yml/badge.svg)](https://github.com/Sria-Infotech-Pvt-Ltd/NxERP/actions/workflows/ci.yml)
 
 ---
@@ -41,7 +40,10 @@ All four apps run on the **same Frappe site** (Bench installation). Authenticati
 ```
 nxerp-integration/           ← this repository
 ├── apps/
-│   ├── helpdesk/            ← company-customized Frappe Helpdesk (git subtree)
+│   ├── frappe/              ← upstream framework (pinned; retrieved by CI/Bench)
+│   ├── erpnext/             ← upstream ERPNext (pinned; retrieved by CI/Bench)
+│   ├── telephony/           ← upstream Helpdesk dependency (retrieved by Bench)
+│   ├── helpdesk/            ← company-customized Frappe Helpdesk snapshot
 │   └── nxerp/               ← NXERP branding app
 ├── .github/
 │   ├── workflows/
@@ -59,7 +61,8 @@ nxerp-integration/           ← this repository
 │   ├── branching.md
 │   ├── deployment.md
 │   ├── migration.md
-│   └── onboarding.md
+│   ├── onboarding.md
+│   └── source-pins.md
 ├── .editorconfig
 ├── .gitignore
 ├── CONTRIBUTING.md
@@ -69,7 +72,7 @@ nxerp-integration/           ← this repository
 └── README.md               ← this file
 ```
 
-The upstream ERPNext repository is **not** vendored here. It is a regular Bench dependency pinned in `apps/nxerp/pyproject.toml` (or in the site's `apps.txt` / `common_site_config.json`). See [Architecture](docs/architecture.md).
+The official ERPNext and Frappe source checkouts are available locally at `erpnext-source/` and `frappe-source/` for inspection and are excluded from Git. ERPNext is a Frappe app, not a Bench installation. The integration repo now contains the customized Helpdesk and NXERP Frappe apps. Runtime installation and end-to-end validation are still in progress.
 
 ---
 
@@ -87,8 +90,9 @@ Frappe Bench
     └── nxerp.nxsys.in/
 ```
 
-**Frappe version:** `>=16.0.0-dev,<18.0.0` (per `helpdesk/pyproject.toml`)
-**Python:** 3.14+
+**ERPNext source:** `v16.52.1` (`ade850bbd6a7412e9994a9637d2c5c713771632a`)
+**Compatible Frappe range:** `>=16.50.0,<17.0.0` (ERPNext declaration); Frappe `v16.53.0` is within that range. Source-level match only; runtime compatibility is not yet tested.
+**Python:** 3.14+ (as declared by ERPNext and the current Helpdesk checkout)
 **Node:** 24 LTS
 **Database:** MariaDB 10.6+
 
@@ -98,62 +102,56 @@ See [docs/architecture.md](docs/architecture.md) for full dependency matrix and 
 
 ## Quick Start (Development)
 
-> **Prerequisites:** Python 3.14, Node 24, Yarn, MariaDB 10.6, Redis.
-> Use the Docker setup for a zero-config environment (see `frappe-helpdesk-docker/`).
+> **Prerequisites:** Python 3.14, Node 24, Yarn, MariaDB, and Redis. The local Docker directory has not yet been validated as a full NXERP development environment.
 
 ```bash
 # 1. Install bench
 pip install frappe-bench
 
 # 2. Create a new bench
-bench init --frappe-branch version-16 ~/nxerp-bench
+bench init --frappe-branch v16.53.0 ~/nxerp-bench
 cd ~/nxerp-bench
 
-# 3. Get apps (use this repository for helpdesk and nxerp)
-bench get-app erpnext --branch version-16
-bench get-app telephony
+# 3. Retrieve the pinned upstream apps
+bench get-app erpnext --branch v16.52.1
+bench get-app telephony https://github.com/frappe/telephony.git
+cd apps/telephony && git checkout 9447577500a25d242088398157b72c654fa34b20 && cd ../..
+
+# 4. Install the integrated apps from this checkout
 bench get-app helpdesk /path/to/nxerp-integration/apps/helpdesk
 bench get-app nxerp /path/to/nxerp-integration/apps/nxerp
 
-# 4. Create a dev site
+# 5. Create a dev site
 bench new-site nxerp.localhost --db-root-password root --admin-password admin
 
-# 5. Install apps (order matters: nxerp must be last)
+# 6. Install apps (NXERP declares ERPNext and Helpdesk dependencies)
 bench --site nxerp.localhost install-app erpnext
 bench --site nxerp.localhost install-app telephony
 bench --site nxerp.localhost install-app helpdesk
 bench --site nxerp.localhost install-app nxerp
 
-# 6. Apply NXERP branding (only needed on a pre-existing site)
+# 7. Apply NXERP branding (only needed on a pre-existing site)
 bench --site nxerp.localhost execute nxerp.branding.apply_branding
 
-# 7. Start
+# 8. Start
 bench start
 ```
 
-The development site is then available at `http://nxerp.localhost:8000`.
+The installation procedure has not been validated; a working integrated site is not yet available.
 
 ---
 
-## Production Installation
+## Deployment
 
-See [docs/deployment.md](docs/deployment.md) for the full procedure including:
-- Pre-deployment checklist
-- Database backup
-- Migration steps
-- Asset build
-- Health check
-- Rollback procedure
-
-**Never run `bench migrate` on production without a verified backup.**
+The deployment environment and staging architecture have not been verified. This repository is not ready to deploy. See [docs/deployment.md](docs/deployment.md) for the prerequisites; do not run these instructions against the live site.
 
 ---
 
 ## Branch Strategy
 
-| Branch | Purpose | Protected |
+| Branch | Purpose | Protection status |
 |--------|---------|-----------|
-| `main` | Production-ready, deployed to nxerp.nxsys.in | ✅ Yes |
+| `main` | Intended release branch | Not verified/configured |
 | `feature/<id>-<slug>` | New features | No |
 | `fix/<id>-<slug>` | Bug fixes | No |
 | `hotfix/<id>-<slug>` | Urgent production fixes | No |
@@ -171,7 +169,7 @@ Key requirements:
 - One PR per logical change
 - All CI checks must pass
 - At least one reviewer approval required
-- Migrations and auth changes require senior review (see CODEOWNERS)
+- Migrations and auth changes require designated senior/security review; actual reviewers must be assigned manually until CODEOWNERS is configured
 - Conventional Commits format for all commit messages
 
 ---

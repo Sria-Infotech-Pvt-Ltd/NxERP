@@ -58,18 +58,8 @@ jobs:
 
       - name: Audit helpdesk dependencies
         run: |
-          cd apps/helpdesk
-          pip-audit --requirement <(pip install -e . --dry-run 2>&1 | grep "Would install" | sed 's/Would install //' | tr ' ' '\n' | sed 's/==/==/') \
-            --format json 2>/dev/null || true
-          # Direct pyproject audit
-          pip-audit --desc --fix-type full \
-            -r <(grep -E '"[a-zA-Z]' apps/helpdesk/pyproject.toml | sed 's/.*"\(.*\)".*/\1/') \
-            || echo "WARNING: pip-audit found issues - review output above"
-
-      - name: Audit nxerp dependencies
-        run: |
-          cd apps/nxerp
-          pip-audit --desc || echo "WARNING: pip-audit found issues in nxerp"
+          python -m pip install -e apps/helpdesk -e apps/nxerp
+          pip-audit --desc
 
   # ─────────────────────────────────────────────────────────────
   # Job 3: Node/Yarn dependency audit
@@ -85,6 +75,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
+
+      - name: Install Yarn Classic
+        run: npm install --global yarn@1.22.22
 
       - name: Yarn audit (helpdesk desk)
         run: |

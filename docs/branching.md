@@ -16,7 +16,7 @@ For a team of 50+ developers:
 
 | Branch Pattern | Purpose | Created From | Merges To | Lifetime |
 |---------------|---------|-------------|----------|---------|
-| `main` | Production-ready code | — | — | Permanent, protected |
+| `main` | Intended release-ready code | — | — | Permanent; protection not configured |
 | `feature/<id>-<slug>` | New functionality | `main` | `main` | Short (< 5 days) |
 | `fix/<id>-<slug>` | Bug fixes | `main` | `main` | Short (< 3 days) |
 | `hotfix/<id>-<slug>` | Urgent production fixes | `main` | `main` | Hours |
@@ -34,14 +34,14 @@ For a team of 50+ developers:
 
 ## Protected Branch Rules for `main`
 
-Configure these in **GitHub → Settings → Branches → Branch protection rules** for `main`:
+These are the recommended rules for **GitHub → Settings → Branches → Branch protection rules** on `main`. They have not been configured. The connected GitHub identity has read but not push permission, and the API returned no branch-protection record. Configure them with an organization administrator after agreeing actual reviewers and CI check names:
 
 | Rule | Setting |
 |------|---------|
 | Require a pull request before merging | ✅ Enabled |
 | Require approvals | 1 (2 for auth/migrations) |
 | Dismiss stale reviews on new push | ✅ Enabled |
-| Require review from Code Owners | ✅ Enabled |
+| Require review from Code Owners | After verified owners are added to `.github/CODEOWNERS` |
 | Require status checks to pass | ✅ CI: `python-lint`, `frontend-lint`, `server-tests` |
 | Require branches up to date before merging | ✅ Enabled |
 | Do not allow bypassing the above settings | ✅ Enabled |
@@ -102,7 +102,7 @@ Then open a Pull Request on GitHub:
 - Target branch: `main`
 - Fill in the PR template completely
 - Link your ticket: `Closes NX-1234`
-- Add relevant reviewers (CODEOWNERS will be added automatically for protected paths)
+- Add the relevant reviewers manually. CODEOWNERS assignments are not configured yet.
 
 ### During Review
 

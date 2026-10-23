@@ -35,8 +35,8 @@ jobs:
         with:
           python-version: "3.14"
 
-      - name: Install linters
-        run: pip install ruff flake8
+      - name: Install Helpdesk lint dependencies
+        run: pip install flake8 flake8-bugbear flake8-comprehensions flake8-simplify==0.30.0
 
       - name: Check for Python syntax errors
         run: python -m compileall -f apps/helpdesk apps/nxerp
@@ -48,8 +48,8 @@ jobs:
             exit 1
           fi
 
-      - name: Ruff (lint + style)
-        run: ruff check apps/helpdesk apps/nxerp
+      - name: Flake8 (project strict configuration)
+        run: flake8 --config apps/helpdesk/.github/helpers/.flake8_strict apps/helpdesk/helpdesk apps/nxerp/nxerp
 
   # ─────────────────────────────────────────────────────────────
   # Job 2: Frontend lint and theme-token check
@@ -62,17 +62,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/checkout@v4
+        with:
+          repository: frappe/frappe
+          ref: v16.53.0
+          path: apps/frappe
+
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
           cache: "yarn"
-          cache-dependency-path: apps/helpdesk/yarn.lock
+          cache-dependency-path: apps/helpdesk/desk/yarn.lock
+
+      - name: Install Yarn Classic
+        run: npm install --global yarn@1.22.22
 
       - name: Install desk dependencies
         run: cd apps/helpdesk/desk && yarn install --frozen-lockfile --ignore-scripts
 
-      - name: ESLint
-        run: cd apps/helpdesk/desk && yarn lint
+      - name: Build Helpdesk frontend
+        run: cd apps/helpdesk/desk && yarn build
 
       - name: Theme token check (generated files fresh, contrast passing)
         run: cd apps/helpdesk/desk && yarn theme:check
@@ -100,9 +109,33 @@ jobs:
           --health-interval=5s
           --health-timeout=2s
           --health-retries=3
+      redis-cache:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+      redis-queue:
+        image: redis:7-alpine
+        ports: ["6380:6379"]
 
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: frappe/frappe
+          ref: v16.53.0
+          path: apps/frappe
+
+      - uses: actions/checkout@v4
+        with:
+          repository: frappe/erpnext
+          ref: v16.52.1
+          path: apps/erpnext
+
+      - uses: actions/checkout@v4
+        with:
+          repository: frappe/telephony
+          ref: 9447577500a25d242088398157b72c654fa34b20
+          path: apps/telephony
 
       - name: Set up Python 3.14
         uses: actions/setup-python@v5
@@ -141,7 +174,7 @@ jobs:
         run: |
           pip install frappe-bench
           bench init --skip-redis-config-generation \
-            --frappe-branch version-16 \
+            --frappe-path "$GITHUB_WORKSPACE/apps/frappe" \
             ~/nxerp-bench
         env:
           CI: true
@@ -149,14 +182,17 @@ jobs:
       - name: Install apps
         run: |
           cd ~/nxerp-bench
-          bench get-app telephony
+          bench set-config -g redis_cache redis://127.0.0.1:6379
+          bench set-config -g redis_queue redis://127.0.0.1:6380
+          bench get-app telephony "$GITHUB_WORKSPACE/apps/telephony"
+          bench get-app erpnext "$GITHUB_WORKSPACE/apps/erpnext"
           bench get-app helpdesk $GITHUB_WORKSPACE/apps/helpdesk
           bench get-app nxerp $GITHUB_WORKSPACE/apps/nxerp
           bench new-site test_site \
             --mariadb-root-password root \
             --admin-password admin \
             --no-mariadb-socket
-          bench --site test_site install-app erpnext || true
+          bench --site test_site install-app erpnext
           bench --site test_site install-app telephony
           bench --site test_site install-app helpdesk
           bench --site test_site install-app nxerp

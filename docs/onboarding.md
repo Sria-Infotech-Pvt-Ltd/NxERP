@@ -108,9 +108,6 @@ yarn dev
 # Build for production
 yarn build
 
-# Linting
-yarn lint
-
 # Theme token validation
 yarn theme:check
 yarn theme:audit
@@ -160,7 +157,7 @@ The NXERP login page works by extending the Frappe framework's own login templat
 frappe/www/login.html         ← upstream (never edit)
         ↓ extends
 nxerp/www/login.html          ← NXERP layout + CSS, no auth logic
-helpdesk/www/login.html       ← same pattern, installed before nxerp
+helpdesk/legacy_reference/    ← old login kept for reference; not routable
 ```
 
 Authentication logic is 100% in the Frappe framework. The login pages only change the visual presentation.

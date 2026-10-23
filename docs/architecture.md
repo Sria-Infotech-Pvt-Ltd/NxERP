@@ -30,17 +30,17 @@ NXERP is a customized ERP platform built on the [Frappe](https://frappeframework
 
 ---
 
-## Pinned Versions
+## Source Compatibility (verified 2026-10-23)
 
 | App | Source | Pin Strategy |
 |-----|--------|-------------|
-| `frappe` | upstream | `>=16.0.0-dev,<18.0.0` (per helpdesk `pyproject.toml`) |
-| `erpnext` | upstream | latest stable tag matching Frappe version |
+| `frappe` | upstream | `v16.53.0` (`e8d41dd0061a32ee781caefe7d0b0d2bb7c15362`); satisfies ERPNext's declared `>=16.50.0,<17.0.0` |
+| `erpnext` | upstream | `v16.52.1` (`ade850bbd6a7412e9994a9637d2c5c713771632a`), checked out at `erpnext-source/` |
 | `telephony` | upstream | `>=0.0.1,<1.0.0` |
 | `helpdesk` | **this repo** `apps/helpdesk/` | company branch (`main`) |
 | `nxerp` | **this repo** `apps/nxerp/` | company branch (`main`) |
 
-> **Upgrading Frappe/ERPNext:** Pin to a tested tag in `bench/apps.txt` or the site's `common_site_config.json`. Never pull `develop` on production.
+> These are compatible source declarations, not a validated installation. ERPNext is a Frappe app; running NXERP requires Bench, Frappe, its services, and the other apps. Do not deploy `develop`.
 
 ---
 
@@ -54,7 +54,7 @@ Browser
   ▼
 /login  ──rendered by──►  nxerp/www/login.html
                            (extends frappe/www/login.html)
-                           (helpdesk/www/login.html is an alias)
+                           (the Helpdesk legacy copy is retained outside www/)
   │
   ▼  POST /api/method/login
 Frappe authentication layer
@@ -76,13 +76,11 @@ Frappe authentication layer
 
 The custom NXERP login page works as follows:
 
-1. **`nxerp/www/login.html`** is the canonical login page (installed last, so it takes priority).  
-   It extends `frappe/www/login.html` — the form, session creation, 2FA, social login, and forgot-password flows are all the framework's own code.
-2. **`helpdesk/www/login.html`** is an identical extension — it provides the same design when Helpdesk is the last installed app.  
-   Both files call `frappe_login_context()` and only add NXERP layout and CSS.
-3. **CSS** lives in `helpdesk/public/nxerp_login/css/nxerp-login.css` and `nxerp-theme.css`.
-4. **Brand assets** live in `helpdesk/public/nxerp_login/images/`.
-5. **`login.py`** (both apps) only sets branding context variables — it does not reimplement authentication.
+1. **`apps/nxerp/nxerp/www/login.html`** is canonical. `required_apps` makes NXERP depend on ERPNext and Helpdesk so its route is loaded after them.
+2. It extends `frappe/www/login.html` — form, session creation, 2FA, social login, and password recovery remain Frappe's own code.
+3. The old Helpdesk login template/context are retained under `apps/helpdesk/legacy_reference/`, outside `www/` so they cannot register a competing route. Helpdesk customer portal routes remain in place.
+4. Login CSS and generated theme are served from `apps/nxerp/nxerp/public/css/`; logos, fonts, and favicon are served from `apps/nxerp/nxerp/public/`.
+5. `apps/nxerp/nxerp/www/login.py` calls Frappe's stock context helper and only adds branding context.
 
 ---
 
@@ -97,12 +95,11 @@ nxerp-integration/
 │   │   │   ├── hooks.py     ← Frappe app hooks
 │   │   │   ├── nxerp_branding.py  ← Branding application script
 │   │   │   ├── integrations/erpnext/  ← ERPNext event handlers
-│   │   │   ├── public/nxerp_login/   ← Login CSS, fonts, images
-│   │   │   └── www/login.*  ← Custom login page
+│   │   │   └── legacy_reference/ ← Historical login source, not routable
 │   │   └── desk/            ← Vue/Vite frontend
 │   └── nxerp/               ← NXERP branding app
 │       └── nxerp/
-│           ├── hooks.py     ← Logo, CSS, after_install hook
+│           ├── hooks.py     ← Logo, CSS, required apps, after_install hook
 │           ├── branding.py  ← apply_branding() script
 │           └── www/login.*  ← Login page override (installed last)
 ├── .github/
@@ -192,6 +189,6 @@ Custom DocTypes are prefixed `HD_`:
 
 ## Deployment Model
 
-The current production deployment at `nxerp.nxsys.in` uses **Frappe Bench on a managed server** (confirmed from `frappe-helpdesk-docker/` and the deployment architecture). Docker is available for local development.
+The deployment architecture for `nxerp.nxsys.in` has not been independently verified. `frappe-helpdesk-docker/` contains a Docker Compose file, but that alone does not establish production architecture. Treat the site as production; do not deploy or migrate against it.
 
 See [deployment.md](deployment.md) for the full procedure.

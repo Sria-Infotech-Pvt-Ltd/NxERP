@@ -1,0 +1,178 @@
+{
+  "$comment": "Allowed text/surface pairs per role, checked in both modes by build/validate-contrast.mjs. min: 4.5 body text, 3 large text and UI.",
+  "pairs": [
+    {
+      "fg": "ink-gray-9",
+      "on": [
+        "surface-base",
+        "surface-gray-1",
+        "surface-gray-2",
+        "surface-gray-3"
+      ],
+      "min": 4.5
+    },
+    {
+      "fg": "ink-gray-9",
+      "on": [
+        "surface-sidebar"
+      ],
+      "min": 4.5,
+      "modes": [
+        "light"
+      ]
+    },
+    {
+      "fg": "ink-gray-8",
+      "on": [
+        "surface-base",
+        "surface-gray-1",
+        "surface-gray-2",
+        "surface-gray-3"
+      ],
+      "min": 4.5
+    },
+    {
+      "fg": "ink-gray-7",
+      "on": [
+        "surface-base",
+        "surface-gray-1",
+        "surface-gray-2",
+        "surface-gray-3"
+      ],
+      "min": 4.5
+    },
+    {
+      "fg": "ink-gray-6",
+      "on": [
+        "surface-base",
+        "surface-gray-1",
+        "surface-gray-2"
+      ],
+      "min": 4.5
+    },
+    {
+      "fg": "ink-gray-5",
+      "on": [
+        "surface-base",
+        "surface-gray-1",
+        "surface-gray-2"
+      ],
+      "min": 4.5
+    },
+    {
+      "fg": "ink-gray-4",
+      "on": [
+        "surface-base"
+      ],
+      "min": 3
+    },
+    {
+      "fg": "ink-base",
+      "on": [
+        "surface-gray-10",
+        "surface-gray-9"
+      ],
+      "min": 4.5
+    },
+    {
+      "fg": "ink-accent-5",
+      "on": [
+        "surface-base",
+        "surface-gray-1",
+        "surface-accent-1",
+        "surface-accent-2"
+      ],
+      "min": 4.5
+    },
+    {
+      "fg": "ink-accent-link",
+      "on": [
+        "surface-base",
+        "surface-gray-1"
+      ],
+      "min": 4.5
+    },
+    {
+      "fg": "ink-accent-6",
+      "on": [
+        "surface-base",
+        "surface-accent-2",
+        "surface-accent-3"
+      ],
+      "min": 4.5
+    },
+    {
+      "fg": "ink-accent-on",
+      "on": [
+        "surface-accent-5",
+        "surface-accent-6"
+      ],
+      "min": 4.5
+    },
+    {
+      "fg": "focus-ring",
+      "on": [
+        "surface-base",
+        "surface-gray-1"
+      ],
+      "min": 3
+    },
+    {
+      "fg": "ink-base",
+      "on": [
+        "surface-blue-6",
+        "surface-blue-7",
+        "surface-blue-8"
+      ],
+      "min": 4.5
+    },
+    {
+      "fg": "ink-blue-5",
+      "on": [
+        "surface-base",
+        "surface-gray-1",
+        "surface-blue-2"
+      ],
+      "min": 4.5
+    },
+    {
+      "fg": "ink-blue-6",
+      "on": [
+        "surface-base",
+        "surface-blue-2",
+        "surface-blue-3"
+      ],
+      "min": 4.5
+    },
+    {
+      "fg": "ink-gray-9",
+      "on": [
+        "surface-elevation-1",
+        "surface-elevation-2",
+        "surface-elevation-3"
+      ],
+      "min": 4.5
+    },
+    {
+      "fg": "ink-gray-5",
+      "on": [
+        "surface-elevation-3"
+      ],
+      "min": 4.5
+    },
+    {
+      "fg": "outline-gray-2",
+      "on": [
+        "surface-base"
+      ],
+      "min": 1.4
+    },
+    {
+      "fg": "outline-gray-3",
+      "on": [
+        "surface-base"
+      ],
+      "min": 1.8
+    }
+  ]
+}
