@@ -47,10 +47,10 @@ nxerp-integration/           ← this repository
 │   └── nxerp/               ← NXERP branding app
 ├── .github/
 │   ├── workflows/
-│   │   ├── ci.yml           ← Python lint + syntax + tests on every PR
-│   │   ├── lint.yml         ← Commit lint, theme-token check, Semgrep
-│   │   ├── security.yml     ← Secret scanning, dependency audit
-│   │   └── cd-staging.yml   ← Deploy to staging (manual trigger)
+│   │   ├── ci.yml           ← Python lint + syntax + tests + commit lint + theme check on every PR
+│   │   ├── security.yml     ← Secret scanning, dependency audit, Semgrep
+│   │   ├── cd-staging.yml   ← Deploy to staging (manual trigger; not yet configured)
+│   │   └── release.yml      ← Create GitHub Release from a version tag
 │   ├── PULL_REQUEST_TEMPLATE.md
 │   ├── ISSUE_TEMPLATE/
 │   │   ├── bug_report.md

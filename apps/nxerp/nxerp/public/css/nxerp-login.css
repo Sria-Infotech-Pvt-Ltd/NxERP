@@ -62,6 +62,9 @@
 	-webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
 }
 .nx-shell *, .nx-shell *::before, .nx-shell *::after { box-sizing: border-box; }
+.nx-cols {
+	flex: 1 1 auto; display: flex; flex-flow: row nowrap; min-height: 100%;
+}
 body[data-path="login"] .navbar,
 body[data-path="login"] .web-footer,
 body[data-path="login"] footer { display: none !important; }
