@@ -27,6 +27,7 @@ docker compose -p nxerp-dev logs -f bench     # wait for "[bootstrap] ready:"
 
 - The bench lives in a named Docker volume (fast, and outside OneDrive/Windows file sharing). The repository is mounted at `/workspace`.
 - The `nxerp` app is **soft-linked** from `/workspace`, so edits apply live. Every other app is fetched at its pinned commit into the `vendor-data` volume and cloned into the bench (a soft link broke ERPNext's `banking/vite.config.ts`, which resolves `../../sites` from the real path). If a pin no longer resolves to its commit, the bootstrap fails on purpose.
+- **Helpdesk source:** if a sibling `../helpdesk` git checkout exists, `up.sh` mounts it read-only and the bootstrap installs the branch checked out there (override with `HELPDESK_REF=<branch>`). Only committed work is installed, so commit before rebuilding. Without the sibling folder, the pinned fork commit from `apps.json` is used.
 - First-time Frappe/ERPNext setup wizard is **not** run by the bootstrap; it stays pending so the real first-run admin flow can be exercised.
 
 ### Seed fake users (dev only)

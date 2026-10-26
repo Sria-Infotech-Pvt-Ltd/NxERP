@@ -31,6 +31,10 @@ Verified state (2026-10-27):
 - **Ownership:** CODEOWNERS (placeholder teams) gates `nxerp/`, `deploy/`, `.github/`, `docs/adr/`.
 - **PR #1** is left untouched; closing it is the owner's decision.
 
+## Local workspace layout (added 2026-10-27)
+
+The owner wants all code in one place. Decision: **one workspace folder, two repositories side by side**, not a monorepo: `nxerp-platform/` (this repo) and `helpdesk/` (the fork). The dev stack mounts both, so the whole product runs from one folder and one command, while upstream merges and ownership stay as decided above. Merging Helpdesk's ~1,100 tracked files into this repository remains rejected for the reasons in Option 2.
+
 ## Consequences
 
 - Adding an app = one `deploy/apps.json` entry plus a registration in the platform (ADR-005); no code is copied.

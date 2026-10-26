@@ -132,3 +132,12 @@ Launcher and landing (earlier probe on the first build, with the same seeded rol
 ## 7. Not verified
 
 Realtime room checks, `before_request` vs token ordering, private-file/print checks (no seeded ERPNext documents), Helpdesk Playwright tests, browser-level behaviour of bare `/desk`, 2FA on non-password login routes, the bootstrap amended with `bench setup requirements --dev` from scratch, and everything on GitHub (CI, branch protection, PR).
+
+## 8. Workspace consolidation and palette verification (2026-10-27, later the same day)
+
+- The platform clone was moved into the workspace as `nxerp-platform/`, next to `helpdesk/`. A full rebuild from empty volumes (`down -v`, then `./deploy/dev/up.sh -d` from the new location) took **418 s** and installed Helpdesk from the local palette commit (`[bootstrap] helpdesk @ 9647f7664d (local /helpdesk-src feature/nxerp-palette)`). This run included the amended `bench setup requirements --dev` step, so that fix is now verified from scratch.
+- `yarn theme:check`, in the container against the real frappe-ui: generated files up to date; coverage 384 frappe-ui tokens per mode, accent family complete (frappe-ui 1.0.0-rc.1); contrast 99 checks passed in light and dark; synced copies up to date. `yarn theme:audit`: no hardcoded colors.
+- `bench run-tests --app nxerp`: 5 tests OK (adds the Desk-palette hook/asset test). `--module helpdesk.tests.api.test_theme`: 3 tests OK. `GET /assets/nxerp/css/nxerp-desk-theme.css`: 200.
+- Found and fixed: the Helpdesk repo's `.gitignore` excluded `desk/src/theme/build/` and `build/lib/` (generic `build/`, `lib/` rules), so the palette generator was never in git.
+- Screenshots (headless Chromium via `tools/screenshots.mjs`, light and dark): login; Helpdesk home and tickets; ERPNext Desk (Administrator is sent to the first-run setup wizard, which shows the palette). Observed: warm paper/sand surfaces, charcoal/amber actions, charcoal dark mode; the NXERP and ERPNext logo marks stay blue (brand assets) and status chips stay category colours. Images are not stored in the repository.
+- Not run: Helpdesk Playwright `theme.spec.ts`.

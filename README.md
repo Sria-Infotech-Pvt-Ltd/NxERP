@@ -14,6 +14,18 @@ Future apps (HRMS, Project Management, Budget Management, ...) are **not install
 
 > **Status: Phase 1 (foundation).** The `nxerp` app is scaffolding only. It registers no behaviour yet. See [docs/PROGRESS.md](docs/PROGRESS.md).
 
+## One workspace, two repositories
+
+Everything lives side by side in one folder; Helpdesk is one module of NXERP and keeps its own git history (ADR-001):
+
+```
+frapper sria/
+  nxerp-platform/   this repo: platform app + deploy + docs   (company repo Sria-Infotech-Pvt-Ltd/NxERP)
+  helpdesk/         Helpdesk module (company fork of frappe/helpdesk, incl. the NXERP login and palette)
+```
+
+`./deploy/dev/up.sh` mounts both: it installs the platform app from this folder and Helpdesk from `../helpdesk` (the branch currently checked out there), plus pinned ERPNext, so one stack runs the whole product.
+
 ## What this repository holds
 
 ```

@@ -9,6 +9,18 @@ Resume point for the next session. Update this file in every PR that changes pha
 | 1: Audit, research, ADRs, foundation | **Complete locally; not yet pushed** (see "Publishing") |
 | 2: Login, launcher, access, routing | Not started |
 
+## Where the code lives (updated 2026-10-27)
+
+One workspace folder, `frapper sria/`: `nxerp-platform/` (this repo, branch `phase-1/foundation`) and `helpdesk/` (Helpdesk fork, branch `feature/nxerp-palette`). `./deploy/dev/up.sh` runs both together. The earlier clone under `dev/NxERP` (outside the workspace) is an obsolete duplicate and can be deleted.
+
+## Colour palette (completed 2026-10-27)
+
+- Source of truth: `helpdesk/desk/src/theme/tokens/*.json`; `yarn theme:build` generates every output and syncs `nxerp-platform/nxerp/public/css/`.
+- Committed on `feature/nxerp-palette` (5 commits). A blanket `build/` and `lib/` ignore rule had excluded the whole generator from git; fixed.
+- The platform serves the Desk palette (`app_include_css`), so ERPNext/Framework Desk is themed from the platform, not from one app.
+- Verified: `theme:check` (generated fresh, 384 frappe-ui tokens covered per mode, 99 contrast checks), `theme:audit` (no hard-coded colours), 5 platform tests + 3 Helpdesk theme tests, and screenshots in light and dark of the login, Helpdesk home/tickets and ERPNext Desk.
+- Remaining (Phase 2): move the token source out of the Helpdesk repo into the platform repo (the palette is platform-wide); recolour logo assets (brand decision); theme the portal/website pages when the login moves to the platform; Helpdesk Playwright theme spec not run.
+
 ## Phase 1: what exists (evidence in `docs/audit/bootstrap-evidence.md`)
 
 - Audit: `docs/audit/helpdesk-audit.md` (enhancements (a)-(f): none clearly IMPLEMENTED; (a) ABSENT, (b) ABSENT, (c) PARTIAL, (d) PARTIAL, (e) ABSENT on create, (f) PARTIAL)
@@ -39,7 +51,7 @@ Resume point for the next session. Update this file in every PR that changes pha
 1. **Push access**: the GitHub account on this machine has READ on `Sria-Infotech-Pvt-Ltd/NxERP`. Grant write, or push from an account with access (steps below).
 2. **Commit author**: local commits use the machine's global git identity (a personal name/email). Decide whether to amend before pushing (`git rebase -r --root --exec 'git commit --amend --reset-author --no-edit'` after setting `user.name`/`user.email` locally; local branch only).
 3. **Helpdesk fork ownership**: it lives under `Sriainfotech`, the company org is `Sria-Infotech-Pvt-Ltd`.
-4. **Uncommitted palette/theme work** in `helpdesk/` (43 modified + 8 untracked files): not in any commit, so not in the reproducible build; the partial-commit risks are in the audit.
+4. **Palette branch** `feature/nxerp-palette` in `helpdesk/` is committed locally and not pushed; decide where it merges (the fork's `nxerp-stable` / `develop`) and push it with write access.
 5. **PR #1** (`codex/nxerp-integration`, 1,163 files) is open on NxERP and untouched: close it or not.
 6. **`/login` vs "v1/login"**: confirm `/login` (`/v1/login` is a 404 in Frappe 16).
 7. **Licence** for `nxerp` (`hooks.py` says `Proprietary` as a placeholder) and **CODEOWNERS** team names (placeholders; teams must exist).
@@ -51,8 +63,8 @@ Resume point for the next session. Update this file in every PR that changes pha
 
 1. Push `phase-1/foundation`, open the PR, get it reviewed, enable branch protection, create CODEOWNERS teams.
 2. Rebase the Helpdesk customisations onto upstream `v1.31.0` in the company fork; re-pin `deploy/apps.json`; rebuild from scratch (`down -v`, `up.sh -d`) and re-run the suites.
-3. Commit the palette work in the fork (or drop it) so the build includes it.
-4. Re-run the amended bootstrap from empty volumes (the `bench setup requirements --dev` step was verified by running the command in the live container, not from scratch).
+3. Push and merge the palette branch in the company fork (committed locally; see "Colour palette").
+4. (Done 2026-10-27) The amended bootstrap was re-run from empty volumes and passed.
 5. Investigate the 7 `Throttled` Helpdesk test errors on a fresh site; decide whether Helpdesk tests run on a Helpdesk-only site in CI.
 6. Spikes to prove before building: `auth_hooks` sees the right user for cookie, token and socket requests and can return 403 before dispatch; one landing target converges both redirect engines; Administrator first-run (setup wizard) is preserved.
 7. Run the remaining unverified checks (realtime, private files/print, `before_request` ordering, 2FA on non-password routes) and extend `tools/access_baseline.sh` into automated Phase 2 acceptance tests: one per row of the coverage table.
