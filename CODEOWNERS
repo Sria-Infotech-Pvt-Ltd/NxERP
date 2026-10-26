@@ -1,0 +1,23 @@
+# PLACEHOLDER team names: the owner must create these GitHub teams (or replace them) and then
+# enable "Require review from Code Owners" in branch protection for main.
+# Until then this file has no enforcement effect.
+#
+# Last matching pattern wins.
+
+*                              @Sria-Infotech-Pvt-Ltd/nxerp-maintainers
+
+# Platform app: access, routing, launcher. Security-sensitive.
+/nxerp/                        @Sria-Infotech-Pvt-Ltd/nxerp-platform @Sria-Infotech-Pvt-Ltd/nxerp-security
+/nxerp/hooks.py                @Sria-Infotech-Pvt-Ltd/nxerp-platform @Sria-Infotech-Pvt-Ltd/nxerp-security
+/nxerp/patches.txt             @Sria-Infotech-Pvt-Ltd/nxerp-platform
+
+# Deployment, versions and CI
+/deploy/                       @Sria-Infotech-Pvt-Ltd/nxerp-devops
+/.github/                      @Sria-Infotech-Pvt-Ltd/nxerp-devops
+/CODEOWNERS                    @Sria-Infotech-Pvt-Ltd/nxerp-maintainers
+
+# Architecture and process docs
+/docs/adr/                     @Sria-Infotech-Pvt-Ltd/nxerp-architecture
+/docs/architecture/            @Sria-Infotech-Pvt-Ltd/nxerp-architecture
+/CLAUDE.md                     @Sria-Infotech-Pvt-Ltd/nxerp-maintainers
+/CONTRIBUTING.md               @Sria-Infotech-Pvt-Ltd/nxerp-maintainers
