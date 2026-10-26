@@ -30,4 +30,6 @@ class TestScaffold(IntegrationTestCase):
 		css = "/assets/nxerp/css/nxerp-desk-theme.css"
 		self.assertIn(css, frappe.get_hooks("app_include_css", app_name="nxerp"))
 		shipped = frappe.get_app_path("nxerp", "public", "css", "nxerp-desk-theme.css")
-		self.assertTrue(os.path.exists(shipped), "run `yarn theme:build` in the Helpdesk repo and commit the output")
+		self.assertTrue(
+			os.path.exists(shipped), "run `yarn theme:build` in the Helpdesk repo and commit the output"
+		)
