@@ -37,6 +37,17 @@ fetch_pinned() {
 	log "$name @ $(git -C "$dir" rev-parse --short=10 HEAD)"
 }
 
+# fetch_local NAME PATH REF -> $VENDOR/NAME at REF taken from a local checkout (dev only)
+fetch_local() {
+	local name=$1 src=$2 ref=$3 dir=$VENDOR/$1
+	if [ ! -d "$dir/.git" ]; then
+		git init -q "$dir"
+	fi
+	git -C "$dir" fetch -q "$src" "$ref"
+	git -C "$dir" checkout -q --detach FETCH_HEAD
+	log "$name @ $(git -C "$dir" rev-parse --short=10 HEAD) (local $src $ref)"
+}
+
 # name|url|branch|commit, in install order
 mapfile -t APPS < <(python3 -I - "$APPS_JSON" <<'PY'
 import json, sys
@@ -67,6 +78,10 @@ if [ ! -d "$BENCH_DIR/apps/frappe" ]; then
 			# dev: live checkout, edits apply without a rebuild
 			log "get-app $name (soft link to $NXERP_SRC)"
 			bench get-app --soft-link --skip-assets "$NXERP_SRC"
+		elif [ "$name" = helpdesk ] && [ -n "${HELPDESK_REF:-}" ] && [ -d /helpdesk-src/.git ]; then
+			fetch_local helpdesk /helpdesk-src "$HELPDESK_REF"
+			log "get-app helpdesk (clone of $VENDOR/helpdesk)"
+			bench get-app --skip-assets "$VENDOR/helpdesk"
 		else
 			# Pinned apps are real clones inside apps/: some build configs (e.g. erpnext's
 			# banking/vite.config.ts) resolve ../../sites relative to the app's real path,

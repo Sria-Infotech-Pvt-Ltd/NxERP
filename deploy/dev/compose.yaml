@@ -40,9 +40,13 @@ services:
       NXERP_ADMIN_PASSWORD: ${NXERP_ADMIN_PASSWORD:?run deploy/dev/up.sh to create deploy/dev/.env}
       # Dev-only: install the NxERP app from this checkout (soft link) instead of cloning it.
       NXERP_SRC: /workspace
+      # Dev: install Helpdesk from the sibling ../helpdesk checkout (branch HELPDESK_REF) instead of the pinned fork commit
+      HELPDESK_SRC: /helpdesk-src
+      HELPDESK_REF: ${HELPDESK_REF:-}
     working_dir: /home/frappe
     volumes:
       - ../..:/workspace:cached
+      - ${HELPDESK_HOST_PATH:-./.no-helpdesk}:/helpdesk-src:ro
       - bench-data:/home/frappe/frappe-bench
       - vendor-data:/home/frappe/vendor
     ports:

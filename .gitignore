@@ -7,6 +7,7 @@
 *.sqlite
 *.sql.gz
 deploy/dev/.env
+deploy/dev/.no-helpdesk/
 
 # Byte-compiled / Python
 __pycache__/

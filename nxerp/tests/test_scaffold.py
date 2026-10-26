@@ -1,3 +1,5 @@
+import os
+
 import frappe
 from frappe.tests import IntegrationTestCase
 
@@ -23,3 +25,9 @@ class TestScaffold(IntegrationTestCase):
 		hooks = frappe.get_hooks(app_name="nxerp")
 		for hook in ("before_request", "after_request", "on_session_creation", "website_route_rules"):
 			self.assertFalse(hooks.get(hook), f"{hook} is not expected in the Phase 1 scaffold")
+
+	def test_desk_palette_is_registered_and_shipped(self):
+		css = "/assets/nxerp/css/nxerp-desk-theme.css"
+		self.assertIn(css, frappe.get_hooks("app_include_css", app_name="nxerp"))
+		shipped = frappe.get_app_path("nxerp", "public", "css", "nxerp-desk-theme.css")
+		self.assertTrue(os.path.exists(shipped), "run `yarn theme:build` in the Helpdesk repo and commit the output")

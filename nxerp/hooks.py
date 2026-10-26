@@ -5,9 +5,10 @@ app_description = "NXERP platform app: shared enterprise shell for ERPNext, Help
 app_email = "devops@example.test"
 app_license = "Proprietary"  # placeholder: owner to confirm the licence (see docs/PROGRESS.md)
 
-# Phase 1 is scaffolding only. This app registers NO behaviour yet: no launcher tile, no
-# login override, no redirects, no permission hooks. Each of those arrives in its own
-# reviewed change (see docs/PROGRESS.md, Phase 2) and must be listed here with its owner.
+# Phase 1 is scaffolding plus shared branding assets. This app registers NO behaviour yet: no
+# launcher tile, no login override, no redirects, no permission hooks. Each of those arrives
+# in its own reviewed change (see docs/PROGRESS.md, Phase 2) and must be listed here with
+# its owner.
 
 # Apps
 # ------------------
@@ -21,7 +22,9 @@ required_apps = []
 # Includes in <head>
 # ------------------
 
-# app_include_css = "/assets/nxerp/css/nxerp.css"
+# Palette for Frappe Desk (ERPNext, Framework). Generated from the token source in the Helpdesk
+# repo (desk/src/theme, `yarn theme:build`); never edit the CSS by hand.
+app_include_css = "/assets/nxerp/css/nxerp-desk-theme.css"
 # app_include_js = "/assets/nxerp/js/nxerp.js"
 
 # Installation
