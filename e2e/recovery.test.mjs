@@ -71,6 +71,6 @@ test("runbook 4: a break-glass System Manager can sign in, reaches the friendly 
 		assert.match(here(page), /^\/desk\/user/, "the administrator can reach the place where access is granted");
 		await context.close();
 	} finally {
-		fixture("delete_user", { user });
+		await fixture("delete_user", { user });
 	}
 });

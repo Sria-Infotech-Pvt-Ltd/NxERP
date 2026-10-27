@@ -8,7 +8,50 @@ Resume point for the next session. Update this file in every PR that changes pha
 | --- | --- |
 | 1: Audit, research, ADRs, foundation | **Complete locally; not yet pushed** (see "Publishing") |
 | 2: Platform access layer and server-side enforcement | **Complete locally; not pushed, no PR** (see "Phase 2") |
-| 3: Login, launcher, routing UI | Not started |
+| 3: Unified login, launcher, routing | **Code and docs complete locally; browser verification partial; not pushed, no PR** (see "Phase 3") |
+
+## Phase 3 (2026-10-27): unified login, launcher, routing
+
+Branch `phase-3/unified-experience` (off `phase-2/access-layer`) in `nxerp-platform`, plus Helpdesk branch
+`feature/nxerp-platform-login` (login removed, title "Helpdesk", Apps menu). **No PR exists**: the GitHub account is read-only
+on the repository (Phase 4 handles git). Nothing was pushed.
+
+**Built:** `/login` in `nxerp` (kill-switch `nxerp_stock_login`), router `/nxerp/go`, launcher `/nxerp/apps`, friendly
+`/nxerp/no-access`, tile overrides, "All applications" row for multi-app users, test-only third app, grant-migration dry run
+(`nxerp/migration.py`), runbook, routes doc, ADR-004 amendment, browser harness in `e2e/`.
+
+**Verified by execution (FACT):**
+
+- `bench run-tests --app nxerp` on the dev site: **160 tests OK** (includes 19 routing tests with about 35 hostile redirect payloads,
+  24 HTTP tests of login/router/launcher/kill-switch/third app, grant migration, the Phase 2 matrix). Helpdesk's own suite: **569 OK**.
+  ruff, ruff format and bandit clean; `tools/check_architecture.py` OK. (The 160-test run was before the final two commits' small
+  test edits; the migration tests were rerun alone and pass.)
+- Browser (Chromium, fresh site `nxerp-e2e.localhost`, real login form): first-run wizard flow 4/4; Case 3 3/3; journeys 20 of 21
+  (Cases 1 and 2, customer, deep links, expired session, logout, wrong password, disabled user, five tampered `redirect-to`
+  payloads); flows: two-factor (OTP via captured mail), lockout, sign-up disabled, social not configured, forgot-password
+  non-disclosure, and the emailed reset link up to setting and using a new password all passed.
+
+**NOT verified (be clear before relying on this):**
+
+- `e2e/pages.test.mjs` (screenshots at desktop and phone widths, accessibility checks) and `e2e/recovery.test.mjs` (kill-switch,
+  admin-password reset, break-glass admin) were **written but never run**. `docs/evidence/phase3/` has **no screenshots** from them, and
+  no accessibility defects were looked for or fixed. The runbook commands are the real Frappe commands but are untested here.
+- Journeys: the one failure (the "All applications" row on a fresh site) was fixed by syncing the navbar item on install
+  and was **not re-run**. Flows: single-use reset link and the email-link login were fixed after failing and **not re-run**
+  (the first failed on my assertion, the second on a rate limit that the fixtures now raise).
+- The ERPNext smoke test is inside the 160; no separate run. CI (`.github/workflows/ci.yml`) has never run on GitHub.
+
+**Findings worth knowing (FACT):** controllers of hyphenated pages must be named with underscores, so Phase 2's `no-access.py`
+never ran (fixed); Frappe caches site config per worker for up to 60 s (kill-switch takes up to a minute); Frappe's wizard gives
+its owner every role, so the owner reaches the launcher; outgoing mail from Frappe is titled "Login To Frappe" (branding of emails is
+not done); `bench execute` hides a function's real exception, so fixtures run with `python -m`.
+
+**Open decisions for the owner:** a User Invitation `redirect_to_path` is not validated by the platform; "Keep me signed in" is cosmetic;
+Helpdesk's menu still links to Frappe support/docs; the grant migration heuristic over-suggests (a "Website Manager" role also has
+ERPNext DocPerms), so review its dry-run output before applying.
+
+**To finish Phase 3:** run `e2e/site.sh snapshot` once (done on the dev machine), then `e2e/run.sh` (about 25 minutes), read
+`docs/evidence/phase3/`, fix what the pages suite finds, and rerun the two items above.
 
 ## Phase 2 (2026-10-27): access layer
 

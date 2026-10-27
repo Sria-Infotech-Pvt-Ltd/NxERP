@@ -59,7 +59,7 @@ test("completing the setup wizard unlocks the launcher for Administrator", { tim
 	let complete = false;
 	for (let i = 0; i < 80 && !complete; i++) {
 		await new Promise((r) => setTimeout(r, 5000));
-		complete = /SETUP=1/.test(fixture("setup_state"));
+		complete = /SETUP=1/.test(await fixture("setup_state"));
 	}
 	assert.ok(complete, "the setup wizard did not finish within the time allowed");
 

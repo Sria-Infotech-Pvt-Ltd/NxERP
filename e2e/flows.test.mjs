@@ -13,13 +13,13 @@ let sink;
 before(async () => {
 	browser = await launch();
 	sink = await startMailSink(2525);
-	fixture("use_mail_sink", { port: 2525 });
+	await fixture("use_mail_sink", { port: 2525 });
 	setConfig("mute_emails", 0); // the dev setup mutes mail; the web worker notices within its 60 s config cache
 	await new Promise((r) => setTimeout(r, 65000));
 });
 after(async () => {
-	fixture("two_factor", { enabled: false });
-	fixture("drop_mail_sink");
+	await fixture("two_factor", { enabled: false });
+	await fixture("drop_mail_sink");
 	setConfig("mute_emails", 1);
 	await sink?.stop();
 	await browser.close();
@@ -29,7 +29,7 @@ after(async () => {
 async function mailFor(recipient, { timeoutMs = 60000 } = {}) {
 	const deadline = Date.now() + timeoutMs;
 	for (;;) {
-		fixture("flush_mail");
+		await fixture("flush_mail");
 		const found = sink.latestFor(recipient);
 		if (found) return found;
 		if (Date.now() > deadline) return null;
@@ -49,16 +49,22 @@ test("forgot password: the emailed link sets a new password, the old one stops w
 	await shot(page, "flow-forgot-requested");
 
 	const mail = await mailFor(user);
-	assert.ok(mail, "no reset email reached the capture server");
+	assert.ok(mail, `no reset email reached the capture server; sink holds: ${sink.messages.map((m) => m.to.join(",") + " / " + (m.raw.match(/Subject: (.*)/)?.[1] || "")).join(" | ")}`);
 	const link = mail.text.match(/https?:\/\/[^\s"'<>]+update-password\?key=[A-Za-z0-9_\-]+/)?.[0];
 	assert.ok(link, "the email carries a reset link");
 	assert.ok(link.startsWith(BASE), `the link points at this site, not somewhere else: ${new URL(link).origin}`);
 
 	const NEW_PASSWORD = `${PASSWORD}-new-9!`;
 	await page.goto(link, { waitUntil: "domcontentloaded" });
-	await page.fill("#new_password", NEW_PASSWORD);
-	await page.fill("#confirm_password", NEW_PASSWORD);
-	await page.waitForFunction(() => !document.querySelector("#update").disabled, null, { timeout: 15000 });
+	// Frappe's page listens for key events (not just input), so type like a person would
+	await page.locator("#new_password").pressSequentially(NEW_PASSWORD);
+	await page.locator("#confirm_password").pressSequentially(NEW_PASSWORD);
+	try {
+		await page.waitForFunction(() => !document.querySelector("#update").disabled, null, { timeout: 15000 });
+	} catch (error) {
+		await shot(page, "flow-password-stuck");
+		throw new Error(`the update button stayed disabled; page says: ${(await page.locator("body").innerText()).replace(/\s+/g, " ").slice(0, 400)}`);
+	}
 	await page.click("#update");
 	await page.waitForTimeout(4000);
 	await shot(page, "flow-password-updated");
@@ -75,11 +81,19 @@ test("forgot password: the emailed link sets a new password, the old one stops w
 	await old.click("section.for-login button[type=submit]");
 	await old.waitForTimeout(2500);
 	assert.equal(url(old).pathname, "/login");
-	// the link is single use
-	const again = await (await session(browser)).page;
-	await again.goto(link, { waitUntil: "domcontentloaded" });
-	const text = (await again.locator("body").innerText()).toLowerCase();
-	assert.ok(/invalid|expired|not valid|already|link/.test(text) || !(await again.locator("#new_password").isVisible().catch(() => false)), "the used link is refused");
+	// the link is single use: submitting a new password with the same key is refused
+	const key = new URL(link).searchParams.get("key");
+	const reuse = await page.request.post(`${BASE}/api/method/frappe.core.doctype.user.user.update_password`, {
+		form: { new_password: `${PASSWORD}-again-3!`, key },
+	});
+	assert.ok(!reuse.ok(), `the used link still changed a password (HTTP ${reuse.status()})`);
+	const check = await (await session(browser)).page;
+	await check.goto(`${BASE}/login`, { waitUntil: "domcontentloaded" });
+	await check.fill("#login_email", user);
+	await check.fill("#login_password", `${PASSWORD}-again-3!`);
+	await check.click("section.for-login button[type=submit]");
+	await check.waitForTimeout(2500);
+	assert.equal(url(check).pathname, "/login", "the password set through the reused link does not work");
 	await context.close();
 });
 
@@ -87,10 +101,16 @@ test("forgot password does not reveal whether an address has an account", async 
 	const answer = async (user) => {
 		const { context, page } = await session(browser);
 		await open(page, "/login#forgot");
-		const response = page.waitForResponse((r) => r.url().includes("reset_password"), { timeout: 30000 });
+		const response = page.waitForResponse((r) => (r.request().postData() || "").includes("reset_password"), { timeout: 60000 });
 		await page.fill("#forgot_email", user);
 		await page.click(".btn-forgot");
-		const r = await response;
+		let r;
+		try {
+			r = await response;
+		} catch (error) {
+			await shot(page, "flow-forgot-no-response");
+			throw error;
+		}
 		const body = await r.text();
 		await context.close();
 		return { status: r.status(), body };
@@ -105,7 +125,7 @@ test("forgot password does not reveal whether an address has an account", async 
 
 test("two-factor: the OTP step appears, a wrong code is refused, the emailed code signs in and lands through the router", async () => {
 	const user = email("otp");
-	fixture("two_factor", { enabled: true });
+	await fixture("two_factor", { enabled: true });
 	try {
 		const { context, page } = await session(browser);
 		await page.goto(`${BASE}/login`, { waitUntil: "domcontentloaded" });
@@ -131,7 +151,7 @@ test("two-factor: the OTP step appears, a wrong code is refused, the emailed cod
 		assert.match(here(page), /^\/helpdesk/, `landed on ${here(page)}`);
 		await context.close();
 	} finally {
-		fixture("two_factor", { enabled: false });
+		await fixture("two_factor", { enabled: false });
 	}
 });
 
@@ -172,14 +192,16 @@ test("sign-up: disabled on this site, so no form is offered and the API refuses"
 });
 
 test("login with an emailed link: not offered on the page; when an administrator switches it on in Frappe it works and lands through the router", async () => {
-	const user = email("agent");
+	const user = email("expiry");
 	const { context, page } = await session(browser);
 	await open(page, "/login");
 	assert.equal(await page.locator("section.for-login-with-email-link:visible").count(), 0, "the option is not shown");
-	const refused = await page.request.post(`${BASE}/api/method/frappe.www.login.send_login_link`, { form: { email: user } });
-	assert.ok(!refused.ok(), "while the Frappe setting is off the endpoint refuses");
+	// while the Frappe setting is off no link is sent (the endpoint answers quietly, which also hides who has an account)
+	await page.request.post(`${BASE}/api/method/frappe.www.login.send_login_link`, { form: { email: user } });
+	await fixture("flush_mail");
+	assert.equal(sink.latestFor(user), null, `no login-link email while the setting is off; sink holds: ${sink.messages.map((m) => m.to.join(",") + " / " + (m.raw.match(/Subject: (.*)/)?.[1] || "")).join(" | ")}`);
 
-	fixture("email_link_login", { enabled: true });
+	await fixture("email_link_login", { enabled: true });
 	try {
 		const sent = await page.request.post(`${BASE}/api/method/frappe.www.login.send_login_link`, { form: { email: user } });
 		assert.ok(sent.ok(), `send_login_link answered ${sent.status()}`);
@@ -192,7 +214,7 @@ test("login with an emailed link: not offered on the page; when an administrator
 		await shot(page, "flow-email-link-landing");
 		assert.match(here(page), /^\/helpdesk/, `the link landed on ${here(page)}`);
 	} finally {
-		fixture("email_link_login", { enabled: false });
+		await fixture("email_link_login", { enabled: false });
 	}
 	await context.close();
 });

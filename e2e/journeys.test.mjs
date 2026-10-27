@@ -153,7 +153,7 @@ test("an expired session sends the user to /login with the page they wanted, and
 	const { context, page } = await session(browser);
 	await signIn(page, email("expiry"), PASSWORD);
 	assert.match(here(page), /^\/helpdesk/);
-	fixture("expire_sessions", { user: email("expiry") }); // the server forgets the session, as it does on expiry
+	await fixture("expire_sessions", { user: email("expiry") }); // the server forgets the session, as it does on expiry
 	await page.goto(`${BASE}/helpdesk/tickets`, { waitUntil: "domcontentloaded" });
 	await page.waitForURL(/\/login/, { timeout: 45000 });
 	assert.equal(url(page).pathname, "/login");

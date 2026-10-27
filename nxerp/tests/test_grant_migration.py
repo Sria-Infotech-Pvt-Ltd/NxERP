@@ -6,7 +6,6 @@ from frappe.tests import IntegrationTestCase
 from nxerp import migration
 from nxerp.tests.utils import (
 	ERP_ACCESS,
-	PLAIN_DESK_ROLE,
 	delete_users,
 	make_user,
 	purge_test_users,
@@ -30,7 +29,7 @@ class TestGrantMigration(IntegrationTestCase):
 		cls.erp_old = mk("m-erp", ["Sales User"])  # used ERPNext before; has no grant
 		cls.erp_granted = mk("m-granted", ["Sales User", ERP_ACCESS])
 		cls.agent = mk("m-agent", ["Agent"])  # Helpdesk access is implied by the role already
-		cls.plain = mk("m-plain", [PLAIN_DESK_ROLE])
+		cls.plain = mk("m-plain", ["Blogger"])  # a desk role with no permission on any ERPNext DocType
 		cls.sysmgr = mk("m-sys", ["System Manager"])
 		cls.disabled = mk("m-off", ["Sales User"], enabled=0)
 		cls.customer = mk("m-cust", ["Customer"], user_type="Website User")
@@ -53,11 +52,13 @@ class TestGrantMigration(IntegrationTestCase):
 			self.assertNotIn((user, "helpdesk"), found, user)
 
 	def test_a_dry_run_changes_nothing_and_apply_grants_then_is_idempotent(self):
-		before = set(frappe.get_roles(self.erp_old))
-		migration.suggest_grants(only=self.created)  # dry run
-		self.assertEqual(set(frappe.get_roles(self.erp_old)), before)
+		user = make_user(unique_email("m-apply"), ["Sales User"]).name  # its own user: apply mutates it
+		self.created.append(user)
+		before = set(frappe.get_roles(user))
+		migration.suggest_grants(only=[user])  # dry run
+		self.assertEqual(set(frappe.get_roles(user)), before)
 
-		migration.suggest_grants(apply=True, only=self.created)
-		frappe.clear_cache(user=self.erp_old)
-		self.assertIn(ERP_ACCESS, frappe.get_roles(self.erp_old))
-		self.assertNotIn((self.erp_old, "erpnext"), self.mine(migration.find_suggestions(self.created)))
+		migration.suggest_grants(apply=True, only=[user])
+		frappe.clear_cache(user=user)
+		self.assertIn(ERP_ACCESS, frappe.get_roles(user))
+		self.assertNotIn((user, "erpnext"), self.mine(migration.find_suggestions([user])))

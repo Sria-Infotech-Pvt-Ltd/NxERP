@@ -4,7 +4,10 @@ import net from "node:net";
 
 export function startMailSink(port = 2525) {
 	const messages = [];
+	const sockets = new Set();
 	const server = net.createServer((socket) => {
+		sockets.add(socket);
+		socket.on("close", () => sockets.delete(socket));
 		let buffer = "";
 		let inData = false;
 		let from = "";
@@ -57,7 +60,11 @@ export function startMailSink(port = 2525) {
 		server.listen(port, "127.0.0.1", () =>
 			resolve({
 				messages,
-				stop: () => new Promise((done) => server.close(() => done())),
+				stop: () =>
+					new Promise((done) => {
+						sockets.forEach((s) => s.destroy()); // an idle client connection would keep close() waiting forever
+						server.close(() => done());
+					}),
 				/** The newest message for `recipient`, decoded enough to read links and codes out of it. */
 				latestFor(recipient) {
 					const found = [...messages].reverse().find((m) => m.to.some((t) => t.toLowerCase() === recipient.toLowerCase()));

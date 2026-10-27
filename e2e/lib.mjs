@@ -1,6 +1,7 @@
 // Shared helpers for the Playwright suite. Runs INSIDE the bench container (see run.sh), against the dev site,
 // with the Chromium that ships in the bench image. Credentials come from the environment and are never printed.
-import { execSync } from "node:child_process";
+import { exec, execSync } from "node:child_process";
+import { promisify } from "node:util";
 import { mkdirSync } from "node:fs";
 import { createRequire } from "node:module";
 
@@ -92,10 +93,14 @@ export async function waitForConfig(check, { timeoutMs = 90000, everyMs = 3000 }
 }
 
 /** Call a function in nxerp.tests.e2e_fixtures on the site; returns its printed output. */
-export function fixture(fn, kwargs = {}) {
+const execAsync = promisify(exec);
+
+/** Async on purpose: tests host the mail sink in this very process, and a blocking call would freeze it. */
+export async function fixture(fn, kwargs = {}) {
 	const json = shellQuote(JSON.stringify(kwargs));
-	return execSync(
-		`cd /home/frappe/frappe-bench && bench --site ${SITE} execute nxerp.tests.e2e_fixtures.${fn} --kwargs '${json}' 2>&1`,
-		{ encoding: "utf-8", env: process.env },
+	const { stdout } = await execAsync(
+		`cd /home/frappe/frappe-bench/sites && E2E_SITE=${SITE} ../env/bin/python -W ignore -m nxerp.tests.e2e_fixtures ${fn} '${json}' 2>&1`,
+		{ env: process.env },
 	);
+	return stdout;
 }

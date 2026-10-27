@@ -69,6 +69,13 @@ def setup():
 	for key, (roles, kwargs) in PERSONAS.items():
 		make_user(email(key), roles, password=password, first_name=f"E2E {key.title()}", **kwargs)
 
+	# Frappe limits password-reset requests per hour; repeated test runs would hit it
+	settings = frappe.get_doc("System Settings")
+	settings.password_reset_limit = 1000
+	settings.rate_limit_email_link_login = 1000
+	settings.login_with_email_link = 0
+	settings.enable_two_factor_auth = 0
+	settings.save(ignore_permissions=True)
 	frappe.db.commit()
 	frappe.clear_cache()
 
@@ -182,3 +189,19 @@ def delete_user(user: str):
 		finally:
 			frappe.flags.in_patch = False
 		frappe.db.commit()
+
+
+if __name__ == "__main__":
+	# python -m nxerp.tests.e2e_fixtures <function> '<json kwargs>'   (run from the bench's sites directory)
+	# Unlike `bench execute`, a failure here is an error with a traceback instead of a swallowed exception.
+	import json
+	import sys
+
+	frappe.init(site=os.environ.get("E2E_SITE", "nxerp-e2e.localhost"))
+	frappe.connect()
+	frappe.set_user("Administrator")
+	try:
+		globals()[sys.argv[1]](**(json.loads(sys.argv[2]) if len(sys.argv) > 2 else {}))
+		frappe.db.commit()
+	finally:
+		frappe.destroy()
