@@ -15,6 +15,25 @@
 {% block head_include %}
 {{ super() }}
 {% if not nx_stock %}
+<script>
+	// The server-side router (/nxerp/go) decides where every sign-in lands. Frappe answers website users with
+	// its own default path, and the browser can carry a stale "last visited" from another account, so both are
+	// pointed at the router here. Authorisation is enforced server-side either way.
+	(function () {
+		try {
+			var handlers = window.login && window.login.login_handlers;
+			var stock = handlers && handlers[200];
+			if (!stock) return;
+			handlers[200] = function (data) {
+				if (data && data.message === "No App") {
+					data.home_page = "/nxerp/go";
+					try { localStorage.removeItem("last_visited"); } catch (e) {}
+				}
+				return stock.apply(this, arguments);
+			};
+		} catch (e) {}
+	})();
+</script>
 <meta name="theme-color" content="#fcfcfb">
 <script>
 	// Pre-paint theme. Shares the "theme" key with the apps, so a guest sees the last choice made on this browser.

@@ -63,6 +63,17 @@ on_session_creation = ["nxerp.routing.on_session_creation"]
 # every "Apps" menu shows the same authorised apps with their correct identities
 override_whitelisted_methods = {"frappe.apps.get_apps": "nxerp.launcher.get_apps"}
 extend_bootinfo = ["nxerp.launcher.extend_bootinfo"]
+# the "All applications" row of Desk's user menu (shown only to multi-app users, see nxerp/launcher.py)
+standard_navbar_items = [
+	{
+		"item_label": "All applications",
+		"item_type": "Route",
+		"route": "/nxerp/apps",
+		"icon": "layout-grid",
+		"is_standard": 1,
+		"condition": "frappe.boot.nxerp && frappe.boot.nxerp.launcher",
+	}
+]
 
 # /login/<anything> (a client-side redirect quirk) is just /login
 website_redirects = [{"source": "/login/.+", "target": "/login"}]

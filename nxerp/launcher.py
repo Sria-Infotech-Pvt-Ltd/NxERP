@@ -15,11 +15,23 @@ Display only. The enforcement layer decides access; hiding a tile is never the c
 """
 
 import frappe
-from frappe import _
 
 from nxerp import access, registry
 
 LAUNCHER_LABEL = "All applications"
+
+# Desk's user menu reads `Navbar Settings.settings_dropdown`, which Frappe assigns to the boot AFTER the
+# `extend_bootinfo` hooks run, so a hook cannot add a row per user. A standard navbar item can: it is synced
+# into that table on migrate and carries a condition Desk evaluates in the browser every time the menu opens.
+# The row therefore shows only to a multi-app user (boot.nxerp.launcher is set only for them).
+LAUNCHER_NAVBAR_ITEM = {
+	"item_label": LAUNCHER_LABEL,
+	"item_type": "Route",
+	"route": "/nxerp/apps",
+	"icon": "layout-grid",
+	"is_standard": 1,
+	"condition": "frappe.boot.nxerp && frappe.boot.nxerp.launcher",
+}
 
 
 def _tiles(user: str) -> list:
@@ -63,19 +75,3 @@ def extend_bootinfo(bootinfo):
 		"apps": [{"key": e.key, "title": e.title, "route": e.route} for e in apps],
 		"launcher": "/nxerp/apps" if len(apps) > 1 else None,
 	}
-
-	if len(apps) > 1:
-		navbar = bootinfo.get("navbar_settings")
-		items = navbar.get("settings_dropdown") if navbar else None
-		if items is not None and not any(i.get("item_label") == LAUNCHER_LABEL for i in items):
-			items.insert(
-				0,
-				frappe._dict(
-					name="nxerp-launcher",
-					item_label=_(LAUNCHER_LABEL),
-					item_type="Route",
-					route="/nxerp/apps",
-					icon="layout-grid",
-					hidden=0,
-				),
-			)
