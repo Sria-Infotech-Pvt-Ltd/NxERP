@@ -31,6 +31,7 @@ class AppEntry:
 	portal_prefixes: tuple = ()  # URL prefixes those portal roles may also open
 	portal_route: str | None = None  # where a portal-only user lands
 	admin_shell: bool = False  # platform administrators may open the path prefixes to administer
+	test_only: bool = False  # declared through site config on a test site only; never a shipped app
 
 	@property
 	def grant_roles(self) -> frozenset:
@@ -70,9 +71,39 @@ APPS: tuple = (
 )
 
 
+def _test_only_entries() -> tuple:
+	"""Entries declared in site config `nxerp_test_apps`, honoured ONLY while `allow_tests` is on.
+
+	This exists so end-to-end tests can exercise a third app (a manager with Helpdesk plus another app)
+	against the running site. A production site never sets `allow_tests`, so these entries are inert there;
+	they are marked `test_only` and never shown outside a test site.
+	"""
+	if not frappe.conf.get("allow_tests"):
+		return ()
+	entries = []
+	for raw in frappe.conf.get("nxerp_test_apps") or []:
+		try:
+			entries.append(
+				AppEntry(
+					key=raw["key"],
+					title=raw["title"],
+					logo=raw.get("logo", ""),
+					route=raw["route"],
+					order=int(raw.get("order", 50)),
+					app="frappe",  # "installed" because Frappe always is
+					owns=tuple(raw.get("owns", (f"{raw['key']}_test_pkg",))),
+					access_role=raw["access_role"],
+					test_only=True,
+				)
+			)
+		except (KeyError, TypeError, ValueError):
+			continue
+	return tuple(entries)
+
+
 def get_registry() -> tuple:
 	"""All declared entries (read at call time so tests can substitute the list)."""
-	return APPS
+	return (*APPS, *_test_only_entries())
 
 
 def installed_entries() -> list:

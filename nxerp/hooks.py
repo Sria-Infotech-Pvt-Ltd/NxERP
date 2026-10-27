@@ -5,9 +5,10 @@ app_description = "NXERP platform app: shared enterprise shell for ERPNext, Help
 app_email = "devops@example.test"
 app_license = "Proprietary"  # placeholder: owner to confirm the licence (see docs/PROGRESS.md)
 
-# Phase 2 adds the access layer (registry, resolver, server-side enforcement). There is still no
-# launcher tile, login override or post-login redirect: those are Phase 3 and are listed here when
-# they arrive, with their owner.
+# Phase 2: the access layer (registry, resolver, server-side enforcement).
+# Phase 3: the unified experience: the one /login (www/login), the post-login router (www/nxerp/go),
+# the launcher (www/nxerp/apps) and the corrected app tiles (launcher.py). All routes are documented in
+# docs/architecture/routes.md.
 
 # Apps
 # ------------------
@@ -17,6 +18,14 @@ app_license = "Proprietary"  # placeholder: owner to confirm the licence (see do
 required_apps = []
 
 # add_to_apps_screen = []
+
+# Platform branding for Desk and website pages (login splash, favicon). nxerp installs last, so these win
+# over any app's own value; Helpdesk keeps its own identity inside its SPA.
+app_logo_url = "/assets/nxerp/nxerp_login/images/nxerp-wordmark.png"
+website_context = {
+	"favicon": "/assets/nxerp/nxerp_login/images/nxerp-favicon.png",
+	"splash_image": "/assets/nxerp/nxerp_login/images/nxerp-wordmark.png",
+}
 
 # Includes in <head>
 # ------------------
@@ -44,6 +53,19 @@ after_request = ["nxerp.enforcement.after_request"]
 # document level (files, print, realtime rooms, check_permission) and list level (get_list, reports)
 has_permission = {"*": ["nxerp.enforcement.has_permission"]}
 permission_query_conditions = {"*": ["nxerp.enforcement.permission_query_conditions"]}
+
+# Unified experience (ADR-004): one login, one router, one launcher.
+# ------------------------------------------------------------------
+
+# every login response and every "home page" lookup points at the post-login router
+on_session_creation = ["nxerp.routing.on_session_creation"]
+
+# every "Apps" menu shows the same authorised apps with their correct identities
+override_whitelisted_methods = {"frappe.apps.get_apps": "nxerp.launcher.get_apps"}
+extend_bootinfo = ["nxerp.launcher.extend_bootinfo"]
+
+# /login/<anything> (a client-side redirect quirk) is just /login
+website_redirects = [{"source": "/login/.+", "target": "/login"}]
 
 # who may change grants, and the last-administrator guard
 doc_events = {

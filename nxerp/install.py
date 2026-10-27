@@ -21,9 +21,20 @@ def ensure_access_roles():
 		).insert(ignore_permissions=True)
 
 
+def ensure_platform_settings():
+	"""Own the post-login landing. Helpdesk's install sets `Portal Settings.default_portal_home` to
+	/helpdesk, which sent every user without a role home page to Helpdesk. Point it at the router unless an
+	administrator chose something else."""
+	current = frappe.db.get_single_value("Portal Settings", "default_portal_home")
+	if current in (None, "", "/helpdesk", "helpdesk"):
+		frappe.db.set_single_value("Portal Settings", "default_portal_home", "/nxerp/go")
+
+
 def after_install():
 	ensure_access_roles()
+	ensure_platform_settings()
 
 
 def after_migrate():
 	ensure_access_roles()
+	ensure_platform_settings()
