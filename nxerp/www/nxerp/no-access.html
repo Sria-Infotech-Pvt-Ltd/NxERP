@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="{{ frappe.lang or 'en' }}">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="robots" content="noindex" />
+	<title>{{ title }}</title>
+	<link rel="stylesheet" href="/assets/nxerp/css/nxerp-theme.css" />
+	<style>
+		body { margin: 0; min-height: 100vh; display: grid; place-items: center; font-family: system-ui, sans-serif;
+			background: var(--surface-base, #efede6); color: var(--ink-gray-9, #262a2b); }
+		main { max-width: 28rem; padding: 2rem; text-align: center; }
+		h1 { font-size: 1.5rem; margin: 0 0 .75rem; }
+		p { margin: 0 0 1.25rem; color: var(--ink-gray-6, #595451); }
+		a { color: var(--ink-accent-link, #744700); }
+	</style>
+</head>
+<body>
+	<main>
+		<h1>{{ title }}</h1>
+		<p>{{ _("Your account does not have access to this application. Ask your administrator if you need it.") }}</p>
+		{% if is_guest %}
+		<a href="/login">{{ _("Sign in") }}</a>
+		{% else %}
+		<a href="/logout">{{ _("Sign out") }}</a>
+		{% endif %}
+	</main>
+</body>
+</html>

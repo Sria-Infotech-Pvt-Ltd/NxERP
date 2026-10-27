@@ -5,10 +5,9 @@ app_description = "NXERP platform app: shared enterprise shell for ERPNext, Help
 app_email = "devops@example.test"
 app_license = "Proprietary"  # placeholder: owner to confirm the licence (see docs/PROGRESS.md)
 
-# Phase 1 is scaffolding plus shared branding assets. This app registers NO behaviour yet: no
-# launcher tile, no login override, no redirects, no permission hooks. Each of those arrives
-# in its own reviewed change (see docs/PROGRESS.md, Phase 2) and must be listed here with
-# its owner.
+# Phase 2 adds the access layer (registry, resolver, server-side enforcement). There is still no
+# launcher tile, login override or post-login redirect: those are Phase 3 and are listed here when
+# they arrive, with their owner.
 
 # Apps
 # ------------------
@@ -30,12 +29,26 @@ app_include_css = "/assets/nxerp/css/nxerp-desk-theme.css"
 # Installation
 # ------------
 
-# before_install = "nxerp.install.before_install"
-# after_install = "nxerp.install.after_install"
+after_install = "nxerp.install.after_install"
+after_migrate = "nxerp.install.after_migrate"
 
-# Request lifecycle
-# ------------------
+# Access layer (ADR-003): an app-level gate that only ever DENIES, on top of Frappe's permissions.
+# ------------------------------------------------------------------------------------------
 
-# before_request = ["nxerp.access.before_request"]
-# on_session_creation = ["nxerp.access.on_session_creation"]
-# website_route_rules = []
+# every request, after the session is known and before dispatch
+auth_hooks = ["nxerp.enforcement.auth_hook"]
+
+# remove assignment and comment metadata from API responses to portal-only users (customers)
+after_request = ["nxerp.enforcement.after_request"]
+
+# document level (files, print, realtime rooms, check_permission) and list level (get_list, reports)
+has_permission = {"*": ["nxerp.enforcement.has_permission"]}
+permission_query_conditions = {"*": ["nxerp.enforcement.permission_query_conditions"]}
+
+# who may change grants, and the last-administrator guard
+doc_events = {
+	"User": {
+		"validate": "nxerp.guard.validate_user",
+		"on_trash": "nxerp.guard.on_trash_user",
+	}
+}
