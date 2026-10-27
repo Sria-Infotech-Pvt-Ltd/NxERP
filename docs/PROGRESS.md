@@ -46,6 +46,12 @@ never ran (fixed); Frappe caches site config per worker for up to 60 s (kill-swi
 its owner every role, so the owner reaches the launcher; outgoing mail from Frappe is titled "Login To Frappe" (branding of emails is
 not done); `bench execute` hides a function's real exception, so fixtures run with `python -m`.
 
+**Dev-site incident (fixed):** ERPNext reloaded in a loop (`/desk` to `setup-wizard` to `/apps` to `/desk`). Cause: an early version of my
+e2e fixtures marked the dev site's setup as complete without resetting Frappe's `desktop:home_page` default, which stays `setup-wizard` until the
+wizard really finishes. Fixed by setting it to `workspace` (what a finished wizard sets); ERPNext then opened with no redirects. The fixtures
+no longer touch the dev site (the browser suite uses its own fresh site). Not a platform-code bug, but a fresh site's setup-wizard UI was
+not driven end to end by the tests (they finish the wizard through its API).
+
 **Open decisions for the owner:** a User Invitation `redirect_to_path` is not validated by the platform; "Keep me signed in" is cosmetic;
 Helpdesk's menu still links to Frappe support/docs; the grant migration heuristic over-suggests (a "Website Manager" role also has
 ERPNext DocPerms), so review its dry-run output before applying.
