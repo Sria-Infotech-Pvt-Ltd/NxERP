@@ -8,7 +8,14 @@ import frappe
 from frappe.tests import IntegrationTestCase
 
 from nxerp import routing
-from nxerp.tests.utils import ERP_ACCESS, PLAIN_DESK_ROLE, delete_users, make_user, purge_test_users, unique_email
+from nxerp.tests.utils import (
+	ERP_ACCESS,
+	PLAIN_DESK_ROLE,
+	delete_users,
+	make_user,
+	purge_test_users,
+	unique_email,
+)
 
 # everything an attacker, or a broken link, might put in `redirect-to`
 HOSTILE = [
@@ -101,7 +108,14 @@ class TestRouting(IntegrationTestCase):
 			self.assertFalse(any(ord(c) < 0x20 for c in result), repr(raw))
 
 	def test_the_obvious_attacks_are_refused_outright(self):
-		for raw in ("//evil.example", "https://evil.example", "javascript:alert(1)", "/\\evil.example", "/%2f%2fevil.example", "/%252f%252fevil.example"):
+		for raw in (
+			"//evil.example",
+			"https://evil.example",
+			"javascript:alert(1)",
+			"/\\evil.example",
+			"/%2f%2fevil.example",
+			"/%252f%252fevil.example",
+		):
 			self.assertIsNone(routing.safe_target(raw), raw)
 
 	def test_good_targets_are_kept_and_normalised(self):
@@ -115,11 +129,20 @@ class TestRouting(IntegrationTestCase):
 			self.assertEqual(routing.authorised_target(self.agent, routing.safe_target(raw)), raw)
 
 	def test_unknown_internal_destinations_are_not_honoured(self):
-		for raw in ("/me", "/update-password", "/some/page", "/api/method/frappe.client.get_list", "/helpdesk-evil/x", "/files/x"):
+		for raw in (
+			"/me",
+			"/update-password",
+			"/some/page",
+			"/api/method/frappe.client.get_list",
+			"/helpdesk-evil/x",
+			"/files/x",
+		):
 			self.assertIsNone(routing.authorised_target(self.both, routing.safe_target(raw)), raw)
 
 	def test_portal_users_may_be_sent_to_the_customer_portal_only(self):
-		self.assertEqual(routing.authorised_target(self.customer, "/helpdesk/my-tickets"), "/helpdesk/my-tickets")
+		self.assertEqual(
+			routing.authorised_target(self.customer, "/helpdesk/my-tickets"), "/helpdesk/my-tickets"
+		)
 		self.assertIsNone(routing.authorised_target(self.customer, "/desk"))
 
 	def test_guests_are_never_sent_anywhere_private(self):
@@ -161,7 +184,9 @@ class TestRouting(IntegrationTestCase):
 
 	def test_no_apps_goes_to_the_no_access_page(self):
 		self.assertEqual(self.route(self.noapps), "/nxerp/no-access")
-		self.assertEqual(self.route(self.sysmgr), "/nxerp/no-access")  # System Manager is not auto-granted apps
+		self.assertEqual(
+			self.route(self.sysmgr), "/nxerp/no-access"
+		)  # System Manager is not auto-granted apps
 
 	def test_customer_goes_to_the_portal(self):
 		self.assertEqual(self.route(self.customer), "/helpdesk/my-tickets")
@@ -180,7 +205,17 @@ class TestRouting(IntegrationTestCase):
 		self.assertEqual(self.route(self.noapps, "/helpdesk/home"), "/nxerp/no-access")
 
 	def test_every_route_result_is_a_same_origin_path(self):
-		users = ("Administrator", self.agent, self.erp, self.both, self.sysmgr, self.noapps, self.customer, self.disabled, "Guest")
+		users = (
+			"Administrator",
+			self.agent,
+			self.erp,
+			self.both,
+			self.sysmgr,
+			self.noapps,
+			self.customer,
+			self.disabled,
+			"Guest",
+		)
 		for user in users:
 			for raw in HOSTILE + list(GOOD):
 				result = self.route(user, raw)

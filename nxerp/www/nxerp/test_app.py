@@ -19,7 +19,9 @@ def get_context(context):
 		frappe.local.flags.redirect_location = "/login?redirect-to=/nxerp/go"
 		raise frappe.Redirect
 
-	entry = next((e for e in registry.installed_entries() if e.test_only and e.route == "/nxerp/test-app"), None)
+	entry = next(
+		(e for e in registry.installed_entries() if e.test_only and e.route == "/nxerp/test-app"), None
+	)
 	if not entry or not access.can_access_app(frappe.session.user, entry.key):
 		frappe.local.flags.redirect_location = access.NO_ACCESS_ROUTE
 		raise frappe.Redirect

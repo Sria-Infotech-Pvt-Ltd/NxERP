@@ -31,6 +31,7 @@
 			<a class="nxp-button" href="/login">{{ _("Sign in") }}</a>
 			{% else %}
 			<a class="nxp-button" href="/nxerp/go">{{ _("Back to my applications") }}</a>
+			{% if can_administer %}<a class="nxp-link" data-admin-hint href="/desk/user">{{ _("Manage user access") }}</a>{% endif %}
 			<a class="nxp-link" href="/logout">{{ _("Sign out") }}</a>
 			{% endif %}
 		</p>

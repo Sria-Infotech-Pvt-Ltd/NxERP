@@ -252,10 +252,16 @@ class TestUnifiedExperience(IntegrationTestCase):
 		self.assertEqual(tiles(r.text), ["erpnext", "helpdesk"])
 		for hidden in ("frappe", "payments", "telephony", "Framework", "Frappe"):
 			self.assertNotIn(f'data-app="{hidden}"', r.text)
-		self.assertNotRegex(r.text, r"NXERP\s*</(h\d|span|p|div)>\s*<[^>]*>\s*Helpdesk")  # no "NXERP = Helpdesk" tile
+		self.assertNotRegex(
+			r.text, r"NXERP\s*</(h\d|span|p|div)>\s*<[^>]*>\s*Helpdesk"
+		)  # no "NXERP = Helpdesk" tile
 
 	def test_launcher_redirects_users_who_do_not_need_it(self):
-		for email, path in ((self.agent, "/helpdesk/home"), (self.erp, "/desk"), (self.noapps, "/nxerp/no-access")):
+		for email, path in (
+			(self.agent, "/helpdesk/home"),
+			(self.erp, "/desk"),
+			(self.noapps, "/nxerp/no-access"),
+		):
 			r = Client(email, self.password).get("/nxerp/apps")
 			self.assertIn(r.status_code, (301, 302), email)
 			self.assertEqual(location(r), path, email)
@@ -275,7 +281,12 @@ class TestUnifiedExperience(IntegrationTestCase):
 	# --- the tile overrides ------------------------------------------------------------------
 
 	def test_get_apps_returns_only_the_callers_apps(self):
-		expected = {self.agent: ["helpdesk"], self.erp: ["erpnext"], self.both: ["erpnext", "helpdesk"], self.noapps: []}
+		expected = {
+			self.agent: ["helpdesk"],
+			self.erp: ["erpnext"],
+			self.both: ["erpnext", "helpdesk"],
+			self.noapps: [],
+		}
 		for email, names in expected.items():
 			r = Client(email, self.password).get("/api/method/frappe.apps.get_apps")
 			self.assertEqual(r.status_code, 200, email)
@@ -289,7 +300,11 @@ class TestUnifiedExperience(IntegrationTestCase):
 		visible = [row["app_name"] for row in boot["app_data"] if row.get("on_apps_screen")]
 		self.assertEqual(sorted(visible), ["erpnext", "helpdesk"])
 		self.assertEqual(boot["nxerp"]["launcher"], "/nxerp/apps")
-		row = next(i for i in boot["navbar_settings"]["settings_dropdown"] if i.get("item_label") == "All applications")
+		row = next(
+			i
+			for i in boot["navbar_settings"]["settings_dropdown"]
+			if i.get("item_label") == "All applications"
+		)
 		self.assertEqual(row["route"], "/nxerp/apps")
 		self.assertIn("boot.nxerp.launcher", row["condition"])  # shown only when the server set a launcher
 
@@ -297,7 +312,9 @@ class TestUnifiedExperience(IntegrationTestCase):
 		boot = boot_of(Client(self.erp, self.password).get("/desk").text)
 		self.assertIsNone(boot["nxerp"]["launcher"])
 		# the row exists for everyone but its condition is false: boot.nxerp.launcher is null for this user
-		self.assertEqual([row["app_name"] for row in boot["app_data"] if row.get("on_apps_screen")], ["erpnext"])
+		self.assertEqual(
+			[row["app_name"] for row in boot["app_data"] if row.get("on_apps_screen")], ["erpnext"]
+		)
 
 	# --- the kill-switch ---------------------------------------------------------------------
 

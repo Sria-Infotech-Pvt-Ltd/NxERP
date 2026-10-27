@@ -1,0 +1,7 @@
+{
+	"name": "nxerp-e2e",
+	"private": true,
+	"type": "module",
+	"description": "Browser tests for the unified NXERP experience (login, router, launcher). Run with e2e/run.sh.",
+	"devDependencies": { "playwright-core": "1.49.1" }
+}

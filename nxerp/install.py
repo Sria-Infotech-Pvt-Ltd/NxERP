@@ -30,9 +30,17 @@ def ensure_platform_settings():
 		frappe.db.set_single_value("Portal Settings", "default_portal_home", "/nxerp/go")
 
 
+def ensure_navbar_items():
+	"""Sync the standard navbar items (the "All applications" row) now; Frappe otherwise does it only on migrate."""
+	from frappe.core.doctype.navbar_settings.navbar_settings import sync_standard_items
+
+	sync_standard_items()
+
+
 def after_install():
 	ensure_access_roles()
 	ensure_platform_settings()
+	ensure_navbar_items()
 
 
 def after_migrate():

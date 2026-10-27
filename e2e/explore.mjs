@@ -1,0 +1,13 @@
+import { launch, session, here, shot, BASE, ADMIN_PASSWORD } from "./lib.mjs";
+const browser = await launch();
+const { page } = await session(browser);
+page.on("framenavigated", (f) => f === page.mainFrame() && console.log("NAV", f.url().replace(BASE, "")));
+page.on("response", (r) => [301, 302, 303].includes(r.status()) && console.log("  HTTP", r.status(), r.url().replace(BASE, "").slice(0, 80), "->", (r.headers()["location"] || "").slice(0, 80)));
+await page.goto(BASE + "/login", { waitUntil: "domcontentloaded" });
+await page.fill("#login_email", "Administrator");
+await page.fill("#login_password", ADMIN_PASSWORD);
+await page.click("section.for-login button[type=submit]");
+await page.waitForTimeout(12000);
+console.log("final:", here(page));
+await shot(page, "x-first");
+await browser.close();

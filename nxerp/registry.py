@@ -96,7 +96,7 @@ def _test_only_entries() -> tuple:
 					test_only=True,
 				)
 			)
-		except (KeyError, TypeError, ValueError):
+		except KeyError, TypeError, ValueError:
 			continue
 	return tuple(entries)
 
