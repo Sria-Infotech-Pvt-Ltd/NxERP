@@ -52,7 +52,13 @@ if frappe.db.exists("DocType", "HD Article Category"):
 	cat = make("HD Article Category", category_name="Seed Getting Started")
 	if cat:
 		for t in ("Seed: resetting your password", "Seed: connecting email", "Seed: understanding SLAs"):
-			make("HD Article", title=t, category=cat.name, content=f"<p>{t}. Fake article body.</p>", status="Published")
+			make(
+				"HD Article",
+				title=t,
+				category=cat.name,
+				content=f"<p>{t}. Fake article body.</p>",
+				status="Published",
+			)
 
 frappe.db.commit()
 print("done")
