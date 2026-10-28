@@ -65,3 +65,12 @@ Nothing is granted by this layer: Frappe's DocType, field and record permissions
   grant guard. Leave it empty if in doubt: the explicit access role is always enough.
 - `portal_roles` is for an app with a customer-facing surface. Portal users never see staff apps, never open Desk,
   and get extra data minimisation (`nxerp.enforcement`: no document-info endpoints, assignment metadata stripped).
+
+## Placeholders (documented only, nothing is created)
+
+- `apps/hrms/`: an own Frappe app in this repository (add a `path` entry to `deploy/apps.json`), **or** the official
+  Frappe HRMS pinned by url and commit in `deploy/apps.json` (it requires ERPNext, so install it after ERPNext).
+- `services/<name>/`: a non-Frappe external app (its own container, reached over HTTP), registered the same way.
+
+For either: add one registry entry in `nxerp/registry.py`, add the access grants, reserve a `/<app>` route
+(`docs/architecture/routes.md`), write an ADR, and add `CODEOWNERS` entries for its folder.

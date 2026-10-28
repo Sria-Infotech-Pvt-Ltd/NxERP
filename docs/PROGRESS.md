@@ -155,3 +155,10 @@ One workspace folder, `frapper sria/`: `nxerp-platform/` (this repo, branch `pha
 ## Publishing
 
 Not pushed. The branch is local at `<local clone>` (`phase-1/foundation`). See the final report for exact steps.
+
+## Restructure (2026-10-28)
+
+Repository reorganised into `apps/`, `deploy/`, `docs/`, `scripts/` (ADR-007). Follow-ups: split the flat platform modules into
+`access/ login/ launcher/ branding/` packages once tests prove the hook paths (architecture rule 4); port Helpdesk's workflows to the
+root `.github/`; run the new CI and the production image build on GitHub; decide the licence mix; the "Assignee follows Team" work lives
+in a patch outside the repository.

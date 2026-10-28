@@ -1,3 +1,7 @@
+> **Layout in the NXERP repository.** Backend (Python package) = `helpdesk/`. Frontend (Vue SPA) = `hd-frontend/` (was `desk/`).
+> Browser tests = `hd-e2e-tests/` (was `e2e/`). Docker quick start = `hd-docker/` (was `docker/`). `realtime/` keeps its name
+> (Frappe loads it by path). Differences from upstream: `docs/upstream.md` at the repository root.
+
 <div align="center" markdown="1">
 
 <img src=".github/hd-logo.svg" alt="Frappe Helpdesk logo" width="80"/>
