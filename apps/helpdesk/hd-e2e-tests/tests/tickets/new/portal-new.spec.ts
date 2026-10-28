@@ -3,7 +3,7 @@ import { expect, test, uid, usePersona } from "../../../helpers/fixtures";
 import { personas } from "../../../helpers/personas";
 import { createArticle, createCategory } from "../../../helpers/portal";
 
-const PIXEL = "e2e/fixtures/pixel.png";
+const PIXEL = "hd-e2e-tests/fixtures/pixel.png";
 
 usePersona("customer");
 

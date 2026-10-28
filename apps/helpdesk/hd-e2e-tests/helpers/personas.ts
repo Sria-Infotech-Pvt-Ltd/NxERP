@@ -34,7 +34,7 @@ export function emailOf(key: PersonaKey) {
 }
 
 export function storageStateOf(key: PersonaKey) {
-  return `e2e/.auth/${key}.json`;
+  return `hd-e2e-tests/.auth/${key}.json`;
 }
 
 /** Idempotently create every persona with its roles, HD Agent or Contact. */

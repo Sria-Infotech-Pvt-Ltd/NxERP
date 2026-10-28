@@ -4,7 +4,7 @@ import { expect, skipGettingStarted, test, uid, usePersona } from "../../helpers
 import { PASSWORD, personas } from "../../helpers/personas";
 import { createThrowawayAgent, openSettings, snapshotSettings } from "../../helpers/settings";
 
-const PIXEL = "e2e/fixtures/pixel.png";
+const PIXEL = "hd-e2e-tests/fixtures/pixel.png";
 
 usePersona("admin");
 

@@ -6,7 +6,7 @@ on:
       - develop
     paths:
       - "desk/**"
-      - "e2e/**"
+      - "hd-e2e-tests/**"
       - "playwright.config.ts"
       - "package.json"
       - "yarn.lock"

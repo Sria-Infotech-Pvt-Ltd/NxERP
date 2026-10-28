@@ -1,12 +1,12 @@
 import { defineConfig, devices } from "@playwright/test";
-import { siteHeader } from "./e2e/helpers/site";
+import { siteHeader } from "./hd-e2e-tests/helpers/site";
 
 /**
  * E2E suite for the Helpdesk SPA, run against a real bench site.
  * `global.setup.ts` seeds personas and saves one logged-in session per persona.
  */
 export default defineConfig({
-  testDir: "./e2e",
+  testDir: "./hd-e2e-tests",
   fullyParallel: false,
   workers: 1,
   forbidOnly: !!process.env.CI,
