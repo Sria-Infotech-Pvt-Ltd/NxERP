@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Frappe Helpdesk — Complete System Pipeline</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1e2530;
+    --border: #2d3441;
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --accent: #388bfd;
+
+    --color-browser: #1f4068;
+    --color-browser-b: #4fa3e0;
+    --color-net: #1a3a2a;
+    --color-net-b: #3fb58a;
+    --color-wsgi: #2d1f4a;
+    --color-wsgi-b: #9b6fdb;
+    --color-auth: #4a1f2e;
+    --color-auth-b: #e05c8a;
+    --color-api: #3a2a14;
+    --color-api-b: #e09b3f;
+    --color-ctrl: #14304a;
+    --color-ctrl-b: #3fb8e0;
+    --color-db: #1a3520;
+    --color-db-b: #4fe086;
+    --color-hooks: #2a1a14;
+    --color-hooks-b: #e0743f;
+    --color-bg-worker: #1a1a3a;
+    --color-bg-worker-b: #7b7bdb;
+    --color-rt: #2a1430;
+    --color-rt-b: #c05fc0;
+    --color-fe-alex: #143040;
+    --color-fe-alex-b: #3fcce0;
+    --color-sched: #3a2a10;
+    --color-sched-b: #e0b83f;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  /* ── TOOLBAR ── */
+  #toolbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 56px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 20px;
+    z-index: 100;
+    flex-shrink: 0;
+  }
+
+  #toolbar h1 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+    letter-spacing: -0.3px;
+  }
+
+  #toolbar .badge {
+    background: var(--accent);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 4px;
+    padding: 2px 6px;
+    letter-spacing: 0.5px;
+  }
+
+  #toolbar .sep { width: 1px; height: 28px; background: var(--border); flex-shrink: 0; }
+
+  #search-box {
+    flex: 1;
+    max-width: 320px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  #search-box:focus { border-color: var(--accent); }
+  #search-box::placeholder { color: var(--text-muted); }
+
+  #toolbar .spacer { flex: 1; }
+
+  .zoom-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 700;
+    transition: background .15s, border-color .15s;
+    user-select: none;
+  }
+  .zoom-btn:hover { background: var(--border); border-color: var(--accent); }
+
+  #zoom-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    min-width: 44px;
+    text-align: center;
+  }
+
+  .ctrl-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 5px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all .15s;
+    white-space: nowrap;
+  }
+  .ctrl-btn:hover { background: var(--border); color: var(--text); }
+
+  /* ── LEGEND ── */
+  #legend {
+    position: fixed;
+    bottom: 16px;
+    left: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    z-index: 100;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  #legend .title { font-weight: 700; color: var(--text); margin-bottom: 8px; font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; }
+  .legend-item { display: flex; align-items: center; gap: 7px; margin-bottom: 4px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+
+  /* ── HINTS ── */
+  #hints {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    z-index: 100;
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+
+  /* ── CANVAS ── */
+  #canvas-wrap {
+    position: fixed;
+    top: 56px;
+    left: 0; right: 0; bottom: 0;
+    overflow: hidden;
+    cursor: grab;
+  }
+  #canvas-wrap:active { cursor: grabbing; }
+
+  #canvas {
+    position: absolute;
+    top: 0; left: 0;
+    transform-origin: 0 0;
+    will-change: transform;
+  }
+
+  /* ── PIPELINE LAYOUT ── */
+  #pipeline {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    padding: 60px 80px;
+    width: 1100px;
+  }
+
+  /* ── STEP CARD ── */
+  .step {
+    width: 960px;
+    border-radius: 14px;
+    border: 1.5px solid transparent;
+    transition: box-shadow .2s;
+    position: relative;
+  }
+  .step:hover { box-shadow: 0 0 0 2px rgba(255,255,255,.08); }
+  .step.dim { opacity: 0.15; }
+  .step.highlight { opacity: 1; }
+
+  .step-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px 20px 12px;
+    cursor: pointer;
+    border-radius: 13px 13px 0 0;
+    user-select: none;
+  }
+
+  .step-num {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 800;
+    flex-shrink: 0;
+    border: 2px solid currentColor;
+    letter-spacing: -0.5px;
+  }
+
+  .step-title {
+    flex: 1;
+  }
+  .step-title h2 {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+    line-height: 1.3;
+  }
+  .step-title p {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 3px;
+    line-height: 1.5;
+  }
+
+  .step-expand-btn {
+    font-size: 18px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    margin-top: 4px;
+    transition: transform .2s;
+  }
+  .step.open .step-expand-btn { transform: rotate(180deg); }
+
+  .step-body {
+    display: none;
+    padding: 0 20px 18px;
+    border-top: 1px solid rgba(255,255,255,.05);
+    margin-top: 2px;
+  }
+  .step.open .step-body { display: block; }
+
+  /* file list */
+  .file-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .file-entry {
+    background: rgba(0,0,0,.3);
+    border-radius: 8px;
+    padding: 10px 14px;
+    border-left: 3px solid rgba(255,255,255,.12);
+  }
+  .file-entry .file-name {
+    font-family: 'Cascadia Code', 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0;
+    color: #79c0ff;
+    margin-bottom: 4px;
+    word-break: break-all;
+  }
+  .file-entry .file-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.55;
+  }
+  .file-entry .file-desc strong { color: var(--text); font-weight: 600; }
+
+  /* data format badge */
+  .data-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    background: rgba(255,255,255,.07);
+    color: var(--text-muted);
+    border: 1px solid rgba(255,255,255,.1);
+    text-transform: uppercase;
+  }
+
+  /* ── CONNECTOR ── */
+  .connector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 40px;
+    flex-shrink: 0;
+  }
+  .connector .line {
+    width: 2px;
+    flex: 1;
+    background: linear-gradient(to bottom, var(--from-color), var(--to-color));
+    opacity: 0.5;
+  }
+  .connector .arrow {
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 8px solid var(--to-color);
+    opacity: 0.5;
+  }
+
+  /* ── BRANCH connector (for parallel paths) ── */
+  .branch-row {
+    display: flex;
+    gap: 20px;
+    width: 960px;
+  }
+  .branch-col { flex: 1; display: flex; flex-direction: column; }
+  .branch-divider {
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: var(--text-muted);
+    gap: 8px;
+  }
+  .branch-divider::before,
+  .branch-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+</style>
+</head>
+<body>
+
+<!-- ── TOOLBAR ── -->
+<div id="toolbar">
+  <h1>🚀 Frappe Helpdesk</h1>
+  <span class="badge">PIPELINE</span>
+  <div class="sep"></div>
+  <input id="search-box" type="text" placeholder="Search files, steps… (e.g. auth.py, socket, SLA)" />
+  <div class="spacer"></div>
+  <button class="zoom-btn" id="btn-out">−</button>
+  <span id="zoom-label">100%</span>
+  <button class="zoom-btn" id="btn-in">+</button>
+  <button class="ctrl-btn" id="btn-reset">Reset View</button>
+  <button class="ctrl-btn" id="btn-expand-all">Expand All</button>
+  <button class="ctrl-btn" id="btn-collapse-all">Collapse All</button>
+</div>
+
+<!-- ── LEGEND ── -->
+<div id="legend">
+  <div class="title">Layers</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#4fa3e0"></div> Browser (Vue 3 SPA)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#3fb58a"></div> Network / Docker</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#9b6fdb"></div> Python WSGI</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#e05c8a"></div> Auth / Session</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#e09b3f"></div> API Routing</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#3fb8e0"></div> Controller Lifecycle</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#4fe086"></div> Database (MariaDB)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#e0743f"></div> Hooks / Events</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#7b7bdb"></div> Background Worker</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#c05fc0"></div> Realtime (Socket.IO)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#3fcce0"></div> Agent Browser</div>
+</div>
+
+<!-- ── HINTS ── -->
+<div id="hints">
+  🖱 Scroll to zoom · Drag to pan<br>
+  🔍 Click any step to expand<br>
+  ⌨️ Type in search to filter
+</div>
+
+<!-- ── CANVAS ── -->
+<div id="canvas-wrap">
+  <div id="canvas">
+    <div id="pipeline"><!-- injected by JS --></div>
+  </div>
+</div>
+
+<script>
+// ── DATA ───────────────────────────────────────────────────────────────────
+const STEPS = [
+  {
+    id: "s1",
+    num: 1,
+    layer: "browser",
+    color: "#4fa3e0",
+    bg: "#1f4068",
+    title: "Browser Boot — Sarah opens the Customer Portal",
+    subtitle: "Vue 3 SPA loads, socket connects, auth state resolves. Happens once when browser navigates to helpdesk.localhost:8000/helpdesk",
+    data: "— (initial page load, no JSON yet)",
+    files: [
+      {
+        name: "desk/src/main.js",
+        desc: "<strong>The app entry point.</strong> Creates the Vue app instance, installs Pinia (state management), Vue Router, frappe-ui library, the i18n translation plugin, and the Socket.IO client. Registers global components (Button, Badge, Dialog…). Mounts everything onto the <code>#app</code> HTML element. The very first JavaScript that runs."
+      },
+      {
+        name: "desk/src/App.vue",
+        desc: "<strong>Root Vue component.</strong> A single <code>&lt;RouterView /&gt;</code> — tells Vue 'render whatever page the current URL maps to'. Nothing else lives here."
+      },
+      {
+        name: "desk/src/index.css",
+        desc: "<strong>Global CSS & Tailwind tokens.</strong> Defines semantic color classes like <code>bg-surface-white</code>, <code>text-ink-gray-9</code>, base typography, and spacing. All visual styling originates here."
+      },
+      {
+        name: "desk/src/router/index.ts",
+        desc: "<strong>URL-to-page mapping + navigation guards.</strong> Defines every route: <code>/tickets</code>, <code>/my-tickets</code>, <code>/kb</code>, <code>/dashboard</code>, etc. Runs a guard before every navigation that checks: Is the user logged in? Are they an agent or customer? If not logged in → redirects to Frappe's login page. If a customer tries to reach <code>/tickets/0001</code> → silently rewrites destination to <code>/my-tickets/0001</code>."
+      },
+      {
+        name: "desk/src/roots/PortalRoot.vue",
+        desc: "<strong>Portal switcher.</strong> Reads <code>authStore.isAgent</code>. If true → loads <code>AgentRoot.vue</code> (the agent shell with full sidebar). If false → loads <code>CustomerPortalRoot.vue</code> (the minimal customer shell). This is why one codebase serves two completely different-looking UIs."
+      },
+      {
+        name: "desk/src/roots/AgentRoot.vue",
+        desc: "<strong>Agent shell layout.</strong> The persistent agent UI chrome: sidebar navigation, header bar, notification bell, availability toggle, command palette. Wraps every agent page."
+      },
+      {
+        name: "desk/src/roots/CustomerPortalRoot.vue",
+        desc: "<strong>Customer shell layout.</strong> Simpler wrapper with just the customer portal navigation bar. Wraps every customer page."
+      },
+      {
+        name: "desk/src/persona.ts",
+        desc: "<strong>First-run onboarding guard.</strong> Detects if the admin has not yet selected their persona (Agent Manager, etc.) during first-time setup. Redirects to <code>/onboarding</code> if so. Prevents using the app before setup is complete."
+      },
+      {
+        name: "desk/src/socket.ts",
+        desc: "<strong>WebSocket client.</strong> Reads <code>socketio_port</code> from <code>sites/common_site_config.json</code>. Connects to <code>http://helpdesk.localhost:9000/helpdesk.localhost</code> via Socket.IO. Exported as a singleton <code>socket</code> object — all stores import and reuse it."
+      },
+      {
+        name: "desk/src/stores/auth.ts",
+        desc: "<strong>Session state store (Pinia).</strong> Makes one API call to <code>helpdesk.api.auth.get_user</code> on app load. Stores: <code>isAgent</code>, <code>isAdmin</code>, <code>isManager</code>, <code>hasDeskAccess</code>, <code>userId</code>, <code>userTeams</code>, <code>availability</code>. All other parts of the app read from here to know who the current user is and what they can do."
+      },
+      {
+        name: "desk/src/pages/ticket/TicketNew.vue",
+        desc: "<strong>The 'New Ticket' form.</strong> Rendered when Sarah navigates to <code>/my-tickets/new</code>. Loads ticket template fields from the backend. Binds form inputs via <code>v-model</code>. On submit → calls <code>frappe-ui createResource().submit()</code> which builds and fires the HTTP request."
+      }
+    ]
+  },
+  {
+    id: "s2",
+    num: 2,
+    layer: "net",
+    color: "#3fb58a",
+    bg: "#1a3a2a",
+    title: "HTTP Request Built & Sent",
+    subtitle: "frappe-ui serializes the form state to JSON, attaches the session cookie, and fires a POST request",
+    data: "DATA FORMAT: JSON over HTTP/1.1",
+    files: [
+      {
+        name: "frappe-ui (npm library)",
+        desc: "<strong>HTTP abstraction layer.</strong> <code>createResource()</code> is a Vue composable that wraps the browser's <code>fetch()</code> API. When <code>.submit()</code> is called, it serializes the reactive form state to JSON, sets <code>Content-Type: application/json</code>, includes the <code>Cookie: sid=...</code> session token automatically, and fires the POST request. It also handles loading/error/success states reactively so the UI can show spinners and error messages."
+      },
+      {
+        name: "HTTP POST Payload",
+        desc: `<strong>The actual JSON sent over the wire:</strong><br><br>
+<code>POST /api/method/helpdesk.api.doc.create_doc</code><br>
+<code>Host: helpdesk.localhost:8000</code><br>
+<code>Content-Type: application/json</code><br>
+<code>Cookie: sid=a8f902b1c4d5e6f7...</code><br><br>
+<code>{</code><br>
+<code>&nbsp;&nbsp;"doctype": "HD Ticket",</code><br>
+<code>&nbsp;&nbsp;"subject": "Production Payment Gateway 502 Error",</code><br>
+<code>&nbsp;&nbsp;"ticket_type": "Technical Issue",</code><br>
+<code>&nbsp;&nbsp;"priority": "Urgent",</code><br>
+<code>&nbsp;&nbsp;"description": "Checkout API is failing..."</code><br>
+<code>}</code>`
+      }
+    ]
+  },
+  {
+    id: "s3",
+    num: 3,
+    layer: "net",
+    color: "#3fb58a",
+    bg: "#1a3a2a",
+    title: "Docker Network & Nginx Reverse Proxy",
+    subtitle: "TCP packet enters the container network. Nginx routes to the Python app. This is pure infrastructure — no business logic here.",
+    data: "DATA FORMAT: Raw TCP bytes → HTTP headers + body",
+    files: [
+      {
+        name: "frappe-helpdesk-docker/docker-compose.yml",
+        desc: "<strong>Container orchestration file.</strong> Defines every process that runs as a separate Docker container: <code>backend</code> (Python Gunicorn), <code>frontend</code> (Nginx serving static JS files), <code>db</code> (MariaDB), <code>redis-cache</code>, <code>redis-queue</code>, <code>redis-socketio</code>, <code>websocket</code> (Node.js Socket.IO). Maps port <code>8000</code> on your Windows machine to the Nginx container's internal port 80."
+      },
+      {
+        name: "Nginx (inside the backend container)",
+        desc: "<strong>Reverse proxy.</strong> Receives the TCP connection on port 8000. Reads the HTTP <code>Host</code> header (<code>helpdesk.localhost</code>) to identify which Frappe site is being requested. Sets proxy headers: <code>X-Forwarded-For</code> (real client IP), <code>X-Real-IP</code>. Forwards the request to Gunicorn via a UNIX domain socket (a file-based fast IPC — no TCP overhead between Nginx and Python)."
+      }
+    ]
+  },
+  {
+    id: "s4",
+    num: 4,
+    layer: "wsgi",
+    color: "#9b6fdb",
+    bg: "#2d1f4a",
+    title: "Gunicorn WSGI Server → Frappe App Init",
+    subtitle: "Python receives the request. Frappe sets up its context: connects to MariaDB and Redis, reads the site config.",
+    data: "DATA FORMAT: Python WSGI environ dict",
+    files: [
+      {
+        name: "Gunicorn",
+        desc: "<strong>Python WSGI server.</strong> Runs multiple Python worker processes in parallel (one per CPU core). Receives the HTTP bytes from Nginx via UNIX socket. Converts them into a WSGI <code>environ</code> Python dictionary (containing method, path, headers, body, etc.) and calls Frappe's WSGI application function."
+      },
+      {
+        name: "frappe/app.py → application(environ, start_response)",
+        desc: "<strong>Frappe's main WSGI entry point</strong> (this is part of the Frappe framework, not helpdesk code). This is where Python 'takes over' from the web server. It calls: <code>frappe.init(site='helpdesk.localhost')</code> which loads <code>sites/helpdesk.localhost/site_config.json</code> (database credentials, Redis URLs). Then <code>frappe.connect()</code> which opens a pooled MariaDB connection and Redis cache connection. Every request goes through this."
+      }
+    ]
+  },
+  {
+    id: "s5",
+    num: 5,
+    layer: "auth",
+    color: "#e05c8a",
+    bg: "#4a1f2e",
+    title: "Authentication & Session Resolution",
+    subtitle: "Frappe verifies the session cookie. Resolves who the user is. Loads their roles. Runs on EVERY request before anything else.",
+    data: "DATA FORMAT: Cookie → Session record → User + Roles",
+    files: [
+      {
+        name: "helpdesk/auth.py → authenticate()",
+        desc: "<strong>Helpdesk's custom auth hook.</strong> Registered in <code>hooks.py</code> under <code>auth_hooks</code>. Runs before every request. Can add additional helpdesk-specific auth checks beyond Frappe's default. Acts as a first-line gate."
+      },
+      {
+        name: "frappe/auth.py → HTTPRequest class",
+        desc: "<strong>Frappe's built-in session verifier.</strong> Extracts the <code>sid</code> value from the <code>Cookie</code> header. Checks Redis cache first (fast), then falls back to MariaDB <code>tabSessions</code> table (slower). If the session is valid and not expired: sets <code>frappe.session.user = 'sarah@acme.com'</code>. If invalid: raises a redirect to the login page. Also handles IP-based session locking."
+      },
+      {
+        name: "frappe.get_roles('sarah@acme.com')",
+        desc: "<strong>Role resolution.</strong> Frappe queries <code>tabHasRole</code> in MariaDB to get Sarah's roles. For a typical customer: <code>['HD Customer', 'Customer Member', 'Guest']</code>. These roles are used for every permission check throughout the request lifecycle. An agent would have <code>['Agent', 'Agent Manager', ...]</code>."
+      }
+    ]
+  },
+  {
+    id: "s6",
+    num: 6,
+    layer: "api",
+    color: "#e09b3f",
+    bg: "#3a2a14",
+    title: "API Router — Dispatch to the Correct Function",
+    subtitle: "Frappe reads the URL path and finds the matching Python function. Checks @frappe.whitelist(). Calls it.",
+    data: "DATA FORMAT: URL path → Python function call",
+    files: [
+      {
+        name: "frappe/handler.py → handle()",
+        desc: "<strong>Frappe's central URL dispatcher</strong> (framework code). Parses the path <code>/api/method/helpdesk.api.doc.create_doc</code>. Uses Python's import system to load the function <code>create_doc</code> from module <code>helpdesk.api.doc</code>. Checks that the function has the <code>@frappe.whitelist()</code> decorator — without it, 403 Forbidden is returned. If the function also has <code>@agent_only</code>, it additionally checks that the current user is an agent."
+      },
+      {
+        name: "helpdesk/helpdesk/api/doc.py → create_doc()",
+        desc: "<strong>The primary document creation endpoint.</strong> This is the function that receives Sarah's JSON payload as Python keyword arguments. It: deserializes JSON fields, calls the field sanitizer (<code>ticket_fields.py</code>), creates a new DocType instance via <code>frappe.new_doc()</code>, populates fields, and calls <code>doc.insert()</code> to trigger the full lifecycle and persist to database. Also handles: <code>get_list_data()</code> for ticket list queries, <code>get_filterable_fields()</code> for the filter panel, <code>get_quick_filters()</code> for fast filter shortcuts."
+      },
+      {
+        name: "helpdesk/helpdesk/api/auth.py → get_user()",
+        desc: "<strong>Session info endpoint.</strong> Returns the logged-in user's full profile as JSON to the frontend <code>auth.ts</code> store. Includes: <code>is_agent</code>, <code>is_admin</code>, <code>is_manager</code>, <code>has_desk_access</code>, team names, availability status. Called once on every page load."
+      },
+      {
+        name: "helpdesk/helpdesk/api/ticket.py",
+        desc: "<strong>Ticket-specific actions.</strong> Operations too specialized for the generic <code>doc.py</code>: <code>assign_ticket_to_agent()</code>, <code>split_ticket()</code>. All decorated with <code>@frappe.whitelist()</code> and <code>@agent_only</code>."
+      },
+      {
+        name: "helpdesk/helpdesk/api/comment.py",
+        desc: "<strong>Comment CRUD API.</strong> Create, edit, and delete comments on tickets. Calls <code>extends/comment.py</code> logic to enforce agent-only access on internal notes."
+      },
+      {
+        name: "helpdesk/helpdesk/api/timeline.py",
+        desc: "<strong>Ticket activity feed API.</strong> <code>get_comment_extras()</code> returns reactions, file attachments, and pinned status for all comments in one batched call. <code>get_ticket_calls()</code> returns telephony call log rows for the timeline."
+      },
+      {
+        name: "helpdesk/helpdesk/api/saved_replies.py",
+        desc: "<strong>Canned response API.</strong> Fetch saved reply templates. Apply Jinja rendering to substitute variables like <code>{{ doc.customer }}</code> with actual ticket values. Also handles 'macro' saved replies that trigger additional actions (e.g., change status while inserting the reply text)."
+      },
+      {
+        name: "helpdesk/helpdesk/api/dashboard.py",
+        desc: "<strong>Agent home dashboard data.</strong> Provides all metrics shown on the home page: ticket counts, average response time, average resolution time, SLA compliance, recent activity, ticket trends chart data."
+      },
+      {
+        name: "helpdesk/helpdesk/api/ticket_analytics.py",
+        desc: "<strong>Deep analytics API.</strong> Resolution time distributions, per-agent performance, CSAT scores, SLA breach breakdowns. Powers the Analytics Dashboard page."
+      },
+      {
+        name: "helpdesk/helpdesk/api/analytics_utils.py",
+        desc: "<strong>Analytics helper functions.</strong> Shared query builders for date range grouping (daily/weekly/monthly bucketing), aggregation helpers reused by both dashboard and analytics endpoints."
+      },
+      {
+        name: "helpdesk/helpdesk/api/knowledge_base.py",
+        desc: "<strong>Knowledge Base API.</strong> Get article categories tree, get articles within a category, submit article helpful/not-helpful votes. Powers the KB pages."
+      },
+      {
+        name: "helpdesk/helpdesk/api/search.py",
+        desc: "<strong>Global full-text search API.</strong> Receives a search query string. Expands synonyms (from HD Synonym records), removes stopwords (from HD Stopword records), runs FTS query against SQLite index. Returns matching article titles + snippets to the search-as-you-type UI."
+      },
+      {
+        name: "helpdesk/helpdesk/api/customer.py",
+        desc: "<strong>Customer organization API.</strong> Get HD Customer details, linked contacts, and aggregated ticket history for the Customer profile page."
+      },
+      {
+        name: "helpdesk/helpdesk/api/contact.py",
+        desc: "<strong>Contact person API.</strong> Get contact details, create new contacts, link contacts to HD Customer organizations. Used by the Contacts directory page."
+      },
+      {
+        name: "helpdesk/helpdesk/api/onboarding.py",
+        desc: "<strong>First-run setup API.</strong> Reads and updates which 'Getting started' onboarding checklist steps have been completed. Controls the 0/10 progress indicator you see in the sidebar."
+      }
+    ]
+  },
+  {
+    id: "s7",
+    num: 7,
+    layer: "api",
+    color: "#e09b3f",
+    bg: "#3a2a14",
+    title: "Field Security Gate — ticket_fields.py",
+    subtitle: "Before touching the database, strip any fields the current user is not allowed to set. Customers cannot inject agent-only fields.",
+    data: "DATA FORMAT: Python dict (fields stripped by role)",
+    files: [
+      {
+        name: "helpdesk/helpdesk/ticket_fields.py → TicketFields class",
+        desc: "<strong>The security boundary between users and the database.</strong> Before any ticket is created or updated, this class is instantiated. It asks: 'Which fields is this session user allowed to read or write?' <br><br>If the user is a <strong>customer</strong> (like Sarah): removes <code>_assign</code> (agent assignment), <code>sla</code>, <code>response_by</code>, <code>resolution_by</code>, <code>feedback_rating</code>, <code>agent_group</code>, and any template field where <code>visible_to == 'Agents'</code>. Customers <strong>cannot</strong> inject these fields even if they craft a manual HTTP request.<br><br>If the user is an <strong>agent</strong> (like Alex): all fields pass through unchanged.<br><br><code>get_layout()</code>: Returns the ordered list of fields for the agent sidebar form.<br><code>get_form()</code>: Returns fields with full metadata for portal forms.<br><code>strip_hidden_fields()</code>: Removes hidden fields from a ticket dict before sending to the client."
+      },
+      {
+        name: "helpdesk/helpdesk/consts.py",
+        desc: "<strong>System constants.</strong> <code>CORE_TICKET_FIELDS</code>: the base set of fields every ticket must have (subject, status, priority, etc.). <code>DEFAULT_TICKET_TEMPLATE</code>: the name of the default form template ('Default'). <code>SERVER_COMPUTED_FIELDS</code>: fields that are always set by the server and never accepted from the client. Referenced by <code>ticket_fields.py</code>."
+      }
+    ]
+  },
+  {
+    id: "s8",
+    num: 8,
+    layer: "ctrl",
+    color: "#3fb8e0",
+    bg: "#14304a",
+    title: "HD Ticket Controller — Python Lifecycle Hooks",
+    subtitle: "frappe.new_doc() creates an in-memory object. Then insert() runs every hook in strict order. Nothing is in the database yet — this is all RAM.",
+    data: "DATA FORMAT: Python HDTicket object (in memory)",
+    files: [
+      {
+        name: "helpdesk/helpdesk/doctype/hd_ticket/hd_ticket.py → HDTicket class",
+        desc: "<strong>THE central controller — the most important file in the codebase.</strong> Extends Frappe's base <code>Document</code> class. Contains every lifecycle hook and business rule for tickets. Key methods in execution order:"
+      },
+      {
+        name: "  → before_insert()",
+        desc: "<strong>Runs once, before the first DB write.</strong> Calls <code>generate_key()</code>: creates a UUID4 secret token stored in <code>self.key</code>. This token is embedded in CSAT feedback email URLs so customers can rate without being logged in. Calls <code>apply_ticket_insert_rules()</code>: evaluates any intake rule overrides."
+      },
+      {
+        name: "  → before_validate()",
+        desc: "<strong>Runs before validation.</strong> Calls these methods in sequence: <code>set_ticket_type()</code> — sets type from HD Settings default. <code>set_raised_by()</code> — sets <code>raised_by = frappe.session.user</code> ('sarah@acme.com'). <code>set_priority()</code> — defaults from Ticket Type then HD Settings. <code>set_default_status()</code> — sets status to 'Open'. <code>set_status_category()</code> — sets category to 'Open', 'Paused', or 'Resolved'. <code>validate_portal_contact()</code> — blocks Sarah from attributing the ticket to another person's contact. <code>set_contact()</code> — links Sarah's Contact record. <code>set_customer()</code> — auto-links 'Acme Corp' by tracing Contact → HD Customer Member → HD Customer."
+      },
+      {
+        name: "  → set_sla() → hd_service_level_agreement/utils.py → get_sla()",
+        desc: "<strong>SLA selection engine.</strong> Queries all active <code>HD Service Level Agreement</code> records, ordered by rank. Joins with <code>HD Service Level Priority</code> to find SLAs covering 'Urgent' priority. For non-default SLAs, evaluates the SLA's <code>condition</code> string using Python's <code>frappe.safe_eval()</code> — a sandboxed Python evaluator. Example condition: <code>doc.customer == 'Acme Corp'</code>. Returns the first matching SLA. Sets <code>self.sla = 'Enterprise-SLA'</code>."
+      },
+      {
+        name: "  → validate()",
+        desc: "<strong>Validation checks.</strong> <code>validate_feedback()</code>: If HD Settings requires feedback before resolving, checks that a rating is present. If not, throws a validation error. <code>validate_higher_perm_levels()</code>: prevents customers from editing fields they don't have write permission to."
+      },
+      {
+        name: "  → before_save()",
+        desc: "<strong>Last computations before the DB write.</strong> <code>set_resolution_date()</code>: if ticket is being resolved, stamps <code>resolution_date = now()</code>. <code>apply_sla()</code>: loads the matched SLA document, reads <code>HD Service Day</code> (working hours per weekday) and <code>HD Service Holiday List</code> (calendar holidays), computes: <code>response_by = now + 1h working time</code>, <code>resolution_by = now + 4h working time</code>. <code>handle_email_feedback()</code>: if status is changing to 'Closed' and CSAT email is enabled in HD Settings, queues a feedback email."
+      },
+      {
+        name: "  → after_insert()",
+        desc: "<strong>Runs after the DB row is committed.</strong> <code>publish_event('helpdesk:new-ticket')</code>: broadcasts to all connected agents via WebSocket. <code>tag_first_ticket()</code>: if this is the user's first-ever ticket, adds a 'First Ticket' tag. <code>create_communication_via_contact()</code>: creates a <code>Communication</code> record from the description text (so it shows in the conversation thread). <code>handle_inline_media_new_ticket()</code>: attaches any embedded images in the description to the ticket. <code>send_acknowledgement_email()</code>: queues an ack email if configured in HD Settings."
+      },
+      {
+        name: "  → on_update()",
+        desc: "<strong>Runs every time the ticket is saved (not just first insert).</strong> <code>remove_assignment_if_not_in_team()</code>: if the team changed and the assigned agent is no longer in the new team, clears the assignment. <code>publish_update()</code>: broadcasts <code>helpdesk:ticket-update</code> to agents viewing this specific ticket. <code>capture_update_telemetry_events()</code>: sends anonymous usage events."
+      },
+      {
+        name: "  → reply_via_agent() [@agent_only]",
+        desc: "<strong>When Alex clicks Send in the email editor.</strong> Decorated with <code>@agent_only</code> (from <code>utils.py</code>) — throws PermissionError if called by a non-agent. Creates a <code>Communication</code> record with <code>sent_or_received='Sent'</code>. Sets <code>In-Reply-To</code> header to the last communication's <code>message_id</code> (for proper email threading). Resolves the sender email account. Calls <code>frappe.sendmail()</code> — queued to Redis. Fires <code>publish_update()</code> so Sarah's browser gets the reply in real time."
+      },
+      {
+        name: "  → create_communication_via_contact()",
+        desc: "<strong>When a customer sends a reply</strong> (from portal or by replying to email). Creates a <code>Communication</code> record with <code>sent_or_received='Received'</code>. If the ticket status was 'Waiting on Customer', reopens it back to the active status. Notifies the assigned agents. Saves the status change — triggering <code>on_update()</code> which broadcasts the change to agents."
+      },
+      {
+        name: "helpdesk/helpdesk/doctype/hd_ticket/customer_edit_controller.py",
+        desc: "<strong>Customer write guard mixin.</strong> Inherited by <code>HDTicket</code>. Contains <code>prevent_customer_edits()</code>: checks if the session user is a customer, and if so, throws a PermissionError if they attempted to change any of the <code>customer_not_allowed_fields</code> (like <code>customer</code> itself, which could let customers reassign their ticket to another organization)."
+      },
+      {
+        name: "helpdesk/helpdesk/doctype/hd_service_level_agreement/hd_service_level_agreement.py",
+        desc: "<strong>SLA deadline calculator.</strong> The <code>apply(ticket)</code> method: given a ticket, reads the SLA's priority rules, reads working hours from HD Service Day, reads holidays from HD Service Holiday List. Computes exact deadline timestamps accounting for non-working time. Also handles SLA pause/resume when ticket status changes to/from 'Waiting on Customer' — storing <code>on_hold_since</code> and adding the hold time to the deadline."
+      },
+      {
+        name: "helpdesk/helpdesk/doctype/hd_team/hd_team.py",
+        desc: "<strong>Team management controller.</strong> When a team is created or updated in the UI, this controller automatically creates or updates the linked Frappe <code>Assignment Rule</code> record. This keeps the UI-level team configuration in sync with Frappe's underlying assignment engine."
+      }
+    ]
+  },
+  {
+    id: "s9",
+    num: 9,
+    layer: "db",
+    color: "#4fe086",
+    bg: "#1a3520",
+    title: "Database Write — MariaDB Persistence",
+    subtitle: "Frappe's ORM converts the Python object to SQL INSERT. Commits the transaction. Data is now permanently on disk.",
+    data: "DATA FORMAT: SQL INSERT → MariaDB row",
+    files: [
+      {
+        name: "frappe/model/document.py → Document.save() / insert()",
+        desc: "<strong>Frappe's ORM save method</strong> (framework code). Runs all the lifecycle hooks in order (the ones listed in Step 8). After all validations pass, it calls the database adapter to write the row."
+      },
+      {
+        name: "frappe/database/mariadb/database.py",
+        desc: "<strong>MariaDB database adapter.</strong> Converts the Python dict into SQL using PyPika query builder (<code>frappe.qb</code>). Executes: <code>INSERT INTO tabHD Ticket (name, subject, status, status_category, priority, raised_by, customer, sla, response_by, resolution_by, creation) VALUES ('0042', '502 Error...', 'Open', 'Open', 'Urgent', 'sarah@acme.com', 'Acme Corp', 'Enterprise-SLA', '2026-10-12 17:26', '2026-10-12 20:26', NOW())</code>. Then <code>frappe.db.commit()</code> commits the MariaDB transaction — data is now durably persisted."
+      },
+      {
+        name: "helpdesk/hooks.py → permission_query_conditions",
+        desc: "<strong>Row-level security injected into every SELECT.</strong> Registers the function <code>helpdesk.helpdesk.doctype.hd_ticket.hd_ticket.permission_query</code>. Frappe automatically appends a SQL WHERE clause to every <code>SELECT * FROM tabHD Ticket</code> query: for customers, only returns their own tickets. For agents, returns all tickets (or filtered by team if 'restrict by agent group' is enabled in HD Settings)."
+      },
+      {
+        name: "HD Settings DocType (tabHD Settings)",
+        desc: "<strong>Global configuration store.</strong> A 'Single' DocType (only one row ever exists). Stores: default ticket status, default priority, auto-assignment toggles, CSAT email settings, SLA defaults, acknowledgement email content, reply email content. Almost every system behavior can be tuned here without touching code."
+      }
+    ]
+  },
+  {
+    id: "s10",
+    num: 10,
+    layer: "hooks",
+    color: "#e0743f",
+    bg: "#2a1a14",
+    title: "hooks.py — The Master Event Registry",
+    subtitle: "This single file wires EVERYTHING together. Every event, override, scheduler job, and permission hook is registered here. Read this file first when debugging any unexpected behavior.",
+    data: "— (configuration, not data)",
+    files: [
+      {
+        name: "helpdesk/helpdesk/hooks.py",
+        desc: "<strong>The application manifest and wiring file.</strong> Every integration point with Frappe is declared here:"
+      },
+      {
+        name: "  doc_events (Event Hooks)",
+        desc: "<code>Comment.before_insert</code> → <code>extends/comment.py</code> (blocks non-agents from adding comments)<br><code>Comment.validate</code> → <code>extends/comment.py</code> (caps pinned comments at 5 per ticket)<br><code>Comment.on_trash</code> → <code>extends/comment.py</code> (cleans up notification logs when comment deleted)<br><code>Assignment Rule.validate</code> → <code>extends/assignment_rule.py</code> (validates rule config)<br><code>Assignment Rule.on_trash</code> → <code>extends/assignment_rule.py</code> (cleans up when rule deleted)<br><code>Customer.after_insert/on_update/before_rename/on_trash</code> → <code>integrations/erpnext/customer.py</code> (ERPNext sync)<br><code>User Permission.*</code> → <code>integrations/erpnext/user_permission.py</code> (permission sync)<br><code>Notification Log.before_insert</code> → <code>extends/notification_log.py</code> (filters notification types)"
+      },
+      {
+        name: "  scheduler_events (Cron Jobs)",
+        desc: "<code>all</code>: <code>helpdesk.search.build_index_if_not_exists</code> + <code>download_corpus</code> (keeps SQLite index current)<br><code>hourly_long</code>: <code>hd_ticket.update_sla_status_in_ticket</code> (scans all tickets, flags SLA breaches)<br><code>daily</code>: <code>hd_ticket.close_tickets_after_n_days</code> (auto-closes stale resolved tickets)"
+      },
+      {
+        name: "  override_doctype_class (Class Overrides)",
+        desc: "<code>Email Account</code> → <code>overrides/email_account.py</code> (CustomEmailAccount: customizes inbound email-to-ticket routing)<br><code>Assignment Rule</code> → <code>overrides/assignment_rule.py</code> (HelpdeskAssignmentRule: adds availability check + team filter)<br><code>User Invitation</code> → <code>overrides/user_invitation.py</code> (HelpdeskUserInvitation: auto-links new users to HD Customer)"
+      },
+      {
+        name: "  has_permission (Doc-Level Access Checks)",
+        desc: "Custom <code>has_permission()</code> functions registered for: <code>HD Ticket</code>, <code>HD Agent</code>, <code>HD Saved Reply</code>, <code>HD Customer</code>, <code>Comment</code>. These run when Frappe checks if a specific user can read/write a specific document row."
+      },
+      {
+        name: "  auth_hooks",
+        desc: "<code>helpdesk.auth.authenticate</code>: runs before EVERY request, before any other code."
+      }
+    ]
+  },
+  {
+    id: "s11",
+    num: 11,
+    layer: "hooks",
+    color: "#e0743f",
+    bg: "#2a1a14",
+    title: "Override & Extension Files",
+    subtitle: "These files modify or extend Frappe framework behavior without changing the Frappe source code.",
+    data: "DATA FORMAT: Python class inheritance / function hooks",
+    files: [
+      {
+        name: "helpdesk/helpdesk/extends/comment.py",
+        desc: "<strong>Comment rules extension.</strong> <code>before_insert()</code>: if it's an HD Ticket comment (not a system comment), throws PermissionError if the session user is not an agent. Customers genuinely cannot post internal notes. <code>validate()</code>: counts pinned comments on the ticket; throws if already at 5. <code>has_permission()</code>: blocks customers from reading internal 'Assignment' and 'Assignment Completed' comment types. <code>on_trash()</code>: when a comment is deleted, also cleans up any Notification Log rows that pointed to it."
+      },
+      {
+        name: "helpdesk/helpdesk/extends/assignment_rule.py",
+        desc: "<strong>Assignment Rule extension.</strong> <code>on_assignment_rule_validate()</code>: validates the assignment rule configuration when an admin saves it. <code>on_assignment_rule_trash()</code>: cleans up the HD Team's reference to this rule when the rule is deleted."
+      },
+      {
+        name: "helpdesk/helpdesk/extends/notification_log.py",
+        desc: "<strong>Notification filter.</strong> <code>before_insert()</code>: Frappe creates a Notification Log row for many events. This hook checks <code>notification_skip_email_types</code> from hooks.py (which includes 'Reaction' and 'Ticket Reopened') and prevents email-spammy notifications for those types."
+      },
+      {
+        name: "helpdesk/helpdesk/overrides/assignment_rule.py → HelpdeskAssignmentRule",
+        desc: "<strong>Smart auto-assignment.</strong> Replaces Frappe's default Assignment Rule behavior. When a ticket needs to be assigned: 1) Gets all members of the target HD Team. 2) Filters out agents who are 'Offline' or 'Busy'. 3) Applies round-robin or load-balancing among the remaining 'Online' agents. 4) Calls <code>HDTicket.assign_agent()</code> on the winner."
+      },
+      {
+        name: "helpdesk/helpdesk/overrides/email_account.py → CustomEmailAccount",
+        desc: "<strong>Inbound email routing.</strong> Overrides how Frappe processes incoming emails. When an email arrives at <code>support@yourcompany.com</code>, this class: parses the <code>In-Reply-To</code> header to find if it's a reply to an existing ticket. If yes → adds the email as a new <code>Communication</code> on the ticket and reopens it. If no → creates a new HD Ticket with the email as the description."
+      },
+      {
+        name: "helpdesk/helpdesk/overrides/realtime.py",
+        desc: "<strong>WebSocket permission check.</strong> Overrides Frappe's <code>frappe.realtime.has_permission</code>. When an agent's browser tries to join the WebSocket room for a specific ticket (<code>'open_doc:HD Ticket/0042'</code>), this function checks that the agent actually has read permission on that ticket. Prevents agents from eavesdropping on tickets outside their scope."
+      },
+      {
+        name: "helpdesk/helpdesk/overrides/user_invitation.py → HelpdeskUserInvitation",
+        desc: "<strong>Customer onboarding hook.</strong> When an HD Customer Manager invites a new user to the customer portal, and that user accepts: this override runs <code>after_accept()</code> to automatically link the new user's Contact record to the correct HD Customer organization."
+      }
+    ]
+  },
+  {
+    id: "s12",
+    num: 12,
+    layer: "bgworker",
+    color: "#7b7bdb",
+    bg: "#1a1a3a",
+    title: "Async Background Workers — Redis Queue",
+    subtitle: "Email sending, heavy computations, and bulk jobs run asynchronously so the HTTP response is not blocked.",
+    data: "DATA FORMAT: Redis job dict → rendered HTML email",
+    files: [
+      {
+        name: "Redis Queue (redis-queue:6379)",
+        desc: "<strong>Task queue.</strong> A Redis database used as a job queue. When helpdesk code calls <code>frappe.enqueue('frappe.sendmail', ...)</code>, it does NOT send the email immediately. Instead, it serializes the job parameters as a JSON dict and pushes it into the Redis list. This returns instantly, so the HTTP response to Sarah is sent right away without waiting for email delivery."
+      },
+      {
+        name: "Bench RQ Worker Process",
+        desc: "<strong>Background Python worker.</strong> A separate Python process that runs continuously alongside the web server. It polls Redis for new jobs. When it finds one, it pops it off the queue and executes it. Runs in the same Python environment as the web app, so it has full access to Frappe and Helpdesk code."
+      },
+      {
+        name: "helpdesk/helpdesk/doctype/hd_settings/helpers.py → get_default_email_content()",
+        desc: "<strong>Email template library.</strong> Returns the default Jinja2 HTML template for each email scenario: <code>'acknowledgement'</code> (new ticket receipt), <code>'reply_via_agent'</code> (wraps the agent's reply with portal link), <code>'share_feedback'</code> (CSAT rating invitation), <code>'reply_to_agents'</code> (notifies agents of customer reply). If admins have overridden the template in HD Settings, uses that instead."
+      },
+      {
+        name: "frappe.sendmail() → SMTP Server",
+        desc: "<strong>Email delivery.</strong> The background worker renders the Jinja template (substituting ticket values), and calls <code>frappe.sendmail()</code> which connects to the configured SMTP server and delivers the email. Sarah receives: 'Subject: Ticket #0042: We've received your request'."
+      }
+    ]
+  },
+  {
+    id: "s13",
+    num: 13,
+    layer: "rt",
+    color: "#c05fc0",
+    bg: "#2a1430",
+    title: "Real-time System — Redis Pub/Sub → Socket.IO → Browser",
+    subtitle: "publish_event() pushes to Redis. Node.js picks it up. WebSocket frame reaches Alex's browser in milliseconds.",
+    data: "DATA FORMAT: Python dict → Redis message → WebSocket binary frame",
+    files: [
+      {
+        name: "helpdesk/helpdesk/utils.py → publish_event()",
+        desc: "<strong>The real-time broadcast function.</strong> Called by <code>after_insert()</code>. Wraps <code>frappe.publish_realtime(event, message, room, after_commit=True)</code>. <code>after_commit=True</code> is important: it means the WebSocket message is only sent AFTER the MariaDB transaction commits — so agents never receive a notification for a ticket that failed to save. The <code>room</code> parameter scopes who receives the message: <code>'helpdesk:new-ticket'</code> goes to all agents, while <code>'open_doc:HD Ticket/0042'</code> only goes to agents currently viewing that specific ticket."
+      },
+      {
+        name: "Redis Pub/Sub (redis-socketio:6379)",
+        desc: "<strong>Message bus between Python and Node.js.</strong> A separate Redis instance (different from the job queue). Python publishes a message to a channel. Node.js has a subscriber listening on that channel. This is the bridge between the Python world and the WebSocket world."
+      },
+      {
+        name: "helpdesk/realtime/index.js (Node.js Socket.IO Server)",
+        desc: "<strong>The real-time relay server.</strong> A Node.js process that runs alongside Python. Subscribes to the Redis pub/sub channel. When a message arrives from Python: determines which Socket.IO 'room' the message belongs to, emits a WebSocket frame to all browser clients connected to that room. Uses the Socket.IO protocol which gracefully falls back from WebSocket to long-polling if needed."
+      }
+    ]
+  },
+  {
+    id: "s14",
+    num: 14,
+    layer: "fe_alex",
+    color: "#3fcce0",
+    bg: "#143040",
+    title: "Alex's Browser — Real-time Reactivity",
+    subtitle: "WebSocket frame arrives. Pinia stores update. Vue re-renders only the changed DOM nodes. Ticket #0042 appears without a page refresh.",
+    data: "DATA FORMAT: WebSocket frame → JavaScript event → Pinia state change → Vue DOM patch",
+    files: [
+      {
+        name: "desk/src/socket.ts → socket (singleton)",
+        desc: "<strong>The Socket.IO client connection.</strong> Already connected and listening since Alex opened the app. Receives the <code>'helpdesk:new-ticket'</code> event frame from the Node.js server. Dispatches it to all registered listeners."
+      },
+      {
+        name: "desk/src/stores/globalStore.ts",
+        desc: "<strong>Shared socket reference.</strong> Holds the <code>$socket</code> instance that all Pinia stores import from. Prevents every store from creating its own connection."
+      },
+      {
+        name: "desk/src/stores/notification.ts → useNotificationStore",
+        desc: "<strong>Notification bell state.</strong> Listens to socket events. On <code>'helpdesk:new-ticket'</code>: increments <code>unread</code> count (the number badge on the bell). <code>routeFor(notification)</code>: when Alex clicks a notification, constructs the correct Vue Router link — for comment notifications, includes the <code>?highlight=comment-XXX</code> query to scroll and highlight that specific comment."
+      },
+      {
+        name: "desk/src/stores/docTickets.ts → getTicketListResource()",
+        desc: "<strong>Ticket list data layer.</strong> Uses <code>createListResource</code> from frappe-ui to maintain the ticket list. On socket event: calls <code>ticketsListResource.reload()</code> which fires a new HTTP GET to <code>helpdesk.api.doc.get_list_data</code> and updates the reactive data. Also maintains <code>ticketsCountResource</code> for the accurate total count (accounting for permissions and filters)."
+      },
+      {
+        name: "desk/src/stores/sla.ts → useSlaStore",
+        desc: "<strong>SLA countdown engine.</strong> After the ticket list updates and includes the new ticket's <code>response_by</code> timestamp: computes <code>'Response due in 59m'</code>. Drives the colored countdown pill. Sets up a <code>setInterval</code> that refreshes every 60 seconds automatically so countdowns tick in real time."
+      },
+      {
+        name: "desk/src/stores/agentStatus.ts → useAgentStatusStore",
+        desc: "<strong>Agent presence management.</strong> Manages Alex's Online/Busy/Offline availability toggle in the UI. When changed: calls the HD Agent API to persist the new status. This status is read by the auto-assignment engine (<code>overrides/assignment_rule.py</code>) when routing new tickets."
+      },
+      {
+        name: "desk/src/pages/home/Home.vue",
+        desc: "<strong>The dashboard page you see in the screenshot.</strong> Composed of: SLA Alerts table (open tickets near or past deadline), My Tickets count card, Avg. First Response metric, Avg. Resolution metric, My Recent Activity feed, Avg. Time Metrics chart (line chart from <code>api/dashboard.py</code>), Reviews/CSAT bar chart. All data is fetched via <code>createResource</code> calls and re-renders when Pinia store state changes."
+      },
+      {
+        name: "desk/src/pages/ticket/Tickets.vue",
+        desc: "<strong>The main ticket list page.</strong> Uses <code>ListViewBuilder.vue</code> for the table. Supports: column sorting, drag-to-resize columns, row click navigation, bulk actions (assign, close, delete multiple), filter panel, sort controls, group-by field. Fetches data from <code>helpdesk.api.doc.get_list_data</code>."
+      },
+      {
+        name: "desk/src/components/ListViewBuilder.vue",
+        desc: "<strong>Reusable data table component.</strong> Powers ticket list, customer list, contact list, KB article list. Renders columns generically using field type definitions from the backend. Handles virtual scrolling for large lists."
+      }
+    ]
+  },
+  {
+    id: "s15",
+    num: 15,
+    layer: "fe_alex",
+    color: "#3fcce0",
+    bg: "#143040",
+    title: "Alex Opens the Ticket & Replies",
+    subtitle: "Agent views the full ticket detail. Writes a reply using the rich-text email editor. Reply triggers another full mini-pipeline.",
+    data: "DATA FORMAT: Rich HTML → JSON → Python → SMTP email → Sarah's inbox",
+    files: [
+      {
+        name: "desk/src/pages/ticket/TicketAgent.vue",
+        desc: "<strong>Agent ticket detail page.</strong> Split-pane layout: left side = conversation thread, right side = metadata sidebar. Loads ticket via <code>createDocumentResource({ doctype: 'HD Ticket', name: '0042', auto: true })</code>. When the ticket data loads, joins the WebSocket room <code>'open_doc:HD Ticket/0042'</code> so live updates (other agents viewing, new comments) arrive without polling."
+      },
+      {
+        name: "desk/src/pages/ticket/TicketConversation.vue",
+        desc: "<strong>The chronological conversation thread.</strong> Renders: customer emails (received), agent replies (sent), internal agent notes (yellow background, hidden from customers), system activity logs (assigned to X, status changed to Y). Uses Frappe's ActivityTimeline component supplemented by <code>helpdesk.api.timeline.get_comment_extras()</code> for reactions and attachments."
+      },
+      {
+        name: "desk/src/pages/ticket/TicketCustomer.vue",
+        desc: "<strong>Customer-facing ticket detail.</strong> Simpler view: only shows the customer's own messages and agent public replies. Hides internal notes. Uses <code>TicketCustomerTemplateFields.vue</code> to show only the fields that <code>ticket_fields.py</code> permits the customer to see."
+      },
+      {
+        name: "desk/src/components/EmailEditor.vue",
+        desc: "<strong>The reply composer.</strong> Rich WYSIWYG editor using TipTap (configured in <code>tiptap-extensions.ts</code>). Features: CC/BCC fields (<code>EmailMultiSelect.vue</code>), file attachments (<code>AttachmentList.vue</code>), saved replies picker (<code>SavedRepliesSelectorModal.vue</code>), 'From' email account selector, send button. On send: calls <code>ticket.reply_via_agent()</code> via <code>createResource</code>."
+      },
+      {
+        name: "desk/src/components/SavedRepliesSelectorModal.vue",
+        desc: "<strong>Canned response modal.</strong> Search UI for finding saved replies. Calls <code>helpdesk.api.saved_replies</code> to fetch templates. When a reply is selected, inserts its Jinja-rendered text into the email editor."
+      },
+      {
+        name: "desk/src/components/ticket-agent/ (directory)",
+        desc: "<strong>Agent sidebar sub-components.</strong> The right metadata panel is composed of: ticket priority/type/status selectors, SLA countdown display, agent assignment picker, team assignment picker, customer profile card with contact details, tag manager, linked article suggestions."
+      },
+      {
+        name: "desk/src/tiptap-extensions.ts",
+        desc: "<strong>Rich text editor configuration.</strong> Configures TipTap editor extensions: @mention support (for tagging agents in internal notes), image paste handling, email-safe HTML output, code blocks, bullet lists, emoji picker, character count."
+      },
+      {
+        name: "desk/src/components/CommunicationArea.vue",
+        desc: "<strong>Email display component.</strong> Renders a single <code>Communication</code> record in the thread. Shows sender avatar, timestamp, formatted email body, inline images, attachment chips. Has reply/forward button."
+      }
+    ]
+  },
+  {
+    id: "s16",
+    num: 16,
+    layer: "bgworker",
+    color: "#7b7bdb",
+    bg: "#1a1a3a",
+    title: "Scheduled Background Jobs — Automated Maintenance",
+    subtitle: "These Python functions run automatically on a timer. No user action needed. They keep tickets in the right state and indexes fresh.",
+    data: "DATA FORMAT: Periodic → SQL UPDATE queries",
+    files: [
+      {
+        name: "HOURLY: update_sla_status_in_ticket()",
+        desc: "<strong>SLA breach detector.</strong> Registered in <code>hooks.py</code> under <code>scheduler_events.hourly_long</code>. Queries all 'Open' tickets with an active SLA. For each: compares the current timestamp against <code>response_by</code> (first response deadline) and <code>resolution_by</code> (resolution deadline). If either has passed without being met: sets <code>agreement_status = 'Failed'</code>. This makes the ticket appear in the SLA Alerts table on Alex's dashboard with a red indicator."
+      },
+      {
+        name: "DAILY: close_tickets_after_n_days()",
+        desc: "<strong>Auto-closer.</strong> Registered in <code>hooks.py</code> under <code>scheduler_events.daily</code>. Finds tickets in 'Resolved' status where the customer has not replied for N days (N is configured in HD Settings). Changes their status to 'Closed'. Prevents the resolved queue from filling up indefinitely."
+      },
+      {
+        name: "ALL (every few min): build_index_if_not_exists()",
+        desc: "<strong>Search index maintenance.</strong> Checks if the SQLite full-text search index exists and is populated. If the index is empty or missing (e.g., after a fresh install), triggers <code>build_index_in_background()</code> which reads all published HD Article records from MariaDB and inserts their title + body text into the SQLite FTS5 table."
+      },
+      {
+        name: "helpdesk/helpdesk/search.py + search_sqlite.py",
+        desc: "<strong>Full-text search infrastructure.</strong> <code>search.py</code>: coordinates building and downloading the search corpus. <code>search_sqlite.py → HelpdeskSearch</code>: manages the SQLite FTS5 database file. Why SQLite? MariaDB's <code>LIKE '%query%'</code> is extremely slow on thousands of long articles. SQLite FTS5 is orders of magnitude faster for keyword search."
+      }
+    ]
+  },
+  {
+    id: "s17",
+    num: 17,
+    layer: "hooks",
+    color: "#e0743f",
+    bg: "#2a1a14",
+    title: "ERPNext Integration (Optional Sync Layer)",
+    subtitle: "When ERPNext is also installed, customer and contact data syncs bidirectionally between ERPNext and Helpdesk.",
+    data: "DATA FORMAT: ERPNext Customer doc → HD Customer doc (mirror)",
+    files: [
+      {
+        name: "helpdesk/helpdesk/integrations/erpnext/customer.py",
+        desc: "<strong>ERPNext Customer mirror.</strong> Registered as a doc_event hook in <code>hooks.py</code>. Fires whenever an ERPNext <code>Customer</code> record is created, updated, renamed, or deleted. Mirrors these changes to the corresponding <code>HD Customer</code> record in Helpdesk. This means: create a customer in ERPNext → it automatically appears in Helpdesk with the same name, linked contacts, and customer group."
+      },
+      {
+        name: "helpdesk/helpdesk/integrations/erpnext/user_permission.py",
+        desc: "<strong>ERPNext permission sync.</strong> When a User Permission is created or changed in ERPNext (e.g., 'This user can only see Customer: Acme Corp'), this hook syncs those restrictions to Helpdesk's DocShare records. Ensures customer portal users only see their own organization's tickets, even if permissions are managed in ERPNext."
+      },
+      {
+        name: "helpdesk/helpdesk/integrations/erpnext/mirror_sync.py",
+        desc: "<strong>Bulk synchronization.</strong> Used for initial setup or batch reconciliation. Reads all ERPNext customers in bulk and creates/updates the corresponding HD Customer records. Handles field mapping and conflict resolution."
+      },
+      {
+        name: "helpdesk/helpdesk/doctype/erpnext_hd_settings/",
+        desc: "<strong>ERPNext integration settings DocType.</strong> Provides an admin UI form for configuring: whether ERPNext sync is enabled, which ERPNext site to connect to, field mapping overrides. Stored as a single settings document in MariaDB."
+      }
+    ]
+  },
+  {
+    id: "s18",
+    num: 18,
+    layer: "fe_alex",
+    color: "#3fcce0",
+    bg: "#143040",
+    title: "Knowledge Base — Deflection Before Ticket Creation",
+    subtitle: "As Sarah types her ticket subject, the frontend searches the KB. If she finds an answer, no ticket is created.",
+    data: "DATA FORMAT: Search string → SQLite FTS query → ranked results JSON",
+    files: [
+      {
+        name: "desk/src/pages/knowledge-base/KnowledgeBaseCustomer.vue",
+        desc: "<strong>Customer KB homepage.</strong> Shows the article categories grid. Search bar at the top. As Sarah types, fires debounced requests to the search API. Results appear as article suggestions — if Sarah clicks one and finds her answer, she doesn't need to submit a ticket."
+      },
+      {
+        name: "desk/src/pages/knowledge-base/KnowledgeBaseAgent.vue",
+        desc: "<strong>Agent KB management page.</strong> Lists all articles with publish/draft status. Allows creating new articles, organizing categories, and bulk-publishing. Agents use this to build the self-service library."
+      },
+      {
+        name: "desk/src/pages/knowledge-base/Article.vue",
+        desc: "<strong>Article reader page.</strong> Renders the article HTML body. Shows breadcrumb navigation. Thumbs up/down buttons submit to <code>HD Article Feedback</code>. View count increments on every load."
+      },
+      {
+        name: "helpdesk/helpdesk/api/knowledge_base.py",
+        desc: "<strong>KB data API.</strong> <code>get_categories()</code>: returns the category tree. <code>get_articles(category)</code>: returns articles in a category. <code>vote_article(article, vote)</code>: saves the helpful/not-helpful vote to <code>HD Article Feedback</code>."
+      },
+      {
+        name: "helpdesk/helpdesk/api/search.py",
+        desc: "<strong>Search coordinator.</strong> Receives query string. Looks up synonyms in <code>HD Synonym</code> records to expand the query (e.g., 'gateway' also searches 'payment processor'). Removes noise words in <code>HD Stopword</code> records (e.g., 'the', 'is'). Calls SQLite FTS5 search. Returns ranked results."
+      }
+    ]
+  }
+];
+
+// ── LAYER COLOR MAP ──────────────────────────────────────────────────────────
+const LAYER_COLORS = {
+  browser: "#4fa3e0",
+  net: "#3fb58a",
+  wsgi: "#9b6fdb",
+  auth: "#e05c8a",
+  api: "#e09b3f",
+  ctrl: "#3fb8e0",
+  db: "#4fe086",
+  hooks: "#e0743f",
+  bgworker: "#7b7bdb",
+  rt: "#c05fc0",
+  fe_alex: "#3fcce0",
+  sched: "#e0b83f"
+};
+
+// ── RENDER ───────────────────────────────────────────────────────────────────
+const pipeline = document.getElementById('pipeline');
+
+STEPS.forEach((step, index) => {
+  const color = step.color;
+  const bg = step.bg;
+
+  // connector before (not for first)
+  if (index > 0) {
+    const prevColor = STEPS[index - 1].color;
+    const conn = document.createElement('div');
+    conn.className = 'connector';
+    conn.style.setProperty('--from-color', prevColor);
+    conn.style.setProperty('--to-color', color);
+    conn.innerHTML = `<div class="line"></div><div class="arrow"></div>`;
+    pipeline.appendChild(conn);
+  }
+
+  const card = document.createElement('div');
+  card.className = 'step';
+  card.id = step.id;
+  card.style.background = bg;
+  card.style.borderColor = color + '44';
+
+  const filesHTML = step.files.map(f => `
+    <div class="file-entry">
+      <div class="file-name">${escapeHtml(f.name)}</div>
+      <div class="file-desc">${f.desc}</div>
+    </div>
+  `).join('');
+
+  const dataBadge = step.data && step.data !== '—'
+    ? `<div class="data-badge">📦 ${escapeHtml(step.data)}</div>`
+    : '';
+
+  card.innerHTML = `
+    <div class="step-header" onclick="toggleStep('${step.id}')">
+      <div class="step-num" style="color:${color}; border-color:${color}">${step.num}</div>
+      <div class="step-title">
+        <h2 style="color:${color}">${escapeHtml(step.title)}</h2>
+        <p>${escapeHtml(step.subtitle)}</p>
+      </div>
+      <div class="step-expand-btn">▾</div>
+    </div>
+    <div class="step-body">
+      ${dataBadge}
+      <div class="file-list">${filesHTML}</div>
+    </div>
+  `;
+
+  pipeline.appendChild(card);
+});
+
+function escapeHtml(str) {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function toggleStep(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+}
+
+// ── EXPAND / COLLAPSE ALL ────────────────────────────────────────────────────
+document.getElementById('btn-expand-all').addEventListener('click', () => {
+  document.querySelectorAll('.step').forEach(el => el.classList.add('open'));
+});
+document.getElementById('btn-collapse-all').addEventListener('click', () => {
+  document.querySelectorAll('.step').forEach(el => el.classList.remove('open'));
+});
+
+// ── SEARCH ───────────────────────────────────────────────────────────────────
+document.getElementById('search-box').addEventListener('input', function () {
+  const query = this.value.trim().toLowerCase();
+  const steps = document.querySelectorAll('.step');
+
+  if (!query) {
+    steps.forEach(el => {
+      el.classList.remove('dim', 'highlight');
+    });
+    document.querySelectorAll('.connector').forEach(el => el.style.opacity = '1');
+    return;
+  }
+
+  steps.forEach(el => {
+    const text = el.innerText.toLowerCase();
+    if (text.includes(query)) {
+      el.classList.remove('dim');
+      el.classList.add('highlight', 'open');
+    } else {
+      el.classList.remove('highlight');
+      el.classList.add('dim');
+    }
+  });
+  document.querySelectorAll('.connector').forEach(el => el.style.opacity = '0.2');
+});
+
+// ── PAN & ZOOM ───────────────────────────────────────────────────────────────
+const canvasWrap = document.getElementById('canvas-wrap');
+const canvas = document.getElementById('canvas');
+
+let scale = 1;
+let originX = 60;
+let originY = 20;
+let isDragging = false;
+let lastX = 0, lastY = 0;
+
+function applyTransform() {
+  canvas.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
+  document.getElementById('zoom-label').textContent = Math.round(scale * 100) + '%';
+}
+applyTransform();
+
+canvasWrap.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const rect = canvasWrap.getBoundingClientRect();
+  const mouseX = e.clientX - rect.left;
+  const mouseY = e.clientY - rect.top;
+
+  const prevScale = scale;
+  const delta = e.deltaY > 0 ? 0.9 : 1.1;
+  scale = Math.min(Math.max(scale * delta, 0.15), 3);
+
+  originX = mouseX - (mouseX - originX) * (scale / prevScale);
+  originY = mouseY - (mouseY - originY) * (scale / prevScale);
+  applyTransform();
+}, { passive: false });
+
+canvasWrap.addEventListener('mousedown', (e) => {
+  if (e.button !== 0) return;
+  isDragging = true;
+  lastX = e.clientX;
+  lastY = e.clientY;
+});
+
+window.addEventListener('mousemove', (e) => {
+  if (!isDragging) return;
+  originX += e.clientX - lastX;
+  originY += e.clientY - lastY;
+  lastX = e.clientX;
+  lastY = e.clientY;
+  applyTransform();
+});
+
+window.addEventListener('mouseup', () => { isDragging = false; });
+
+document.getElementById('btn-in').addEventListener('click', () => {
+  const cx = canvasWrap.clientWidth / 2;
+  const cy = canvasWrap.clientHeight / 2;
+  const prev = scale;
+  scale = Math.min(scale * 1.2, 3);
+  originX = cx - (cx - originX) * (scale / prev);
+  originY = cy - (cy - originY) * (scale / prev);
+  applyTransform();
+});
+
+document.getElementById('btn-out').addEventListener('click', () => {
+  const cx = canvasWrap.clientWidth / 2;
+  const cy = canvasWrap.clientHeight / 2;
+  const prev = scale;
+  scale = Math.max(scale / 1.2, 0.15);
+  originX = cx - (cx - originX) * (scale / prev);
+  originY = cy - (cy - originY) * (scale / prev);
+  applyTransform();
+});
+
+document.getElementById('btn-reset').addEventListener('click', () => {
+  scale = 0.6;
+  originX = (canvasWrap.clientWidth - 1100 * scale) / 2;
+  originY = 20;
+  applyTransform();
+});
+
+// Auto-fit on load
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    scale = 0.55;
+    originX = (canvasWrap.clientWidth - 1100 * scale) / 2;
+    originY = 20;
+    applyTransform();
+  }, 50);
+});
+</script>
+</body>
+</html>
