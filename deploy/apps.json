@@ -1,0 +1,31 @@
+[
+  {
+    "name": "payments",
+    "url": "https://github.com/frappe/payments",
+    "branch": "version-16",
+    "commit": "cca07d9f9392e2ea0e521c5975151db9e4b6c321"
+  },
+  {
+    "name": "erpnext",
+    "url": "https://github.com/frappe/erpnext",
+    "branch": "v16.52.1",
+    "commit": "ade850bbd6a7412e9994a9637d2c5c713771632a"
+  },
+  {
+    "name": "telephony",
+    "url": "https://github.com/frappe/telephony",
+    "branch": "develop",
+    "commit": "9447577500a25d242088398157b72c654fa34b20"
+  },
+  {
+    "name": "helpdesk",
+    "url": "https://github.com/Sriainfotech/Frappe-Help-Desk",
+    "branch": "feature/nxerp-login-page",
+    "commit": "1c6981cc515af58b8cdfbad7a7525b33236e399b"
+  },
+  {
+    "name": "nxerp",
+    "url": "https://github.com/Sria-Infotech-Pvt-Ltd/NxERP",
+    "branch": "main"
+  }
+]

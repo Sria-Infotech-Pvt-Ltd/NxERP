@@ -1,0 +1,38 @@
+# Secrets and local environment: never commit
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.sqlite
+*.sql.gz
+deploy/dev/.env
+deploy/dev/.no-helpdesk/
+
+# Byte-compiled / Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Node
+node_modules/
+*.log
+
+# Frappe / bench artefacts
+sites/
+*.pyc
+nxerp/public/dist/
+nxerp/public/node_modules/
+
+# Editors / OS
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+Thumbs.db

@@ -1,0 +1,66 @@
+name: nxerp-dev
+
+# Local development stack. Started by deploy/dev/up.sh (which supplies both env files).
+# Host ports are 8100 (web) and 9100 (realtime) so they never clash with other Frappe stacks.
+
+services:
+  mariadb:
+    image: ${MARIADB_IMAGE}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --skip-character-set-client-handshake
+    environment:
+      MARIADB_ROOT_PASSWORD: ${NXERP_DB_ROOT_PASSWORD:?run deploy/dev/up.sh to create deploy/dev/.env}
+      MARIADB_AUTO_UPGRADE: 1
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  redis-cache:
+    image: ${REDIS_IMAGE}
+
+  redis-queue:
+    image: ${REDIS_IMAGE}
+
+  bench:
+    image: ${BENCH_IMAGE}
+    command: bash /workspace/deploy/dev/bootstrap.sh
+    environment:
+      SHELL: /bin/bash
+      FRAPPE_REPO: ${FRAPPE_REPO}
+      FRAPPE_REF: ${FRAPPE_REF}
+      FRAPPE_COMMIT: ${FRAPPE_COMMIT}
+      NXERP_SITE: ${NXERP_SITE:-nxerp.localhost}
+      NXERP_DB_ROOT_PASSWORD: ${NXERP_DB_ROOT_PASSWORD}
+      NXERP_ADMIN_PASSWORD: ${NXERP_ADMIN_PASSWORD:?run deploy/dev/up.sh to create deploy/dev/.env}
+      # Dev-only: install the NxERP app from this checkout (soft link) instead of cloning it.
+      NXERP_SRC: /workspace
+      # Dev: install Helpdesk from the sibling ../helpdesk checkout (branch HELPDESK_REF) instead of the pinned fork commit
+      HELPDESK_SRC: /helpdesk-src
+      HELPDESK_REF: ${HELPDESK_REF:-}
+    working_dir: /home/frappe
+    volumes:
+      - ../..:/workspace:cached
+      - ${HELPDESK_HOST_PATH:-./.no-helpdesk}:/helpdesk-src:ro
+      - bench-data:/home/frappe/frappe-bench
+      - vendor-data:/home/frappe/vendor
+    ports:
+      - "8100:8000"
+      - "9100:9000"
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      redis-cache:
+        condition: service_started
+      redis-queue:
+        condition: service_started
+
+volumes:
+  mariadb-data:
+  bench-data:
+  vendor-data:

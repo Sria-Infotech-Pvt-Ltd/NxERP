@@ -1,0 +1,76 @@
+name: CI
+
+# STATUS: this workflow has NOT been run on GitHub yet (it was authored in Phase 1 from a
+# local checkout). Its steps were exercised locally where noted in docs/audit/bootstrap-evidence.md.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint (pre-commit)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - run: pip install pre-commit
+      - run: pre-commit run --all-files --show-diff-on-failure
+
+  pins:
+    name: Validate version pins and architecture rules
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -I deploy/check_pins.py
+      - run: python3 -I tools/check_architecture.py
+
+  install-smoke:
+    name: Install smoke (frappe + erpnext + helpdesk + nxerp)
+    runs-on: ubuntu-latest
+    needs: [lint, pins]
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bring up the dev platform
+        run: ./deploy/dev/up.sh -d
+      - name: Wait for bootstrap
+        run: |
+          for i in $(seq 1 240); do
+            if docker compose -p nxerp-dev logs bench 2>&1 | grep -q '\[bootstrap\] ready:'; then
+              echo "bootstrap finished"; exit 0
+            fi
+            if [ "$(docker inspect -f '{{.State.Running}}' nxerp-dev-bench-1)" != "true" ]; then
+              echo "bench container stopped before it was ready"; docker compose -p nxerp-dev logs --tail 200 bench; exit 1
+            fi
+            sleep 15
+          done
+          echo "timed out waiting for bootstrap"; docker compose -p nxerp-dev logs --tail 200 bench; exit 1
+      - name: Installed apps
+        run: docker compose -p nxerp-dev exec -T bench bash -lc 'cd frappe-bench && bench --site nxerp.localhost list-apps'
+      - name: Site answers
+        run: |
+          curl -fsS http://localhost:8100/api/method/ping
+          curl -fsS -o /dev/null -w 'login: %{http_code}\n' http://localhost:8100/login
+          curl -fsS -o /dev/null -w 'helpdesk: %{http_code}\n' http://localhost:8100/helpdesk
+      - name: nxerp tests
+        run: docker compose -p nxerp-dev exec -T bench bash -lc 'cd frappe-bench && bench --site nxerp.localhost run-tests --app nxerp'
+      - name: Logs on failure
+        if: failure()
+        run: docker compose -p nxerp-dev logs --tail 300 bench
