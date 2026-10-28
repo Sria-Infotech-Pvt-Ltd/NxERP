@@ -35,7 +35,7 @@ type(scope)!: summary                    breaking change; explain it in the body
   1 approval (2 once the team can support it). Author never approves their own PR; an AI assistant's PR needs a human approval.
 - Changes that need an ADR in the same PR: version pins (`deploy/versions.env`, `deploy/apps.json` -> ADR-002), access rules
   (ADR-003), routes (ADR-004), architecture rules (ADR-005), dev/deploy topology (ADR-006).
-- Sensitive paths (see `CODEOWNERS`): `nxerp/{enforcement,access,guard,routing}.py`, `nxerp/www/login.*`, `nxerp/patches/`, `deploy/`,
+- Sensitive paths (see `CODEOWNERS`): `nxerp/{enforcement,access,guard,routing}.py`, `apps/nxerp_platform/nxerp/www/login.*`, `apps/nxerp_platform/nxerp/patches/`, `deploy/`,
   `.github/`, `docs/governance/`, `e2e/`. Security owners review them. Reviewers check the server-side enforcement, not the UI.
 
 ## Review rules
@@ -56,4 +56,4 @@ type(scope)!: summary                    breaking change; explain it in the body
 ## Releases
 
 Tag `vX.Y.Z` from `main` after `ci-gate` is green on that commit; `-rc.N` tags are release candidates (staging). The tag must equal
-`nxerp/__init__.py` `__version__`. Process: [docs/runbooks/release.md](../runbooks/release.md).
+`apps/nxerp_platform/nxerp/__init__.py` `__version__`. Process: [docs/runbooks/release.md](../runbooks/release.md).

@@ -29,7 +29,7 @@ Rules for every contributor and every AI assistant working in this repository.
 
 - Apps never import each other. The platform resolves apps through hooks and registries (ADR-005).
 - `nxerp` declares no `required_apps`.
-- Platform code goes in `nxerp/`; app-specific code stays in that app's repo.
+- Platform code goes in `apps/nxerp_platform/nxerp/`; app-specific code stays in that app's repo.
 - Every patch is idempotent and listed in `patches.txt`; fixtures and migrations are versioned.
 - Version pins live in `deploy/versions.env` and `deploy/apps.json`; changing one needs an ADR-002 update.
 

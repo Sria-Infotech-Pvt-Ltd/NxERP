@@ -46,9 +46,9 @@ jobs:
           set -euo pipefail
           version="${TAG#v}"
           base="${version%%-*}"
-          code=$(python3 -I -c 'import re; print(re.search(r"__version__ = \"([^\"]+)\"", open("nxerp/__init__.py").read()).group(1))')
+          code=$(python3 -I -c 'import re; print(re.search(r"__version__ = \"([^\"]+)\"", open("apps/nxerp_platform/nxerp/__init__.py").read()).group(1))')
           if [ "$base" != "$code" ]; then
-            echo "::error::tag $TAG does not match nxerp/__init__.py __version__ $code (bump it in a PR first)"; exit 1
+            echo "::error::tag $TAG does not match apps/nxerp_platform/nxerp/__init__.py __version__ $code (bump it in a PR first)"; exit 1
           fi
           # fetch-depth: 0 above already brought origin/main (credentials are not persisted, so no second fetch)
           if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then

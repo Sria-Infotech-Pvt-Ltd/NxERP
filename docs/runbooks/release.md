@@ -6,7 +6,7 @@ has never been fully built (only `docker buildx build --check` passed), nothing 
 
 ## Versioning
 
-`vMAJOR.MINOR.PATCH` for releases, `vMAJOR.MINOR.PATCH-rc.N` for release candidates. The tag must equal `nxerp/__init__.py`
+`vMAJOR.MINOR.PATCH` for releases, `vMAJOR.MINOR.PATCH-rc.N` for release candidates. The tag must equal `apps/nxerp_platform/nxerp/__init__.py`
 `__version__` (without `v` and `-rc.N`); `release.yml` refuses otherwise. A release pins upstream exactly as `deploy/versions.env` and
 `deploy/apps.json` say at that commit (ADR-002), so a tag is reproducible except for Python dependencies below the Frappe layer
 (Frappe does not lock them: see `upstream-security-update.md`).

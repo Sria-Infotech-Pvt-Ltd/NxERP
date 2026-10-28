@@ -21,9 +21,9 @@ On Linux and macOS use `python3` where this page says `python`.
 | Layer | What it proves | Needs the dev stack? | Where |
 | --- | --- | --- | --- |
 | 1. Static checks | formatting, lint, security patterns, pins, architecture rules | no (host or CI) | `ruff`, `bandit`, `deploy/check_pins.py`, `tools/check_architecture.py`, pre-commit |
-| 2. Plain Python tests | the architecture checker catches violations | no | `nxerp/tests/test_architecture.py` |
-| 3. Integration tests (in process) | registry, resolver, gate decisions, routing and redirect safety, guard, grant migration, the add-an-app checklist | yes: a Frappe site | `nxerp/tests/test_*.py` (`IntegrationTestCase`) |
-| 4. Persona x surface matrix | who is allowed or refused on each enforcement surface, over real HTTP | yes | `nxerp/tests/test_access_matrix.py`, `world.py`; writes `docs/security/phase2-matrix.md` |
+| 2. Plain Python tests | the architecture checker catches violations | no | `apps/nxerp_platform/nxerp/tests/test_architecture.py` |
+| 3. Integration tests (in process) | registry, resolver, gate decisions, routing and redirect safety, guard, grant migration, the add-an-app checklist | yes: a Frappe site | `apps/nxerp_platform/nxerp/tests/test_*.py` (`IntegrationTestCase`) |
+| 4. Persona x surface matrix | who is allowed or refused on each enforcement surface, over real HTTP | yes | `apps/nxerp_platform/nxerp/tests/test_access_matrix.py`, `world.py`; writes `docs/security/phase2-matrix.md` |
 | 5. HTTP tests | real `/login`, `/nxerp/go`, `/nxerp/apps`, tile overrides, kill-switch, test-only third app, customer leaks | yes | `test_unified_experience.py`, `test_customer_leaks.py` |
 | 6. Browser (Playwright) | the real login form, redirects, launcher, special flows, accessibility basics, recovery runbook, first-run wizard | yes, plus a **separate fresh site** | `e2e/` |
 | 7. Upstream regression | Helpdesk's own suite still passes with the access layer active | yes | `bench ... run-tests --app helpdesk` |
@@ -38,7 +38,7 @@ python -I deploy/check_pins.py            # pins are exact, nxerp is last
 python -I tools/check_architecture.py     # architecture rules, see below
 pre-commit run --all-files                # ruff, ruff-format, bandit, shellcheck, gitleaks, file hygiene
 ruff check . && ruff format --check .     # what pre-commit runs for Python
-bandit -r nxerp -x nxerp/tests -q && bandit -r nxerp/tests -s B101,B105,B106,B311 -q
+bandit -r nxerp -x apps/nxerp_platform/nxerp/tests -q && bandit -r apps/nxerp_platform/nxerp/tests -s B101,B105,B106,B311 -q
 ```
 
 `tools/check_architecture.py` (stdlib only) fails when: `nxerp` imports another Frappe app in any form (import, from, `importlib.import_module("x")`, `__import__("x")`;

@@ -24,7 +24,7 @@ alerting or on-call rota exists, and the contacts below are placeholders for the
    - Bad release: roll back (`rollback.md`).
    - Credential suspected leaked: rotate it now (see below), then investigate.
 4. **Preserve evidence**: take a backup (`backup.sh`), copy the web/worker logs (`docker compose logs --since 2h > incident-<date>.log`),
-   Frappe's `Access Log`/`Error Log` records, and the platform denial log (`nxerp/audit.py`). Do not delete anything.
+   Frappe's `Access Log`/`Error Log` records, and the platform denial log (`apps/nxerp_platform/nxerp/audit.py`). Do not delete anything.
 
 ## Diagnose
 

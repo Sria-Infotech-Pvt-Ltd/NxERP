@@ -42,7 +42,7 @@ repos:
     hooks:
       - id: bandit
         args: ["-q", "-s", "B101,B105,B106,B311"]
-        files: ^nxerp/
+        files: ^apps/nxerp_platform/nxerp/
 
   - repo: https://github.com/koalaman/shellcheck-precommit
     rev: v0.10.0
@@ -57,7 +57,7 @@ repos:
         entry: python -I tools/check_architecture.py
         language: python
         pass_filenames: false
-        files: ^nxerp/
+        files: ^apps/nxerp_platform/nxerp/
 
 ci:
   autoupdate_schedule: weekly

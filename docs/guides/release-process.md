@@ -4,7 +4,7 @@ How a change becomes a release, conceptually. The step-by-step operator procedur
 [`../runbooks/release.md`](../runbooks/release.md) (cutting a release) and [`../runbooks/deploy.md`](../runbooks/deploy.md) (deploying and rolling back).
 Read this page for the model and the rules; read the runbooks to do the work.
 
-**Status, stated plainly (FACT as of 2026-10-28):** no release has ever been cut. The repository has no tags and no changelog, `nxerp/__init__.py` says
+**Status, stated plainly (FACT as of 2026-10-28):** no release has ever been cut. The repository has no tags and no changelog, `apps/nxerp_platform/nxerp/__init__.py` says
 `0.0.1`, nothing has been pushed (the remote has only `main`'s initial commit), CI has never run on GitHub, and nothing has been deployed anywhere. Everything
 below marked DECISION is a proposal for the owner to ratify; nothing marked so is already in force.
 
@@ -20,7 +20,7 @@ reproduces the same product. The Helpdesk fork is released by pinning a commit t
   - MAJOR: a change that needs operator action or breaks a contract (a Frappe major upgrade, a changed grant model, a removed route).
   - MINOR: new capability or a registered app, backward compatible; a pin bump of a minor upstream version.
   - PATCH: fixes and upstream security patches with no behaviour change.
-- The `nxerp` app version in `nxerp/__init__.py` is bumped to match the release in the release PR. Upstream versions are recorded in the release notes, not invented: they come from the pins.
+- The `nxerp` app version in `apps/nxerp_platform/nxerp/__init__.py` is bumped to match the release in the release PR. Upstream versions are recorded in the release notes, not invented: they come from the pins.
 - A change to a version pin, an access rule, a route or an architecture rule carries its ADR (or amendment) in the same PR, so the release notes can cite it.
 - A Frappe major upgrade (for example 17) is a new ADR and never a patch release (ADR-002).
 
@@ -55,7 +55,7 @@ It also lists the exact pins (copy of `deploy/versions.env` and `deploy/apps.jso
 - [ ] `python -I deploy/check_pins.py` and `python -I tools/check_architecture.py --app-path helpdesk=<path>` pass.
 - [ ] All pins are exact commits that exist on a remote; the Helpdesk fork commit is pushed.
 - [ ] ADRs and docs match the code ([`../README.md`](../README.md)); `docs/PROGRESS.md` is current.
-- [ ] `nxerp/__init__.py` version bumped; `CHANGELOG.md` section written, including upgrade notes and what is not verified.
+- [ ] `apps/nxerp_platform/nxerp/__init__.py` version bumped; `CHANGELOG.md` section written, including upgrade notes and what is not verified.
 - [ ] A fresh build from empty volumes works and the RC passed staging verification.
 - [ ] A backup and a restore were rehearsed; the previous tag is known and its pins redeployable.
 - [ ] Owners and approvers named in [`../governance/ownership.md`](../governance/ownership.md) have signed off; open items for the owner ([`../governance/owner-action-list.md`](../governance/owner-action-list.md)) that block the release are resolved.

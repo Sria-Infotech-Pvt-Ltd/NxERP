@@ -7,7 +7,7 @@
 #
 # Environment (all optional):
 #   NXERP_IMAGE     image name, default ghcr.io/sria-infotech-pvt-ltd/nxerp   (placeholder registry: see docs/runbooks/release.md)
-#   NXERP_VERSION   default: __version__ from nxerp/__init__.py (the release workflow sets it from the tag)
+#   NXERP_VERSION   default: __version__ from apps/nxerp_platform/nxerp/__init__.py (the release workflow sets it from the tag)
 #   GIT_TOKEN       read token for private app repositories, passed as a BuildKit secret (never baked into a layer)
 #   SBOM_DIR        where the SBOM is written, default dist/
 #
@@ -37,7 +37,7 @@ py=python3
 "$py" -c "" >/dev/null 2>&1 || py=python   # Windows: python3 may be the Store shortcut
 "$py" -I deploy/check_pins.py
 
-version=${NXERP_VERSION:-$("$py" -I -c 'import re; print(re.search(r"__version__ = \"([^\"]+)\"", open("nxerp/__init__.py").read()).group(1))')}
+version=${NXERP_VERSION:-$("$py" -I -c 'import re; print(re.search(r"__version__ = \"([^\"]+)\"", open("apps/nxerp_platform/nxerp/__init__.py").read()).group(1))')}
 sha=$(git rev-parse --short=12 HEAD)
 [ -z "$(git status --porcelain)" ] || sha="$sha-dirty"
 image=${NXERP_IMAGE:-ghcr.io/sria-infotech-pvt-ltd/nxerp}

@@ -70,7 +70,7 @@ def main():
 	targets.append(str(src / "frappe"))
 	for app in apps:
 		if app["name"] == "nxerp":
-			targets.append(str(ROOT))  # the platform app is this checkout
+			targets.append(str(ROOT / "apps" / "nxerp_platform"))  # the platform app lives in this checkout
 			continue
 		fetch(app["name"], app["url"], app["commit"], src / app["name"], token)
 		targets.append(str(src / app["name"]))

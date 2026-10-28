@@ -16,7 +16,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-REPO = Path(__file__).resolve().parents[2]
+REPO = Path(__file__).resolve().parents[4]
 CHECKER = REPO / "tools" / "check_architecture.py"
 
 CLEAN_HOOKS = "app_name = 'nxerp'\nrequired_apps = []\n"
@@ -106,7 +106,8 @@ class TestArchitectureRules(unittest.TestCase):
 		code, output = self.run_cli("--root", str(REPO))
 		self.assertEqual(code, 0, output)
 		self.assertTrue(output.startswith("OK:"))
-		self.assertIn("SKIPPED", output)  # without --app-path the other-app rules are not verified
+		# without --app-path the other-app rules are verified only for apps found under apps/ (none in the older layout)
+		self.assertTrue("SKIPPED" in output or "checked other apps" in output)
 
 	# --- the checker catches violations (negative tests on a synthetic tree) ------------------
 

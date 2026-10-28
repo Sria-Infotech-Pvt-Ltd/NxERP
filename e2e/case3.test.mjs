@@ -1,6 +1,6 @@
 // Case 3: a user with Helpdesk plus a third application. No third app ships, so this registers a clearly
 // marked TEST-ONLY entry through site config (honoured only when the site has allow_tests on; see
-// nxerp/registry.py) and removes it afterwards. The stand-in app is the page /nxerp/test-app.
+// apps/nxerp_platform/nxerp/registry.py) and removes it afterwards. The stand-in app is the page /nxerp/test-app.
 import assert from "node:assert/strict";
 import test, { after, before } from "node:test";
 import { ADMIN_PASSWORD, BASE, PASSWORD, email, here, launch, session, shot, signIn, tiles, url, setConfig, waitForConfig } from "./lib.mjs";

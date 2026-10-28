@@ -24,7 +24,7 @@ and [`../security/shared-set.md`](../security/shared-set.md).
 
 - Every redirect target the platform issues is a **site-relative path**; never a scheme, host, `//` or backslash. Use `routing.safe_target` (it percent-decodes up to three rounds before judging, rejects control characters and over-long input, normalises `..`), then `routing.authorised_target` (the path must belong to an installed app **and** the user may use it). Do not write a second validator and do not use Frappe's `sanitize_redirect` as the decision (ADR-004 amendment 1).
 - Never trust `redirect-to`, a User Invitation's `redirect_to_path` (still unvalidated by Frappe and open in ADR-004 amendment 1), or the browser's `localStorage["last_visited"]`.
-- A new redirect payload that slipped through becomes a case in `HOSTILE` in `nxerp/tests/test_routing.py` first, then a fix.
+- A new redirect payload that slipped through becomes a case in `HOSTILE` in `apps/nxerp_platform/nxerp/tests/test_routing.py` first, then a fix.
 
 ## Secrets and personal data
 

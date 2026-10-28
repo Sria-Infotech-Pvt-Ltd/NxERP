@@ -13,19 +13,19 @@
 *                              @Sria-Infotech-Pvt-Ltd/nxerp-maintainers
 
 # Platform app: access, routing, launcher.
-/nxerp/                        @Sria-Infotech-Pvt-Ltd/nxerp-platform
-/nxerp/hooks.py                @Sria-Infotech-Pvt-Ltd/nxerp-platform @Sria-Infotech-Pvt-Ltd/nxerp-security
-/nxerp/patches.txt             @Sria-Infotech-Pvt-Ltd/nxerp-platform @Sria-Infotech-Pvt-Ltd/nxerp-security
+/apps/nxerp_platform/nxerp/                        @Sria-Infotech-Pvt-Ltd/nxerp-platform
+/apps/nxerp_platform/nxerp/hooks.py                @Sria-Infotech-Pvt-Ltd/nxerp-platform @Sria-Infotech-Pvt-Ltd/nxerp-security
+/apps/nxerp_platform/nxerp/patches.txt             @Sria-Infotech-Pvt-Ltd/nxerp-platform @Sria-Infotech-Pvt-Ltd/nxerp-security
 
 # Security-sensitive platform code: server-side enforcement, access resolution, grant guard, post-login routing, login page, patches.
-/nxerp/enforcement.py          @Sria-Infotech-Pvt-Ltd/nxerp-security @Sria-Infotech-Pvt-Ltd/nxerp-platform
-/nxerp/access.py               @Sria-Infotech-Pvt-Ltd/nxerp-security @Sria-Infotech-Pvt-Ltd/nxerp-platform
-/nxerp/guard.py                @Sria-Infotech-Pvt-Ltd/nxerp-security @Sria-Infotech-Pvt-Ltd/nxerp-platform
-/nxerp/routing.py              @Sria-Infotech-Pvt-Ltd/nxerp-security @Sria-Infotech-Pvt-Ltd/nxerp-platform
-/nxerp/www/login.*             @Sria-Infotech-Pvt-Ltd/nxerp-security @Sria-Infotech-Pvt-Ltd/nxerp-platform
-/nxerp/www/nxerp/go.*          @Sria-Infotech-Pvt-Ltd/nxerp-security @Sria-Infotech-Pvt-Ltd/nxerp-platform
-/nxerp/api/                    @Sria-Infotech-Pvt-Ltd/nxerp-security @Sria-Infotech-Pvt-Ltd/nxerp-platform
-/nxerp/patches/                @Sria-Infotech-Pvt-Ltd/nxerp-security @Sria-Infotech-Pvt-Ltd/nxerp-platform
+/apps/nxerp_platform/nxerp/enforcement.py          @Sria-Infotech-Pvt-Ltd/nxerp-security @Sria-Infotech-Pvt-Ltd/nxerp-platform
+/apps/nxerp_platform/nxerp/access.py               @Sria-Infotech-Pvt-Ltd/nxerp-security @Sria-Infotech-Pvt-Ltd/nxerp-platform
+/apps/nxerp_platform/nxerp/guard.py                @Sria-Infotech-Pvt-Ltd/nxerp-security @Sria-Infotech-Pvt-Ltd/nxerp-platform
+/apps/nxerp_platform/nxerp/routing.py              @Sria-Infotech-Pvt-Ltd/nxerp-security @Sria-Infotech-Pvt-Ltd/nxerp-platform
+/apps/nxerp_platform/nxerp/www/login.*             @Sria-Infotech-Pvt-Ltd/nxerp-security @Sria-Infotech-Pvt-Ltd/nxerp-platform
+/apps/nxerp_platform/nxerp/www/nxerp/go.*          @Sria-Infotech-Pvt-Ltd/nxerp-security @Sria-Infotech-Pvt-Ltd/nxerp-platform
+/apps/nxerp_platform/nxerp/api/                    @Sria-Infotech-Pvt-Ltd/nxerp-security @Sria-Infotech-Pvt-Ltd/nxerp-platform
+/apps/nxerp_platform/nxerp/patches/                @Sria-Infotech-Pvt-Ltd/nxerp-security @Sria-Infotech-Pvt-Ltd/nxerp-platform
 
 # Deployment, versions, CI, release and governance. Security reviews these because they hold the supply chain and the secrets flow.
 /deploy/                       @Sria-Infotech-Pvt-Ltd/nxerp-devops @Sria-Infotech-Pvt-Ltd/nxerp-security

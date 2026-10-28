@@ -3,7 +3,7 @@
 Status: Phase 3. Every route the platform owns or depends on, who may open it, and what happens otherwise.
 Companion to [ADR-004](../adr/ADR-004-route-map.md) (the decision) and
 [`access-admin.md`](access-admin.md) (how grants are managed). Behaviour below was observed on the running
-dev stack and is covered by `nxerp/tests/test_unified_experience.py`, `nxerp/tests/test_routing.py` and the
+dev stack and is covered by `apps/nxerp_platform/nxerp/tests/test_unified_experience.py`, `apps/nxerp_platform/nxerp/tests/test_routing.py` and the
 browser suites in `e2e/`.
 
 **Reading the table.** *Guest* = not signed in. *Staff* = a System User. *Authorised* = holds the app's grant
@@ -72,7 +72,7 @@ is unchanged (open question, see PROGRESS.md).
 No other whitelisted method was added. The Phase 2 methods in `nxerp.api.access` are documented in
 `access-admin.md`.
 
-Hooks that shape these routes (`nxerp/hooks.py`; the exact set is asserted by `test_scaffold.py`):
+Hooks that shape these routes (`apps/nxerp_platform/nxerp/hooks.py`; the exact set is asserted by `test_scaffold.py`):
 `on_session_creation` (points a fresh login at the router), `extend_bootinfo` (Desk's own app switcher shows
 only the user's apps, Framework hidden), `override_whitelisted_methods` (above), `website_redirects`
 (`/login/<x>` to `/login`) and `standard_navbar_items` (the "All applications" row in Desk's user menu, shown
@@ -99,7 +99,7 @@ Status and evidence are in `docs/PROGRESS.md` (Phase 3 test results).
 | Session expiry and logout | Frappe | after expiry any protected path goes to `/login?redirect-to=<path>`, and sign-in returns there if the user is still authorised |
 | Sign-up | Frappe (`disable_signup`) | disabled on the dev and test sites; the API refuses |
 | Login with an emailed link | Frappe (System Settings) | not offered on the NXERP page; endpoints stay as Frappe ships them |
-| Social / LDAP / SSO | Frappe | not configured here; the NXERP page hides the buttons unless `SHOW_SOCIAL_LOGIN` is switched on (`nxerp/www/login.py`) |
+| Social / LDAP / SSO | Frappe | not configured here; the NXERP page hides the buttons unless `SHOW_SOCIAL_LOGIN` is switched on (`apps/nxerp_platform/nxerp/www/login.py`) |
 | Kill-switch | `nxerp` | site config `nxerp_stock_login = 1` serves Frappe's stock login (`docs/runbooks/login-recovery.md`) |
 
 Site config is cached by every web worker for up to 60 seconds (`frappe/config.py`), so the kill-switch and any
@@ -111,4 +111,4 @@ The login, launcher and no-access pages: one `h1`, a `main` landmark, labelled f
 the launcher and the no-access page, visible focus, text contrast checked in light and dark at 1440 and 390 px
 wide, no horizontal scroll (`e2e/pages.test.mjs`). These are automated basics, not a screen-reader audit.
 NXERP branding appears on the login, launcher and no-access pages; ERPNext and Helpdesk keep their own names
-and tiles. Palette tokens come from `nxerp/public/css/nxerp-theme.css` only.
+and tiles. Palette tokens come from `apps/nxerp_platform/nxerp/public/css/nxerp-theme.css` only.

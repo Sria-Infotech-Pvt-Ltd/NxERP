@@ -27,8 +27,8 @@ node_modules/
 # Frappe / bench artefacts
 sites/
 *.pyc
-nxerp/public/dist/
-nxerp/public/node_modules/
+apps/nxerp_platform/nxerp/public/dist/
+apps/nxerp_platform/nxerp/public/node_modules/
 
 # Editors / OS
 .idea/

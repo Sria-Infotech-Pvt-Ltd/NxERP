@@ -7,7 +7,7 @@ Adding an app is **one registry entry plus grants**. No platform code changes, n
 Add it to `deploy/apps.json`, pinned to an exact commit (never vendored, ADR-001), after the apps it
 depends on and before `nxerp`. Rebuild with `./deploy/dev/up.sh`.
 
-## 2. Add one `AppEntry` to `nxerp/registry.py`
+## 2. Add one `AppEntry` to `apps/nxerp_platform/nxerp/registry.py`
 
 ```python
 AppEntry(
@@ -39,7 +39,7 @@ Revocation is immediate on the next request.
 ## 4. Verify
 
 Run the matrix: `bench --site <site> run-tests --app nxerp`. Add the new app's surfaces (a URL, a method, a
-resource, a file) as rows in `nxerp/tests/test_access_matrix.py`; a user without the grant must be refused
+resource, a file) as rows in `apps/nxerp_platform/nxerp/tests/test_access_matrix.py`; a user without the grant must be refused
 on each.
 
 ## What the registry gives you automatically

@@ -93,7 +93,7 @@ listed in `deploy/environments/README.md`.
 
 ## Checking that it works (once applied)
 
-1. Open a throwaway PR touching `nxerp/access.py`: it must show *Review required from code owners* and block merging until `ci-gate` is
+1. Open a throwaway PR touching `apps/nxerp_platform/nxerp/access.py`: it must show *Review required from code owners* and block merging until `ci-gate` is
    green.
 2. Try `git push origin main` directly: must be rejected. Try a merge commit: the button must not offer it.
 3. Record the result in the PR/issue. Do not write "branch protection works" anywhere until step 1 and 2 were seen.

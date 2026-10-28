@@ -13,13 +13,13 @@ rollback would lose too much). Security fixes in NXERP code use this path too. U
 
 ## Steps
 
-1. **Reproduce and write the failing test first** (in `nxerp/tests/` or the e2e suite). Say in the PR what you ran and saw (FACT).
+1. **Reproduce and write the failing test first** (in `apps/nxerp_platform/nxerp/tests/` or the e2e suite). Say in the PR what you ran and saw (FACT).
 2. Branch from `main`: `git switch -c fix/<area>-<summary> origin/main`. (Production runs a tag of `main`; if `main` already contains
    unreleased work you do not want to ship, say so and talk to the release manager: the supported answer today is to ship `main`
    after reverting the unwanted commit in the same PR. A long-lived `release/x.y` branch does not exist.)
 3. Fix, run the relevant tests locally (`docs/runbooks/deploy.md` has the commands), open the PR with title `fix(scope): ...`.
 4. Review and merge (squash). Expedite by pinging the area owner (ownership.md); do not ask anyone to skip CI.
-5. Bump `nxerp/__init__.py` `__version__` (patch) in the same PR or a follow-up PR, merge.
+5. Bump `apps/nxerp_platform/nxerp/__init__.py` `__version__` (patch) in the same PR or a follow-up PR, merge.
 6. Tag from `main` after `ci-gate` is green on that commit: `vX.Y.Z+1-rc.1`; staging deploys; verify the defect is fixed there with the
    steps from the report; then tag `vX.Y.Z+1` and run the production deploy (`release.md`, `deploy.md`).
 7. Rollback plan stated before you deploy (`rollback.md`). Take a backup first (automatic in `deploy.sh`).

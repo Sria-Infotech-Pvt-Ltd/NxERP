@@ -44,7 +44,7 @@ All in the Helpdesk fork, branch `feature/nxerp-platform-login`. Nothing in Frap
 
 | File | Change | Why it cannot live in `nxerp` |
 | --- | --- | --- |
-| `helpdesk/www/login.html`, `login.py`, and the login-only assets | **deleted** (moved to `nxerp/www/login.*` and `nxerp/public/nxerp_login/`) | Frappe's template resolver picks the *last installed* app's `/login`; two apps cannot both own it. Helpdesk must stop owning it |
+| `helpdesk/www/login.html`, `login.py`, and the login-only assets | **deleted** (moved to `apps/nxerp_platform/nxerp/www/login.*` and `apps/nxerp_platform/nxerp/public/nxerp_login/`) | Frappe's template resolver picks the *last installed* app's `/login`; two apps cannot both own it. Helpdesk must stop owning it |
 | `helpdesk/hooks.py` | app title and apps-screen tile title are "Helpdesk" (were "NXERP"); logo, favicon and splash hooks removed | The title is Helpdesk's own identity; the platform hooks now come from `nxerp`, so Helpdesk pages no longer reference platform assets |
 | `desk/src/composables/useApps.ts`, `Sidebar.vue`, `MobileSidebar.vue` | the Apps menu reads Frappe's app list (which `nxerp` overrides), lists other apps plus "All applications", and appears only for multi-app users | This is the Helpdesk SPA's own menu; it cannot be changed from outside the SPA |
 | `desk/src/theme/build/sync.mjs`, `check-tracked.mjs`, README, `tokens/audit-allow.json` | the login stylesheet targets removed | They referenced files that no longer exist there |

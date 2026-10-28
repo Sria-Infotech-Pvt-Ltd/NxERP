@@ -33,6 +33,7 @@ import tomllib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+PLATFORM_APP = Path("apps") / "nxerp_platform"
 
 # Other apps the platform must never import. Frappe itself is allowed. deploy/apps.json adds to this set.
 FORBIDDEN = {"erpnext", "helpdesk", "hrms", "telephony", "payments", "lending", "crm"}
@@ -59,6 +60,22 @@ PLATFORM_SYMBOLS = {
 	"safe_target",
 	"authorised_target",
 }
+
+
+def platform_root(root: Path) -> Path:
+	"""Folder holding the platform app's pyproject.toml and nxerp/ package: apps/nxerp_platform in this monorepo,
+	the repository root in the older single-app layout (which the negative tests build)."""
+	app = root / PLATFORM_APP
+	return app if (app / "nxerp").is_dir() else root
+
+
+def discover_apps(root: Path) -> dict:
+	"""The other apps of a monorepo: every apps/<name> folder except the platform's."""
+	apps = root / "apps"
+	if not apps.is_dir():
+		return {}
+	skip = platform_root(root)
+	return {d.name: d for d in sorted(apps.iterdir()) if d.is_dir() and d != skip}
 
 
 def iter_files(root: Path, suffix: str):
@@ -102,7 +119,7 @@ def forbidden_apps(root: Path) -> set:
 
 def check_platform_imports(root: Path, forbidden: set) -> list:
 	errors = []
-	for path in iter_files(root / "nxerp", ".py"):
+	for path in iter_files(platform_root(root) / "nxerp", ".py"):
 		for lineno, module in named_modules(parse(path)):
 			if module.split(".")[0] in forbidden:
 				errors.append(f"R1 {path.relative_to(root).as_posix()}:{lineno}: imports {module}")
@@ -111,9 +128,9 @@ def check_platform_imports(root: Path, forbidden: set) -> list:
 
 def check_required_apps(root: Path, forbidden: set) -> list:
 	errors = []
-	hooks = root / "nxerp" / "hooks.py"
+	hooks = platform_root(root) / "nxerp" / "hooks.py"
 	if not hooks.is_file():
-		return ["R2 nxerp/hooks.py is missing"]
+		return ["R2 apps/nxerp_platform/nxerp/hooks.py is missing"]
 	for node in ast.walk(parse(hooks)):
 		if isinstance(node, ast.Assign):
 			targets, value = node.targets, node.value
@@ -130,9 +147,9 @@ def check_required_apps(root: Path, forbidden: set) -> list:
 		except ValueError:
 			literal = None
 		if literal not in ([], ()):
-			errors.append(f"R2 nxerp/hooks.py:{node.lineno}: required_apps must be an empty list (ADR-005)")
+			errors.append(f"R2 apps/nxerp_platform/nxerp/hooks.py:{node.lineno}: required_apps must be an empty list (ADR-005)")
 
-	pyproject = root / "pyproject.toml"
+	pyproject = platform_root(root) / "pyproject.toml"
 	if pyproject.is_file():
 		data = tomllib.loads(pyproject.read_text(encoding="utf-8"))
 		for dep in data.get("project", {}).get("dependencies", []):
@@ -156,7 +173,10 @@ def check_second_app_in_repo(root: Path) -> list:
 		if hooks.name != "hooks.py":
 			continue
 		package = hooks.parent
-		if package == root / "nxerp" or not (package / "__init__.py").is_file():
+		if package == platform_root(root) / "nxerp" or not (package / "__init__.py").is_file():
+			continue
+		# a sibling app under apps/ is checked by the other-app rules (R3, R4b), not a stray second app
+		if (root / "apps") in package.parents and platform_root(root) not in package.parents:
 			continue
 		errors.append(
 			f"R4a {package.relative_to(root).as_posix()}: a second Frappe app lives in the platform repo"
@@ -206,7 +226,7 @@ def check(root: Path = ROOT, app_paths: dict | None = None) -> list:
 	"""All violations as strings; an empty list means the tree is clean."""
 	forbidden = forbidden_apps(root)
 	errors = []
-	if not (root / "nxerp").is_dir():
+	if not (platform_root(root) / "nxerp").is_dir():
 		return [f"R1 {root}: no nxerp/ package to check"]
 	errors += check_platform_imports(root, forbidden)
 	errors += check_required_apps(root, forbidden)
@@ -244,6 +264,7 @@ def main(argv=None) -> int:
 	args = parser.parse_args(argv)
 	app_paths = parse_app_paths(args.app_path, os.environ.get("NXERP_APP_PATHS"))
 
+	app_paths = {**discover_apps(Path(args.root)), **app_paths}
 	errors = check(Path(args.root), app_paths)
 	if errors:
 		print("\n".join(f"ERROR: {e}" for e in errors))

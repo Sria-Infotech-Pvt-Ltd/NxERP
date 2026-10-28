@@ -14,7 +14,7 @@ Verified state (2026-10-27):
 - **FACT** PR #1 "Integrate NXERP with ERPNext and Helpdesk" (head `codex/nxerp-integration`, 1,163 files, +363,590/-2) is open against `main`. It is the earlier integration attempt; it is **not** a base for this work and was not read or modified.
 - **FACT** The Helpdesk customisations live in `Sriainfotech/Frappe-Help-Desk` (remote `company`), a *different GitHub owner* from the company organisation `Sria-Infotech-Pvt-Ltd`. Local `helpdesk/` has `origin` = `frappe/helpdesk` (upstream) and `company` = that fork; branch `feature/nxerp-login-page` @ `1c6981cc5`, 10 commits ahead of / 12 behind `origin/develop` (merge-base `58b82a6e2`).
 - **FACT** Frappe apps are one repository per app: `bench get-app <url>` clones a repo whose root is the app (`telephony/pyproject.toml` + `telephony/telephony/`, same for ERPNext and Frappe).
-- **FACT** A second, empty-history local repo exists at `frapper sria/NXERP/nxerp` (branch `master`, no commits, `origin` = NxERP) holding an earlier `nxerp` app with a login override (`nxerp/www/login.*`, `nxerp/branding.py`). It was not used; its contents are Phase 2 input (see ADR-005).
+- **FACT** A second, empty-history local repo exists at `frapper sria/NXERP/nxerp` (branch `master`, no commits, `origin` = NxERP) holding an earlier `nxerp` app with a login override (`apps/nxerp_platform/nxerp/www/login.*`, `nxerp/branding.py`). It was not used; its contents are Phase 2 input (see ADR-005).
 
 ## Options considered
 

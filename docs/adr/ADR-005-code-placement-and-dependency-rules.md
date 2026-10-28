@@ -6,13 +6,13 @@
 ## Context
 
 - **FACT** Today the login page, NXERP assets and branding live inside the Helpdesk fork: `helpdesk/www/login.{html,py}`, `helpdesk/public/nxerp_login/*`, `helpdesk/nxerp_branding.py`, and the Helpdesk `app_title` is "NXERP" (`helpdesk/hooks.py:2`). At runtime Frappe lists the Helpdesk app as title "NXERP" and the platform app as "NXERP" too (`frappe.utils.change_log.get_versions`). That contradicts "Helpdesk is never NXERP" and would show two tiles with the same name.
-- **FACT** A separate local `NXERP/nxerp` app (never committed) contains another login override (`nxerp/www/login.*`, `branding.py`). Two apps overriding `/login` resolve by install order (last wins), which is fragile.
+- **FACT** A separate local `NXERP/nxerp` app (never committed) contains another login override (`apps/nxerp_platform/nxerp/www/login.*`, `branding.py`). Two apps overriding `/login` resolve by install order (last wins), which is fragile.
 - **FACT** Hooks only append, and tile data is read per app (`get_hooks(..., app_name=X)`): a third app cannot hide or re-route another app's tile through hooks (research part 1, I6).
 - **FACT** The fork's login diff against upstream is 64 files / +831 -64 (audit), and cherry-picks cleanly onto `v1.31.0` (ADR-002).
 
 ## Decision
 
-1. **Platform app (`nxerp`) owns everything shared:** `/login`, the post-login router, the launcher, the no-access page, platform branding (NXERP logo, palette tokens for shared pages), and the access resolver (ADR-003). In Phase 2 the login moves from the Helpdesk fork into `nxerp/www/login.*`; the Helpdesk fork then keeps only Helpdesk-specific branding.
+1. **Platform app (`nxerp`) owns everything shared:** `/login`, the post-login router, the launcher, the no-access page, platform branding (NXERP logo, palette tokens for shared pages), and the access resolver (ADR-003). In Phase 2 the login moves from the Helpdesk fork into `apps/nxerp_platform/nxerp/www/login.*`; the Helpdesk fork then keeps only Helpdesk-specific branding.
 2. **Per-app code stays in the app:** Helpdesk SPA theming and Helpdesk screens belong to Helpdesk; ERPNext is never customised from `nxerp` except through supported hooks.
 3. **Naming:** the Helpdesk app title becomes "Helpdesk"; "NXERP" is reserved for the platform. This is a Phase 2 change to the fork (`app_title`, `add_to_apps_screen`, and `nxerp_branding.apply_branding()`, which rewrites site-wide settings and must not run implicitly).
 4. **Dependency rules (architecture rules):**

@@ -25,7 +25,7 @@ on the repository (Phase 4 handles git). Nothing was pushed.
 
 **Built:** `/login` in `nxerp` (kill-switch `nxerp_stock_login`), router `/nxerp/go`, launcher `/nxerp/apps`, friendly
 `/nxerp/no-access`, tile overrides, "All applications" row for multi-app users, test-only third app, grant-migration dry run
-(`nxerp/migration.py`), runbook, routes doc, ADR-004 amendment, browser harness in `e2e/`.
+(`apps/nxerp_platform/nxerp/migration.py`), runbook, routes doc, ADR-004 amendment, browser harness in `e2e/`.
 
 **Verified by execution (FACT):**
 
@@ -70,9 +70,9 @@ ERPNext DocPerms), so review its dry-run output before applying.
 
 Branch `phase-2/access-layer` (off `phase-1/foundation`) in `nxerp-platform`. Nothing upstream was modified.
 
-- `nxerp/registry.py` (ERPNext, Helpdesk), `nxerp/access.py` (`get_user_apps`, `can_access_app`, `can_use_portal`, `resolve_landing`),
-  `nxerp/enforcement.py` (auth hook gate, document and list hooks, response sanitiser), `nxerp/guard.py` (grant and lockout
-  guard), `nxerp/api/access.py` (grant API), `nxerp/audit.py` (denial log), `nxerp/www/nxerp/no-access.*`.
+- `apps/nxerp_platform/nxerp/registry.py` (ERPNext, Helpdesk), `apps/nxerp_platform/nxerp/access.py` (`get_user_apps`, `can_access_app`, `can_use_portal`, `resolve_landing`),
+  `apps/nxerp_platform/nxerp/enforcement.py` (auth hook gate, document and list hooks, response sanitiser), `apps/nxerp_platform/nxerp/guard.py` (grant and lockout
+  guard), `apps/nxerp_platform/nxerp/api/access.py` (grant API), `apps/nxerp_platform/nxerp/audit.py` (denial log), `apps/nxerp_platform/nxerp/www/nxerp/no-access.*`.
 - Tests: **115 passing** (`bench --site nxerp.localhost run-tests --app nxerp`); Helpdesk's own suite **566 passing, 0 failing**
   with the layer active; bandit and ruff clean.
 - Docs: `docs/adr/ADR-003-amendment-1.md`, `docs/architecture/adding-an-app.md`, `docs/architecture/access-admin.md`,

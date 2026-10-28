@@ -9,7 +9,7 @@
 ## A1. The registry lives in `nxerp`, not in each app's hooks
 
 ADR-003 point 3 / ADR-005 described apps declaring themselves through hooks. Phase 2 uses a declarative registry
-(`nxerp/registry.py`) holding strings only. Reasons: the brief asks for one registry in `nxerp`; hooks only append, so
+(`apps/nxerp_platform/nxerp/registry.py`) holding strings only. Reasons: the brief asks for one registry in `nxerp`; hooks only append, so
 an app could not be hidden or corrected centrally; and a single list is what the tests and the launcher read.
 Dependency direction is unchanged: the registry never imports an app, and apps never import `nxerp`.
 A hook-based extension point can be added later without changing the resolver.

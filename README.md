@@ -29,7 +29,7 @@ frapper sria/
 ## What this repository holds
 
 ```
-nxerp/        the platform Frappe app (this repo root is the app, as bench expects)
+apps/nxerp_platform/   the platform Frappe app (package `nxerp`)
 deploy/       pinned versions, apps.json, dev stack and bootstrap (no secrets)
 docs/         audit, research, ADRs, architecture, progress
 .github/      CI, PR and issue templates
@@ -49,7 +49,7 @@ Frappe and ERPNext are **never vendored or copied here**; they are upstream tags
 - It does **not** replace Frappe authentication, sessions, roles or DocType permissions
 - It does **not** import from other apps, and other apps must not import from it
 - It is **not** the security boundary by hiding icons: enforcement is on the server
-- It does **not** ship dev data (the seed script lives under `nxerp/tests/` and refuses to run outside developer mode)
+- It does **not** ship dev data (the seed script lives under `apps/nxerp_platform/nxerp/tests/` and refuses to run outside developer mode)
 
 ## Quick start (dev)
 

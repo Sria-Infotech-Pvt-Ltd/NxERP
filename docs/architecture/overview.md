@@ -58,18 +58,18 @@ flowchart TB
 
 | Component | Where | Job |
 | --- | --- | --- |
-| Registry | `nxerp/registry.py` | The one declarative list of apps (`AppEntry`): key, title, route, owning python packages, access role, URL prefixes, portal roles. Strings only: it never imports an app (ADR-005, ADR-003 amendment 1). A test-only entry can be declared through site config on a site with `allow_tests` |
-| Resolver | `nxerp/access.py` | `get_user_apps`, `can_access_app`, `can_use_portal`, `resolve_landing`. Derived from `frappe.get_roles`; keeps **no cache of its own**, so revocation applies on the next request |
-| Gate | `nxerp/enforcement.py` | Deny-only. `auth_hooks` classifies every request (page prefix, whitelisted method root, resource, DocType/report arguments) and answers 302 to `/nxerp/no-access` (pages) or a 403 JSON (API). Wildcard `has_permission` and `permission_query_conditions` hooks cover files, print, realtime rooms and lists. An `after_request` hook strips `_assign` / `_comments` from API responses to portal-only users. Fails closed for everyone except `Administrator` |
-| Grant guard and API | `nxerp/guard.py`, `nxerp/api/access.py` | Only a platform administrator may change an `NXERP Access:` role; the last named System Manager cannot be removed, disabled or deleted |
-| Denial log | `nxerp/audit.py` | One JSON line per denial in `logs/<site>/nxerp.access.log`; the user is a salted hash, never an email |
-| Router | `nxerp/routing.py`, `www/nxerp/go.*` | `/nxerp/go`: the single post-login decision. `routing.safe_target` is the redirect validator |
-| Launcher | `nxerp/launcher.py`, `www/nxerp/apps.*` | `/nxerp/apps` (users with two or more apps), the `frappe.apps.get_apps` override and the Desk boot changes so every "Apps" menu agrees |
-| Login | `nxerp/www/login.*`, `public/nxerp_login/` | The only `/login`. Frappe's own authentication code runs underneath; the layout is NXERP's |
+| Registry | `apps/nxerp_platform/nxerp/registry.py` | The one declarative list of apps (`AppEntry`): key, title, route, owning python packages, access role, URL prefixes, portal roles. Strings only: it never imports an app (ADR-005, ADR-003 amendment 1). A test-only entry can be declared through site config on a site with `allow_tests` |
+| Resolver | `apps/nxerp_platform/nxerp/access.py` | `get_user_apps`, `can_access_app`, `can_use_portal`, `resolve_landing`. Derived from `frappe.get_roles`; keeps **no cache of its own**, so revocation applies on the next request |
+| Gate | `apps/nxerp_platform/nxerp/enforcement.py` | Deny-only. `auth_hooks` classifies every request (page prefix, whitelisted method root, resource, DocType/report arguments) and answers 302 to `/nxerp/no-access` (pages) or a 403 JSON (API). Wildcard `has_permission` and `permission_query_conditions` hooks cover files, print, realtime rooms and lists. An `after_request` hook strips `_assign` / `_comments` from API responses to portal-only users. Fails closed for everyone except `Administrator` |
+| Grant guard and API | `apps/nxerp_platform/nxerp/guard.py`, `apps/nxerp_platform/nxerp/api/access.py` | Only a platform administrator may change an `NXERP Access:` role; the last named System Manager cannot be removed, disabled or deleted |
+| Denial log | `apps/nxerp_platform/nxerp/audit.py` | One JSON line per denial in `logs/<site>/nxerp.access.log`; the user is a salted hash, never an email |
+| Router | `apps/nxerp_platform/nxerp/routing.py`, `www/nxerp/go.*` | `/nxerp/go`: the single post-login decision. `routing.safe_target` is the redirect validator |
+| Launcher | `apps/nxerp_platform/nxerp/launcher.py`, `www/nxerp/apps.*` | `/nxerp/apps` (users with two or more apps), the `frappe.apps.get_apps` override and the Desk boot changes so every "Apps" menu agrees |
+| Login | `apps/nxerp_platform/nxerp/www/login.*`, `public/nxerp_login/` | The only `/login`. Frappe's own authentication code runs underneath; the layout is NXERP's |
 | No-access page | `www/nxerp/no-access.html` + `no_access.py` | A plain page that names no app |
-| Install and migrate | `nxerp/install.py`, `patches/create_access_roles.py` | Creates one access role per installed registry app (idempotent, `desk_access = 0`) and points `Portal Settings.default_portal_home` at the router |
-| Migration helper | `nxerp/migration.py` | Dry-run suggestion of access roles for users that existed before the layer (never applies unless asked) |
-| Palette | `nxerp/public/css/*` | Generated from the token source in the Helpdesk repo (`desk/src/theme`); never edited by hand |
+| Install and migrate | `apps/nxerp_platform/nxerp/install.py`, `patches/create_access_roles.py` | Creates one access role per installed registry app (idempotent, `desk_access = 0`) and points `Portal Settings.default_portal_home` at the router |
+| Migration helper | `apps/nxerp_platform/nxerp/migration.py` | Dry-run suggestion of access roles for users that existed before the layer (never applies unless asked) |
+| Palette | `apps/nxerp_platform/nxerp/public/css/*` | Generated from the token source in the Helpdesk repo (`desk/src/theme`); never edited by hand |
 
 ## Request flow (what happens to one request)
 
@@ -94,7 +94,7 @@ list of what is enforced and by which test is [`../security/phase2-coverage.md`]
 
 ## Sign-in flow (where a user lands)
 
-1. `GET /login` is served by `nxerp/www/login.*` (the kill-switch `nxerp_stock_login` serves Frappe's own page instead).
+1. `GET /login` is served by `apps/nxerp_platform/nxerp/www/login.*` (the kill-switch `nxerp_stock_login` serves Frappe's own page instead).
    A signed-in visitor is redirected to `/nxerp/go`. An unsafe `redirect-to` is dropped; a safe one is carried through the router.
 2. Authentication is Frappe's (`/api/method/login`, 2FA, lockout, password reset are unchanged). `on_session_creation`
    sets the home page to `/nxerp/go`; the login page script does the same for website users, whose redirect Frappe computes elsewhere (ADR-004 amendment 1).
@@ -121,7 +121,7 @@ only the page. Authentication, the router and the gate are unchanged. Site confi
 
 ## Hooks the platform registers
 
-`nxerp/hooks.py` registers the set below. `nxerp/tests/test_scaffold.py` pins the request-path and routing hooks to exact values and asserts that
+`apps/nxerp_platform/nxerp/hooks.py` registers the set below. `apps/nxerp_platform/nxerp/tests/test_scaffold.py` pins the request-path and routing hooks to exact values and asserts that
 `before_request`, `on_login`, `on_logout`, `website_route_rules` and `get_website_user_home_page` are NOT used (a new hook must come with tests and a docs line):
 `auth_hooks`, `after_request`, `has_permission["*"]`, `permission_query_conditions["*"]`, `on_session_creation`,
 `override_whitelisted_methods` (`frappe.apps.get_apps`), `extend_bootinfo`, `standard_navbar_items` (the "All applications" row,
@@ -130,7 +130,7 @@ shown only to multi-app users), `website_redirects` (`/login/<x>` to `/login`), 
 
 ## Browser and integration test harness
 
-- `nxerp/tests/`: Frappe `IntegrationTestCase` suites run with `bench --site nxerp.localhost run-tests --app nxerp`
+- `apps/nxerp_platform/nxerp/tests/`: Frappe `IntegrationTestCase` suites run with `bench --site nxerp.localhost run-tests --app nxerp`
   (registry, resolver, enforcement, persona x surface matrix, routing and about 35 hostile redirect payloads, customer leaks, grant migration,
   HTTP tests of login/router/launcher/kill-switch, a test-only third app, the add-an-app checklist) plus `test_architecture.py` (plain unittest, no site needed).
 - `e2e/`: Playwright (Chromium inside the bench container) on a **separate fresh site** `nxerp-e2e.localhost` served on port 8001, so the
@@ -175,7 +175,7 @@ CI (`.github/workflows/ci.yml`) is authored but, per `docs/PROGRESS.md`, has not
 ## Rules this overview implies
 
 1. One login (Frappe `/login`), one identity per person. Authentication, authorisation, application visibility and routing are four separate concerns.
-2. The platform app does not import apps and apps do not import the platform (ADR-005). Enforced by `tools/check_architecture.py` and `nxerp/tests/test_architecture.py`.
+2. The platform app does not import apps and apps do not import the platform (ADR-005). Enforced by `tools/check_architecture.py` and `apps/nxerp_platform/nxerp/tests/test_architecture.py`.
 3. Hiding an icon is not security: enforcement happens on the server ([`../research/frappe-access-and-routing.md`](../research/frappe-access-and-routing.md) has the surface-by-surface table).
 4. A unified experience is not merged code: Frappe and ERPNext are pinned upstream tags, Helpdesk is a pinned company fork, `nxerp` is our own app.
 
@@ -185,7 +185,7 @@ CI (`.github/workflows/ci.yml`) is authored but, per `docs/PROGRESS.md`, has not
 | --- | --- |
 | Login page and its assets | `nxerp` (`www/login.*`, `public/nxerp_login/`); Helpdesk keeps only the logo images its own SPA uses |
 | Launcher, router, no-access, tiles | `nxerp` |
-| Which apps exist and who may use them | `nxerp/registry.py` + Frappe roles (`NXERP Access: <App>`) |
+| Which apps exist and who may use them | `apps/nxerp_platform/nxerp/registry.py` + Frappe roles (`NXERP Access: <App>`) |
 | Version pins | `deploy/versions.env`, `deploy/apps.json` (an ADR-002 update goes with any change) |
 | App-specific screens and theming | that app's repo |
 

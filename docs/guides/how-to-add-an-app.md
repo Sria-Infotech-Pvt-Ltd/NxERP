@@ -6,7 +6,7 @@ None of those is installed or registered today and none is shown anywhere; this 
 
 **Adding an app is one pin, one registry entry and role grants.** No platform code changes, no imports in either direction (ADR-005).
 The short reference is [`../architecture/adding-an-app.md`](../architecture/adding-an-app.md); this guide is the full checklist, and
-**its promises are checked by a test**: `nxerp/tests/test_add_app_checklist.py` registers a clearly marked dummy app in process and asserts
+**its promises are checked by a test**: `apps/nxerp_platform/nxerp/tests/test_add_app_checklist.py` registers a clearly marked dummy app in process and asserts
 each promise below against the real registry, resolver, gate, launcher and router code. If a promise stops being true, that test fails and this guide must change.
 
 ## 0. Before you start
@@ -24,7 +24,7 @@ each promise below against the real registry, resolver, gate, launcher and route
 
 The registry entry is **active only while its Frappe app is installed** on the site (`AppEntry.app`). Declared but not installed means invisible everywhere.
 
-## 2. Add one `AppEntry` to `nxerp/registry.py`
+## 2. Add one `AppEntry` to `apps/nxerp_platform/nxerp/registry.py`
 
 Add it to the `APPS` tuple. Strings only; never import the app.
 
@@ -57,7 +57,7 @@ AppEntry(
 | `path_prefixes` | Page URLs the gate protects (whole path segments only: `/<app-route>` covers `/<app-route>/x` but not `/<app-route>x`) | The app's route prefix(es). Must not overlap another app's |
 | `admin_shell` | Lets platform administrators open the prefixes to administer | Leave `False`. Only ERPNext (the Desk shell) sets it |
 
-`nxerp/tests/test_add_app_checklist.py` holds these shape rules as code (`checklist_problems`): a key without spaces, a role named `NXERP Access: ...`, a route under a prefix,
+`apps/nxerp_platform/nxerp/tests/test_add_app_checklist.py` holds these shape rules as code (`checklist_problems`): a key without spaces, a role named `NXERP Access: ...`, a route under a prefix,
 non-empty `owns`, no clash with another app's key, role, packages or prefixes, portal fields complete. Run it on your entry.
 
 ## 3. Roles: created by migrate, not by hand
@@ -106,15 +106,15 @@ A `redirect-to` into the app is honoured after sign-in only for someone who may 
 
 ## 7. Hooks
 
-- [ ] **Do not edit `nxerp/hooks.py`** to add an app. The set of platform hooks is pinned by `test_scaffold.py`, and the registry is the one extension point.
+- [ ] **Do not edit `apps/nxerp_platform/nxerp/hooks.py`** to add an app. The set of platform hooks is pinned by `test_scaffold.py`, and the registry is the one extension point.
 - [ ] The app keeps its own `hooks.py` (title, `add_to_apps_screen`, its own `required_apps` if it needs ERPNext). Frappe builds a tile from it, and the platform then corrects every "Apps" menu from the registry: the registry's title and logo win and unregistered apps are hidden. **`nxerp` itself still declares no `required_apps`.**
 - [ ] A new top-level URL the app serves must be covered by `path_prefixes`; a new whitelisted API by `owns`.
 
 ## 8. Tests
 
 - [ ] `bench --site nxerp.localhost run-tests --app nxerp --module nxerp.tests.test_add_app_checklist` stays green (it uses a dummy entry, so it does not depend on your app).
-- [ ] Add the app's real surfaces as rows to `nxerp/tests/test_access_matrix.py` (a URL, a method, a resource, a file): a user without the grant must be refused on each, by URL and by API, and the guest case too.
-- [ ] Extend `nxerp/tests/test_registry.py` for ownership (`entry_for_doctype` of one of the app's DocTypes returns your entry; Frappe core DocTypes still return none).
+- [ ] Add the app's real surfaces as rows to `apps/nxerp_platform/nxerp/tests/test_access_matrix.py` (a URL, a method, a resource, a file): a user without the grant must be refused on each, by URL and by API, and the guest case too.
+- [ ] Extend `apps/nxerp_platform/nxerp/tests/test_registry.py` for ownership (`entry_for_doctype` of one of the app's DocTypes returns your entry; Frappe core DocTypes still return none).
 - [ ] `python3 -I tools/check_architecture.py --app-path <app>=<path-to-the-app-checkout>` passes: no import of `nxerp` from the app, no platform code inside it.
 - [ ] Add a persona (a user holding only the new app) to the HTTP and, if the app has a UI, browser tests ([`testing.md`](testing.md)).
 

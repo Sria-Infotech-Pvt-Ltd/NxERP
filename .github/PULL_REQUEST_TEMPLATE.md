@@ -5,7 +5,7 @@
 
 ## Type of change
 
-- [ ] Feature / fix in the platform app (`nxerp/`)
+- [ ] Feature / fix in the platform app (`apps/nxerp_platform/nxerp/`)
 - [ ] Access, routing or login (security-sensitive: security owners review, see CODEOWNERS)
 - [ ] Version pin change (`deploy/versions.env`, `deploy/apps.json`)
 - [ ] Deploy, CI or release tooling (`deploy/`, `.github/`)

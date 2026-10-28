@@ -47,7 +47,7 @@ The project rules live in the repository root: [CLAUDE.md](../CLAUDE.md) (non-ne
 
 | Document | Purpose |
 | --- | --- |
-| [guides/how-to-add-an-app.md](guides/how-to-add-an-app.md) | The checklist for adding an app, with a test (`nxerp/tests/test_add_app_checklist.py`) that exercises it |
+| [guides/how-to-add-an-app.md](guides/how-to-add-an-app.md) | The checklist for adding an app, with a test (`apps/nxerp_platform/nxerp/tests/test_add_app_checklist.py`) that exercises it |
 | [guides/coding-standards.md](guides/coding-standards.md) | Python (tabs, ruff), no cross-app imports, comments, error handling, hyphenated `www` pages, commits |
 | [guides/testing.md](guides/testing.md) | The test layers and how to run each, the fresh-site harness, the traps, the flaky-test policy |
 | [guides/security-guidelines.md](guides/security-guidelines.md) | Server-side enforcement, redirect safety, secrets, logging without personal data, the review checklist |

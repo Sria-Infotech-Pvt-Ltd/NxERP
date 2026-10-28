@@ -8,8 +8,8 @@ reason**. Evidence is the test suite (`bench --site <site> run-tests --app nxerp
 
 | Tool | Command | Result |
 | --- | --- | --- |
-| bandit 1.9.4 (application code) | `bandit -r nxerp -x nxerp/tests` | 0 high, 0 medium. 1 low (B110, `try/except/pass` in the denial logger) **accepted**: a logging failure must never turn a denial into an error; marked `# nosec B110` with the reason |
-| bandit (tests) | `bandit -r nxerp/tests -s B101,B105,B106,B311` | clean; skipped IDs are asserts, generated fake passwords and `secrets`-based fixtures |
+| bandit 1.9.4 (application code) | `bandit -r nxerp -x apps/nxerp_platform/nxerp/tests` | 0 high, 0 medium. 1 low (B110, `try/except/pass` in the denial logger) **accepted**: a logging failure must never turn a denial into an error; marked `# nosec B110` with the reason |
+| bandit (tests) | `bandit -r apps/nxerp_platform/nxerp/tests -s B101,B105,B106,B311` | clean; skipped IDs are asserts, generated fake passwords and `secrets`-based fixtures |
 | ruff check / format | `ruff check .`, `ruff format --check .` | clean |
 | architecture rules | `tools/check_architecture.py` | nxerp imports no other app, declares no `required_apps` |
 

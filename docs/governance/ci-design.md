@@ -14,7 +14,7 @@ accepted only when the owner sets `CODEQL_ENABLED=false`). Job names are stable 
 | `lint` | pre-commit (hygiene, ruff, bandit, shellcheck), `ruff check/format`, bandit, Conventional Commit check (PR title strict, commits format-only) | no |
 | `pins-and-architecture` | `deploy/check_pins.py`, `tools/check_architecture.py`, actionlint, `bash -n` on scripts, `docker compose config` of the staging-like file, `docker buildx build --check` | no |
 | `frontend` | Helpdesk SPA (separate repo, checked out at its pin): `yarn install --frozen-lockfile`, `theme:check`, `theme:audit`, `yarn build` | no |
-| `nxerp-tests` | every `nxerp/tests/test_*.py` module except the matrix and the ERPNext smoke | yes |
+| `nxerp-tests` | every `apps/nxerp_platform/nxerp/tests/test_*.py` module except the matrix and the ERPNext smoke | yes |
 | `access-matrix` | `test_access_matrix`; uploads `docs/security/phase2-matrix.md` as artifact `access-matrix` | yes |
 | `erpnext-smoke` | `test_erpnext_smoke` | yes |
 | `helpdesk-regression` | `bench run-tests --app helpdesk` with the access layer active | yes |

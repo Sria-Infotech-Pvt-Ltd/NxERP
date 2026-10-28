@@ -24,7 +24,7 @@ Types: `feat`, `fix`, `docs`, `chore`, `ci`, `test`, `refactor`. No secrets, no 
 ## Pull requests
 
 - Fill in the PR template; paste evidence of what you ran and saw.
-- Required reviews: at least one approval; a code owner for sensitive paths (`nxerp/`, `deploy/`, `.github/`, `docs/adr/`).
+- Required reviews: at least one approval; a code owner for sensitive paths (`apps/nxerp_platform/`, `deploy/`, `.github/`, `docs/adr/`).
 - Changes to version pins, access rules, routes or the architecture rules need the matching ADR updated in the same PR.
 - CI must be green. CI results from a local run are not CI results: say which you ran.
 
