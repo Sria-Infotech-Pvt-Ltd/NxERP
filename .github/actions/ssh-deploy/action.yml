@@ -60,7 +60,7 @@ runs:
         opts=(-i "$RUNNER_TEMP/ssh/key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts")
         ssh "${opts[@]}" "$DEPLOY_USER@$HOST" "mkdir -p '$DEPLOY_PATH/scripts'"
         scp "${opts[@]}" deploy/scripts/*.sh "$DEPLOY_USER@$HOST:$DEPLOY_PATH/scripts/"
-        scp "${opts[@]}" deploy/staging-like/compose.yaml deploy/staging-like/nginx.conf.template "$DEPLOY_USER@$HOST:$DEPLOY_PATH/"
+        scp "${opts[@]}" deploy/docker/compose/staging-like/compose.yaml deploy/docker/compose/staging-like/nginx.conf.template "$DEPLOY_USER@$HOST:$DEPLOY_PATH/"
         ssh "${opts[@]}" "$DEPLOY_USER@$HOST" "chmod +x '$DEPLOY_PATH'/scripts/*.sh"
 
     - name: Registry login on the host

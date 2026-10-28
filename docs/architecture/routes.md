@@ -4,7 +4,7 @@ Status: Phase 3. Every route the platform owns or depends on, who may open it, a
 Companion to [ADR-004](../adr/ADR-004-route-map.md) (the decision) and
 [`access-admin.md`](access-admin.md) (how grants are managed). Behaviour below was observed on the running
 dev stack and is covered by `apps/nxerp_platform/nxerp/tests/test_unified_experience.py`, `apps/nxerp_platform/nxerp/tests/test_routing.py` and the
-browser suites in `e2e/`.
+browser suites in `apps/nxerp_platform/browser-tests/`.
 
 **Reading the table.** *Guest* = not signed in. *Staff* = a System User. *Authorised* = holds the app's grant
 (`docs/adr/ADR-003-amendment-1.md`). "Friendly page" = `/nxerp/no-access`. No response in this document
@@ -109,6 +109,6 @@ other `bench set-config` change takes effect within a minute without a restart.
 
 The login, launcher and no-access pages: one `h1`, a `main` landmark, labelled fields, `lang` set, a skip link on
 the launcher and the no-access page, visible focus, text contrast checked in light and dark at 1440 and 390 px
-wide, no horizontal scroll (`e2e/pages.test.mjs`). These are automated basics, not a screen-reader audit.
+wide, no horizontal scroll (`apps/nxerp_platform/browser-tests/pages.test.mjs`). These are automated basics, not a screen-reader audit.
 NXERP branding appears on the login, launcher and no-access pages; ERPNext and Helpdesk keep their own names
 and tiles. Palette tokens come from `apps/nxerp_platform/nxerp/public/css/nxerp-theme.css` only.

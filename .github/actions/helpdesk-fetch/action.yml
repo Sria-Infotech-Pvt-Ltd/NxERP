@@ -4,7 +4,7 @@ description: >
   The pin is the single source of truth: there is no branch name or ref to configure here.
 inputs:
   dest:
-    description: Directory to create (outside the nxerp checkout; deploy/dev/up.sh expects ../helpdesk next to it)
+    description: Directory to create (outside the nxerp checkout; deploy/bootstrap/up.sh expects ../helpdesk next to it)
     required: true
   apps-json:
     description: Path of the apps.json that holds the pin
@@ -13,7 +13,7 @@ inputs:
     description: Read token for the Helpdesk repository (secrets.HELPDESK_READ_TOKEN); empty works only for a public repository
     default: ""
   branch:
-    description: Local branch name to create at the pinned commit (deploy/dev/up.sh installs the branch checked out in ../helpdesk)
+    description: Local branch name to create at the pinned commit (deploy/bootstrap/up.sh installs the branch checked out in ../helpdesk)
     default: ci-pinned
 runs:
   using: composite

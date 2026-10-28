@@ -36,7 +36,7 @@ rule nobody checks is not a standard.
 
 ## JavaScript, Vue and TypeScript
 
-- **This repo has no Vue or TypeScript.** The only JavaScript here is the browser test suite under `e2e/` (`.mjs`, tabs, no build step) and two scripts under `scripts/`.
+- **This repo has no Vue or TypeScript.** The only JavaScript here is the browser test suite under `apps/nxerp_platform/browser-tests/` (`.mjs`, tabs, no build step) and two scripts under `scripts/`.
 - The Helpdesk SPA and the palette generator live in the **Helpdesk repo** and follow that repo's tooling: `.prettierrc.json`, `.eslintrc.js`, `commitlint.config.mjs`. Run its own checks there. Colours come from the generated palette tokens only (`yarn theme:audit` fails on a hard-coded colour); never edit the generated CSS under `apps/nxerp_platform/nxerp/public/css/` by hand (`yarn theme:build` in the Helpdesk repo regenerates it).
 - **Server-side first:** the frontend is never the security boundary. Hiding a button, a tile or a route is display; the server must refuse the request ([security-guidelines.md](security-guidelines.md)).
 

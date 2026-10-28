@@ -104,11 +104,11 @@ jobs:
         run: docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.12 -color
       - name: Shell syntax of deploy and CI scripts
         run: |
-          for f in deploy/scripts/*.sh deploy/docker/*.sh deploy/dev/*.sh e2e/*.sh scripts/*.sh; do bash -n "$f"; done
+          for f in deploy/scripts/*.sh deploy/docker/*.sh deploy/bootstrap/*.sh apps/nxerp_platform/browser-tests/*.sh scripts/*.sh; do bash -n "$f"; done
       - name: Staging-like compose file renders (config only; dummy values, nothing is started)
         run: |
           printf 'NXERP_IMAGE_TAG=0.0.0-ci\nNXERP_SITE=staging.example.test\nNXERP_DB_ROOT_PASSWORD=dummy\nNXERP_ADMIN_PASSWORD=dummy\n' > "$RUNNER_TEMP/dummy.env"
-          docker compose --env-file "$RUNNER_TEMP/dummy.env" -f deploy/staging-like/compose.yaml config -q
+          docker compose --env-file "$RUNNER_TEMP/dummy.env" -f deploy/docker/compose/staging-like/compose.yaml config -q
       - name: Dockerfile passes BuildKit's build checks (no build is run here; see job docker-build)
         run: docker buildx build --check -f deploy/docker/Dockerfile .
 
@@ -156,7 +156,7 @@ jobs:
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ runner.temp }}/stack-volumes
-          key: stack-${{ runner.os }}-${{ hashFiles('deploy/apps.json', 'deploy/versions.env', 'deploy/dev/bootstrap.sh', 'deploy/dev/compose.yaml', 'e2e/site.sh') }}
+          key: stack-${{ runner.os }}-${{ hashFiles('deploy/apps.json', 'deploy/versions.env', 'deploy/bootstrap/bootstrap.sh', 'deploy/docker/compose/dev/compose.yaml', 'apps/nxerp_platform/browser-tests/site.sh') }}
           lookup-only: true
       - name: Free disk space (the stack and its tarballs are several GB)
         if: steps.lookup.outputs.cache-hit != 'true'
@@ -294,7 +294,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # one shard per file in e2e/*.test.mjs; `first-run` needs the pristine site and finishes the setup wizard
+        # one shard per file in apps/nxerp_platform/browser-tests/*.test.mjs; `first-run` needs the pristine site and finishes the setup wizard
         suite: [first-run, journeys, flows, case3, recovery, pages]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -351,15 +351,15 @@ jobs:
         run: scripts/ci_stack.sh bench migrate
       - name: Deploy scripts against this stack
         env:
-          NXERP_COMPOSE_FILE: deploy/dev/compose.yaml
+          NXERP_COMPOSE_FILE: deploy/docker/compose/dev/compose.yaml
           NXERP_COMPOSE_PROJECT: nxerp-dev
-          NXERP_ENV_FILES: deploy/versions.env deploy/dev/.env
+          NXERP_ENV_FILES: deploy/versions.env deploy/bootstrap/.env
           NXERP_SERVICE: bench
           NXERP_SITE: nxerp.localhost
           NXERP_REQUIRE_SCHEDULER: "0" # a dev site has the scheduler disabled
           NXERP_BACKUP_DIR: ${{ runner.temp }}/backups
         run: |
-          set -a; . deploy/dev/.env; set +a
+          set -a; . deploy/bootstrap/.env; set +a
           deploy/scripts/healthcheck.sh
           backup_dir=$(deploy/scripts/backup.sh | tail -n 1)
           NXERP_DB_ROOT_PASSWORD="$NXERP_DB_ROOT_PASSWORD" deploy/scripts/restore.sh --yes "$backup_dir"
@@ -428,7 +428,7 @@ jobs:
           scripts/ci_stack.sh down
       - name: Reuse the previous stack's generated passwords (the old site was installed with them)
         if: steps.prev.outputs.tag != ''
-        run: install -m 600 "$RUNNER_TEMP/prev/nxerp-platform/deploy/dev/.env" deploy/dev/.env
+        run: install -m 600 "$RUNNER_TEMP/prev/nxerp-platform/deploy/dev/.env" deploy/bootstrap/.env
       - name: This commit's stack on the SAME volumes (no cache and no re-bootstrap, the old bench is reused)
         if: steps.prev.outputs.tag != ''
         uses: ./.github/actions/stack-up
@@ -444,9 +444,9 @@ jobs:
       - name: Site is healthy and the platform tests that need no fixtures pass
         if: steps.prev.outputs.tag != ''
         env:
-          NXERP_COMPOSE_FILE: deploy/dev/compose.yaml
+          NXERP_COMPOSE_FILE: deploy/docker/compose/dev/compose.yaml
           NXERP_COMPOSE_PROJECT: nxerp-dev
-          NXERP_ENV_FILES: deploy/versions.env deploy/dev/.env
+          NXERP_ENV_FILES: deploy/versions.env deploy/bootstrap/.env
           NXERP_SERVICE: bench
           NXERP_REQUIRE_SCHEDULER: "0"
         run: |
@@ -493,7 +493,7 @@ jobs:
           python -m pip install pip-audit==2.10.1
           pip-audit --no-deps --disable-pip -r build/deps/requirements.txt --progress-spinner off | tee build/deps/pip-audit.txt
       - name: npm audit (browser tests)
-        working-directory: e2e
+        working-directory: apps/nxerp_platform/browser-tests
         run: |
           npm install --package-lock-only --ignore-scripts
           npm audit --audit-level=high
@@ -583,7 +583,7 @@ jobs:
       - name: Python licences (PyPI metadata) against .github/license-policy
         run: python3 -I scripts/check_licenses.py pypi build/deps/requirements.txt
       - name: npm licences, browser tests
-        working-directory: e2e
+        working-directory: apps/nxerp_platform/browser-tests
         run: |
           npm install --ignore-scripts
           npx --yes license-checker-rseidelsohn@5.0.1 --json > "$RUNNER_TEMP/e2e-licenses.json"

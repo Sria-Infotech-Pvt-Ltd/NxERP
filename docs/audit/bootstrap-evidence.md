@@ -14,7 +14,7 @@ Everything here was executed on 2026-10-27 on a Windows 11 workstation with Dock
 
 ## 2. One-command bootstrap
 
-Command: `./deploy/dev/up.sh -d` (creates the git-ignored `deploy/dev/.env`, then `docker compose up`).
+Command: `./deploy/bootstrap/up.sh -d` (creates the git-ignored `deploy/bootstrap/.env`, then `docker compose up`).
 
 Clean from-scratch run (all volumes removed first, `docker compose -p nxerp-dev down -v`): **408 seconds** from `up` to `[bootstrap] ready:` (image layers and the host's Docker cache were warm; a first-ever run on a new machine downloads more).
 
@@ -135,7 +135,7 @@ Realtime room checks, `before_request` vs token ordering, private-file/print che
 
 ## 8. Workspace consolidation and palette verification (2026-10-27, later the same day)
 
-- The platform clone was moved into the workspace as `nxerp-platform/`, next to `helpdesk/`. A full rebuild from empty volumes (`down -v`, then `./deploy/dev/up.sh -d` from the new location) took **418 s** and installed Helpdesk from the local palette commit (`[bootstrap] helpdesk @ 9647f7664d (local /helpdesk-src feature/nxerp-palette)`). This run included the amended `bench setup requirements --dev` step, so that fix is now verified from scratch.
+- The platform clone was moved into the workspace as `nxerp-platform/`, next to `helpdesk/`. A full rebuild from empty volumes (`down -v`, then `./deploy/bootstrap/up.sh -d` from the new location) took **418 s** and installed Helpdesk from the local palette commit (`[bootstrap] helpdesk @ 9647f7664d (local /helpdesk-src feature/nxerp-palette)`). This run included the amended `bench setup requirements --dev` step, so that fix is now verified from scratch.
 - `yarn theme:check`, in the container against the real frappe-ui: generated files up to date; coverage 384 frappe-ui tokens per mode, accent family complete (frappe-ui 1.0.0-rc.1); contrast 99 checks passed in light and dark; synced copies up to date. `yarn theme:audit`: no hardcoded colors.
 - `bench run-tests --app nxerp`: 5 tests OK (adds the Desk-palette hook/asset test). `--module helpdesk.tests.api.test_theme`: 3 tests OK. `GET /assets/nxerp/css/nxerp-desk-theme.css`: 200.
 - Found and fixed: the Helpdesk repo's `.gitignore` excluded `desk/src/theme/build/` and `build/lib/` (generic `build/`, `lib/` rules), so the palette generator was never in git.
@@ -162,6 +162,6 @@ Realtime room checks, `before_request` vs token ordering, private-file/print che
 - ERPNext smoke: an authorised user loads `/desk`, creates and reads a Customer and an Item over HTTP; the same business
   roles without the grant are refused on the same session and allowed the moment the grant is added.
 - Static: bandit 1.9.4 (0 high, 0 medium, 1 low accepted), ruff check and format clean, architecture check, pin check.
-- Test-environment notes: the bench container's `NXERP_ADMIN_PASSWORD` can be stale relative to `deploy/dev/.env`; pass it
+- Test-environment notes: the bench container's `NXERP_ADMIN_PASSWORD` can be stale relative to `deploy/bootstrap/.env`; pass it
   explicitly with `docker compose exec -e`. Tests create and delete committed fake users and records on the dev database.
 - Not run: the GitHub Actions workflow (no write access to the repository), so no CI result exists.

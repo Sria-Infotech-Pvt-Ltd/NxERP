@@ -1,7 +1,7 @@
 """Fixtures for the Playwright suite in /e2e: clearly fake users for every journey and the role of a
-test-only third app. Never part of a shipped site; the suite runs on its own fresh site (e2e/site.sh).
+test-only third app. Never part of a shipped site; the suite runs on its own fresh site (apps/nxerp_platform/browser-tests/site.sh).
 
-Run inside the bench container (e2e/run.sh does this for you):
+Run inside the bench container (apps/nxerp_platform/browser-tests/run.sh does this for you):
 
 	NXERP_E2E_PASSWORD=... bench --site nxerp-e2e.localhost execute nxerp.tests.e2e_fixtures.setup
 	bench --site nxerp-e2e.localhost execute nxerp.tests.e2e_fixtures.teardown
@@ -128,7 +128,7 @@ def two_factor(enabled: bool = True):
 
 
 def use_mail_sink(port: int = 2525):
-	"""Point outgoing mail at a local capture server (e2e/lib/mailsink.mjs); nothing leaves the machine."""
+	"""Point outgoing mail at a local capture server (apps/nxerp_platform/browser-tests/lib/mailsink.mjs); nothing leaves the machine."""
 	_guard()
 	name = "NXERP E2E Sink"
 	if frappe.db.exists("Email Account", name):

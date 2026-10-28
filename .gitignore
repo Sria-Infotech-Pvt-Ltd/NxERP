@@ -6,8 +6,8 @@
 *.key
 *.sqlite
 *.sql.gz
-deploy/dev/.env
-deploy/dev/.no-helpdesk/
+deploy/bootstrap/.env
+deploy/bootstrap/.no-helpdesk/
 
 # Byte-compiled / Python
 __pycache__/

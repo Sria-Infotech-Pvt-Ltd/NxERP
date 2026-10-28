@@ -137,7 +137,7 @@ if [ "$environments" = 1 ]; then
 	fi
 	call PUT "repos/$repo/environments/production" "{\"wait_timer\":0,\"prevent_self_review\":true,\"reviewers\":[$reviewers_json],\"deployment_branch_policy\":{\"protected_branches\":false,\"custom_branch_policies\":true}}"
 	call POST "repos/$repo/environments/production/deployment-branch-policies" '{"name":"main","type":"branch"}'
-	echo "# Environment secrets/variables (DEPLOY_SSH_KEY, DEPLOY_HOST, ...) are NOT set by this script: see deploy/environments/README.md." >&2
+	echo "# Environment secrets/variables (DEPLOY_SSH_KEY, DEPLOY_HOST, ...) are NOT set by this script: see deploy/env/README.md." >&2
 fi
 
 echo

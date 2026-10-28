@@ -2,8 +2,8 @@
 
 When people cannot sign in, or the NXERP login page is broken, work down this list. Each step is a
 `bench` command run on the server (in the dev stack: `docker compose -p nxerp-dev exec bench bash -lc '<command>'`
-from `deploy/dev`). Replace `SITE` with the site name. Steps 1, 2 and 4 (and the lockout in 3) were exercised against a real browser session by
-`e2e/recovery.test.mjs` and `e2e/flows.test.mjs`.
+from `deploy/bootstrap`). Replace `SITE` with the site name. Steps 1, 2 and 4 (and the lockout in 3) were exercised against a real browser session by
+`apps/nxerp_platform/browser-tests/recovery.test.mjs` and `apps/nxerp_platform/browser-tests/flows.test.mjs`.
 
 **Do not paste passwords into a shared chat, ticket or shell history.** Where a command takes a password, leave
 it off and the command prompts for it.

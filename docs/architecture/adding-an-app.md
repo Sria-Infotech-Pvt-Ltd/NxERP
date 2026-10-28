@@ -5,7 +5,7 @@ Adding an app is **one registry entry plus grants**. No platform code changes, n
 ## 1. Install the app
 
 Add it to `deploy/apps.json`, pinned to an exact commit (never vendored, ADR-001), after the apps it
-depends on and before `nxerp`. Rebuild with `./deploy/dev/up.sh`.
+depends on and before `nxerp`. Rebuild with `./deploy/bootstrap/up.sh`.
 
 ## 2. Add one `AppEntry` to `apps/nxerp_platform/nxerp/registry.py`
 

@@ -8,7 +8,7 @@
 #   - /login renders the login form
 #   - protected routes do NOT serve content to an anonymous visitor: /nxerp/apps, /nxerp/go and /helpdesk redirect to
 #     /login; /api/resource/User answers 401 or 403
-# Exit 0 only when all pass. It is a gate, not a replacement for the browser suite (e2e/).
+# Exit 0 only when all pass. It is a gate, not a replacement for the browser suite (apps/nxerp_platform/browser-tests/).
 set -euo pipefail
 
 base=${NXERP_BASE_URL:?set NXERP_BASE_URL, e.g. https://staging.example.test}

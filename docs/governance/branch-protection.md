@@ -86,7 +86,7 @@ pattern `v*`, tick **Restrict deletions**, **Restrict updates**, **Block force p
 
 **Environments** - **Settings > Environments > New environment**: `staging`; `production` with **Required reviewers** (at least two
 people or a team), **Prevent self-review**, and **Deployment branches and tags** limited to `main`. Add the secrets and variables
-listed in `deploy/environments/README.md`.
+listed in `deploy/env/README.md`.
 
 **Teams for CODEOWNERS** - organisation **Teams > New team**: create `nxerp-platform`, `nxerp-security`, `nxerp-devops`,
 `nxerp-architecture`, `nxerp-maintainers`; give each **Write** access to the repository (Settings > Collaborators and teams).

@@ -36,7 +36,7 @@ type(scope)!: summary                    breaking change; explain it in the body
 - Changes that need an ADR in the same PR: version pins (`deploy/versions.env`, `deploy/apps.json` -> ADR-002), access rules
   (ADR-003), routes (ADR-004), architecture rules (ADR-005), dev/deploy topology (ADR-006).
 - Sensitive paths (see `CODEOWNERS`): `nxerp/{enforcement,access,guard,routing}.py`, `apps/nxerp_platform/nxerp/www/login.*`, `apps/nxerp_platform/nxerp/patches/`, `deploy/`,
-  `.github/`, `docs/governance/`, `e2e/`. Security owners review them. Reviewers check the server-side enforcement, not the UI.
+  `.github/`, `docs/governance/`, `apps/nxerp_platform/browser-tests/`. Security owners review them. Reviewers check the server-side enforcement, not the UI.
 
 ## Review rules
 

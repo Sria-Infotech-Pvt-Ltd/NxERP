@@ -37,7 +37,7 @@
 /CODEOWNERS                    @Sria-Infotech-Pvt-Ltd/nxerp-maintainers @Sria-Infotech-Pvt-Ltd/nxerp-security
 
 # Browser end-to-end suite: it defines what "access works" means, so platform and security own it
-/e2e/                          @Sria-Infotech-Pvt-Ltd/nxerp-platform @Sria-Infotech-Pvt-Ltd/nxerp-security
+/apps/nxerp_platform/browser-tests/                          @Sria-Infotech-Pvt-Ltd/nxerp-platform @Sria-Infotech-Pvt-Ltd/nxerp-security
 
 # Architecture and process docs
 /docs/adr/                     @Sria-Infotech-Pvt-Ltd/nxerp-architecture

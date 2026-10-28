@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Runs INSIDE the bench container (see deploy/dev/compose.yaml). Idempotent: on an existing
+# Runs INSIDE the bench container (see deploy/docker/compose/dev/compose.yaml). Idempotent: on an existing
 # bench it skips straight to `bench start`.
 #
 # Builds: frappe (pinned in deploy/versions.env) + the apps in deploy/apps.json, in order,

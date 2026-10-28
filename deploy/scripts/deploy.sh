@@ -34,7 +34,7 @@ while [ $# -gt 0 ]; do
 done
 [[ "$tag" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][A-Za-z0-9._-]+)?$ ]] || die "--tag must look like 1.2.3, 1.2.3-rc.1 or 1.2.3-ab12cd34ef56 (got '$tag')"
 env_file=${NXERP_ENV_FILES%% *}
-[ -f "$env_file" ] || die "env file not found: $env_file (create it from deploy/environments/*.env.example)"
+[ -f "$env_file" ] || die "env file not found: $env_file (create it from deploy/env/*.env.example)"
 
 set_tag() { # set_tag TAG: rewrite NXERP_IMAGE_TAG in the env file atomically, keeping its mode
 	local tmp

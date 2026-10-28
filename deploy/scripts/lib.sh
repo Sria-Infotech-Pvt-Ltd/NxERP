@@ -5,7 +5,7 @@
 # a real staging/production host (run it there, or over ssh) and, for tests, the dev stack:
 #
 #   NXERP_SITE              site name (default nxerp.localhost)
-#   NXERP_COMPOSE_FILE      compose file (default deploy/staging-like/compose.yaml)
+#   NXERP_COMPOSE_FILE      compose file (default deploy/docker/compose/staging-like/compose.yaml)
 #   NXERP_COMPOSE_PROJECT   compose project name (-p), optional
 #   NXERP_ENV_FILES         space-separated --env-file list, optional
 #   NXERP_SERVICE           service that has bench (default backend; the dev stack uses "bench")
@@ -17,7 +17,7 @@
 export MSYS_NO_PATHCONV=1 # Git Bash on Windows must not rewrite /home/frappe/... into C:/...
 
 NXERP_SITE=${NXERP_SITE:-nxerp.localhost}
-NXERP_COMPOSE_FILE=${NXERP_COMPOSE_FILE:-deploy/staging-like/compose.yaml}
+NXERP_COMPOSE_FILE=${NXERP_COMPOSE_FILE:-deploy/docker/compose/staging-like/compose.yaml}
 NXERP_COMPOSE_PROJECT=${NXERP_COMPOSE_PROJECT:-}
 NXERP_ENV_FILES=${NXERP_ENV_FILES:-}
 NXERP_SERVICE=${NXERP_SERVICE:-backend}

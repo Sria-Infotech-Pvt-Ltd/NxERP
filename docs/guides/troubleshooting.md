@@ -2,7 +2,7 @@
 
 Real problems met while building NXERP, with cause and fix. Each entry says whether the cause was **verified** (seen and
 reproduced or proven by a test) or is an **assumption**. For login problems in a running environment use the runbook
-[`../runbooks/login-recovery.md`](../runbooks/login-recovery.md) first. Commands run in the dev stack from `deploy/dev`
+[`../runbooks/login-recovery.md`](../runbooks/login-recovery.md) first. Commands run in the dev stack from `deploy/bootstrap`
 (`docker compose -p nxerp-dev -f compose.yaml exec -T bench bash -lc '<command>'`); replace `<site>` with `nxerp.localhost`
 (dev) or `nxerp-e2e.localhost` (browser suite). **Never** `docker compose down -v` or recreate the stack to fix a problem: that
 deletes the site and its database. Restarting the one container (`docker restart nxerp-dev-bench-1`) is fine.
@@ -28,7 +28,7 @@ deletes the site and its database. Restarting the one container (`docker restart
 
 - **Symptom:** opening ERPNext Desk on a site flickers and reloads forever.
 - **Cause (verified, dev-site incident in Phase 3):** Frappe's global default `desktop:home_page` stays `setup-wizard` until the wizard genuinely finishes. A fixture had marked the site's setup as complete (the setup flags) without resetting that default, so Desk sent the browser to the wizard, the wizard sent it back, repeat. It was a test-fixture mistake, not a platform bug.
-- **Fix:** set the default to `workspace`, which is what a finished wizard sets (ERPNext then opened with no redirects). Do not mark setup complete by hand; finish the wizard, or use its API as `e2e/first-run.test.mjs` does. The fixtures no longer touch the dev site's setup state.
+- **Fix:** set the default to `workspace`, which is what a finished wizard sets (ERPNext then opened with no redirects). Do not mark setup complete by hand; finish the wizard, or use its API as `apps/nxerp_platform/browser-tests/first-run.test.mjs` does. The fixtures no longer touch the dev site's setup state.
 - **Status of the command:** the value and the effect were verified on the dev site in Phase 3; the exact command used was not recorded. Frappe's own source confirms the form: `frappe/desk/page/setup_wizard/setup_wizard.py:410` does `frappe.db.set_default("desktop:home_page", "workspace")` when the wizard completes, `frappe/utils/install.py:48-49` sets `setup-wizard` on install, and the patch `reset_corrupt_defaults` (`v13_0`) sets either value from `setup_complete`. One way to apply it by hand is `bench --site <site> console` then `frappe.db.set_default("desktop:home_page", "workspace")` and `frappe.db.commit()` (ASSUMPTION: this exact snippet was not run for this page). Related: the Administrator on a site with an unfinished wizard is deliberately routed to `/desk` so the wizard runs (`routing.landing_for`, ADR-004 rule 5).
 
 ## 2. A hyphenated `www` page's controller never runs
@@ -47,7 +47,7 @@ deletes the site and its database. Restarting the one container (`docker restart
 
 - **Symptom:** a harness script "detects" that a server is already running when it is not (or fails to start one).
 - **Cause (verified):** `pgrep -f '<pattern>'` run from `bash -lc '... <pattern> ...'` matches the very shell whose command line contains the pattern.
-- **Fix:** probe the port instead (`curl -s -o /dev/null http://localhost:8001/login`), and when you must match a process use a bracketed pattern (`pkill -f 'bench_[h]elper.*serve --port 8001'`). This is what `e2e/run.sh` does.
+- **Fix:** probe the port instead (`curl -s -o /dev/null http://localhost:8001/login`), and when you must match a process use a bracketed pattern (`pkill -f 'bench_[h]elper.*serve --port 8001'`). This is what `apps/nxerp_platform/browser-tests/run.sh` does.
 
 ## 5. `bench execute` hides the real exception
 
@@ -59,18 +59,18 @@ deletes the site and its database. Restarting the one container (`docker restart
 
 - **Symptom:** `docker compose exec bench ls /workspace` fails, or complains about `C:/Program Files/Git/workspace`.
 - **Cause (verified):** MSYS path conversion in Git Bash rewrites arguments that look like POSIX paths.
-- **Fix:** prefix the command with `MSYS_NO_PATHCONV=1`, or keep the path inside the quoted `bash -lc '...'` string (observed: a path embedded in a longer quoted string, as `e2e/run.sh` does, is left alone). Using WSL avoids it.
+- **Fix:** prefix the command with `MSYS_NO_PATHCONV=1`, or keep the path inside the quoted `bash -lc '...'` string (observed: a path embedded in a longer quoted string, as `apps/nxerp_platform/browser-tests/run.sh` does, is left alone). Using WSL avoids it.
 
 ## 7. Where is the MariaDB root password?
 
 - **Symptom:** `bench new-site`, `drop-site` or `restore` asks for a root password and no document says where it is.
-- **Answer:** the dev stack generates it on first run into the git-ignored `deploy/dev/.env` as `NXERP_DB_ROOT_PASSWORD` (next to `NXERP_ADMIN_PASSWORD`). It is deliberately in no document and no script. `e2e/site.sh` passes it into the container for you. For an ad-hoc command: `cd deploy/dev; set -a; . ./.env; set +a; docker compose -p nxerp-dev -f compose.yaml exec -T -e NXERP_DB_ROOT_PASSWORD bench bash -lc 'cd ~/frappe-bench && bench --site <site> restore <file> --db-root-password "$NXERP_DB_ROOT_PASSWORD"'` (the variable is read from your shell, never typed or printed). Day-to-day work does not need the root password: the site has its own database credentials.
-- If `deploy/dev/.env` is lost, ASSUMPTION: the passwords already stored in the existing volumes still apply and a regenerated `.env` would not change them (not tested). Do not recreate the stack to "reset" them; ask the person who ran the first `up.sh`.
+- **Answer:** the dev stack generates it on first run into the git-ignored `deploy/bootstrap/.env` as `NXERP_DB_ROOT_PASSWORD` (next to `NXERP_ADMIN_PASSWORD`). It is deliberately in no document and no script. `apps/nxerp_platform/browser-tests/site.sh` passes it into the container for you. For an ad-hoc command: `cd deploy/bootstrap; set -a; . ./.env; set +a; docker compose -p nxerp-dev -f compose.yaml exec -T -e NXERP_DB_ROOT_PASSWORD bench bash -lc 'cd ~/frappe-bench && bench --site <site> restore <file> --db-root-password "$NXERP_DB_ROOT_PASSWORD"'` (the variable is read from your shell, never typed or printed). Day-to-day work does not need the root password: the site has its own database credentials.
+- If `deploy/bootstrap/.env` is lost, ASSUMPTION: the passwords already stored in the existing volumes still apply and a regenerated `.env` would not change them (not tested). Do not recreate the stack to "reset" them; ask the person who ran the first `up.sh`.
 
 ## 8. The Helpdesk pin in `deploy/apps.json` is not the code you are running
 
 - **Facts (verified 2026-10-28):** `apps.json` pins the Helpdesk fork commit `1c6981cc5` on `feature/nxerp-login-page`, which exists on the `company` remote and still contains Helpdesk's own `www/login.*`. The Phase 3 Helpdesk work (login removed, title "Helpdesk", Apps menu) is on the local branch `feature/nxerp-platform-login` (`3897718c6`), which **is not on any remote**.
-- **Consequences:** `./deploy/dev/up.sh` installs the branch checked out in the sibling `../helpdesk` folder when it exists (the intended dev setup), so a developer with that checkout sees Phase 3. A build **without** the sibling folder (a clean CI runner, a new colleague's machine) installs the pinned commit, i.e. Helpdesk before Phase 3. `nxerp` is installed last so its `/login` still wins, but the rest of the Phase 3 changes are absent. Whether the full test suite passes on that build is NOT verified.
+- **Consequences:** `./deploy/bootstrap/up.sh` installs the branch checked out in the sibling `../helpdesk` folder when it exists (the intended dev setup), so a developer with that checkout sees Phase 3. A build **without** the sibling folder (a clean CI runner, a new colleague's machine) installs the pinned commit, i.e. Helpdesk before Phase 3. `nxerp` is installed last so its `/login` still wins, but the rest of the Phase 3 changes are absent. Whether the full test suite passes on that build is NOT verified.
 - **If the bootstrap cannot fetch a pin:** it fails on purpose (`fetch_pinned` aborts when the commit does not resolve; the exact message was not reproduced for this page). Push the commit to the fork first (needs write access to `Sriainfotech/Frappe-Help-Desk`), then update `apps.json` to that exact commit, update [ADR-002](../adr/ADR-002-version-matrix.md) and run `python3 -I deploy/check_pins.py`.
 - **Rule:** the release must pin a commit that exists on a remote ([release-process.md](release-process.md)); a local-only branch cannot be a release.
 

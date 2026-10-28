@@ -25,7 +25,7 @@ on the repository (Phase 4 handles git). Nothing was pushed.
 
 **Built:** `/login` in `nxerp` (kill-switch `nxerp_stock_login`), router `/nxerp/go`, launcher `/nxerp/apps`, friendly
 `/nxerp/no-access`, tile overrides, "All applications" row for multi-app users, test-only third app, grant-migration dry run
-(`apps/nxerp_platform/nxerp/migration.py`), runbook, routes doc, ADR-004 amendment, browser harness in `e2e/`.
+(`apps/nxerp_platform/nxerp/migration.py`), runbook, routes doc, ADR-004 amendment, browser harness in `apps/nxerp_platform/browser-tests/`.
 
 **Verified by execution (FACT):**
 
@@ -40,7 +40,7 @@ on the repository (Phase 4 handles git). Nothing was pushed.
 
 **NOT verified (be clear before relying on this):**
 
-- `e2e/pages.test.mjs` (screenshots at desktop and phone widths, accessibility checks) and `e2e/recovery.test.mjs` (kill-switch,
+- `apps/nxerp_platform/browser-tests/pages.test.mjs` (screenshots at desktop and phone widths, accessibility checks) and `apps/nxerp_platform/browser-tests/recovery.test.mjs` (kill-switch,
   admin-password reset, break-glass admin) were **written but never run**. `docs/evidence/phase3/` has **no screenshots** from them, and
   no accessibility defects were looked for or fixed. The runbook commands are the real Frappe commands but are untested here.
 - Journeys: the one failure (the "All applications" row on a fresh site) was fixed by syncing the navbar item on install
@@ -63,7 +63,7 @@ not driven end to end by the tests (they finish the wizard through its API).
 Helpdesk's menu still links to Frappe support/docs; the grant migration heuristic over-suggests (a "Website Manager" role also has
 ERPNext DocPerms), so review its dry-run output before applying.
 
-**To finish Phase 3:** run `e2e/site.sh snapshot` once (done on the dev machine), then `e2e/run.sh` (about 25 minutes), read
+**To finish Phase 3:** run `apps/nxerp_platform/browser-tests/site.sh snapshot` once (done on the dev machine), then `apps/nxerp_platform/browser-tests/run.sh` (about 25 minutes), read
 `docs/evidence/phase3/`, fix what the pages suite finds, and rerun the two items above.
 
 ## Phase 2 (2026-10-27): access layer
@@ -88,7 +88,7 @@ Branch `phase-2/access-layer` (off `phase-1/foundation`) in `nxerp-platform`. No
 
 ## Where the code lives (updated 2026-10-27)
 
-One workspace folder, `frapper sria/`: `nxerp-platform/` (this repo, branch `phase-1/foundation`) and `helpdesk/` (Helpdesk fork, branch `feature/nxerp-palette`). `./deploy/dev/up.sh` runs both together. The earlier clone under `dev/NxERP` (outside the workspace) is an obsolete duplicate and can be deleted.
+One workspace folder, `frapper sria/`: `nxerp-platform/` (this repo, branch `phase-1/foundation`) and `helpdesk/` (Helpdesk fork, branch `feature/nxerp-palette`). `./deploy/bootstrap/up.sh` runs both together. The earlier clone under `dev/NxERP` (outside the workspace) is an obsolete duplicate and can be deleted.
 
 ## Colour palette (completed 2026-10-27)
 
@@ -107,7 +107,7 @@ One workspace folder, `frapper sria/`: `nxerp-platform/` (this repo, branch `pha
 - Research: `docs/research/frappe-access-and-routing.md` + two parts, including the surface coverage table
 - ADR-001 to ADR-006, all Accepted
 - Platform app `nxerp` (scaffold only, 4 tests passing), `deploy/` pins + dev stack, `scripts/` checks, governance files, minimal CI
-- One command (`./deploy/dev/up.sh -d`) brought up frappe + payments + erpnext + telephony + helpdesk + nxerp on one site in 408 s from empty volumes
+- One command (`./deploy/bootstrap/up.sh -d`) brought up frappe + payments + erpnext + telephony + helpdesk + nxerp on one site in 408 s from empty volumes
 
 ## Decisions made (see ADRs)
 

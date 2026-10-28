@@ -24,7 +24,7 @@ frapper sria/
   helpdesk/         Helpdesk module (company fork of frappe/helpdesk, incl. the NXERP login and palette)
 ```
 
-`./deploy/dev/up.sh` mounts both: it installs the platform app from this folder and Helpdesk from `../helpdesk` (the branch currently checked out there), plus pinned ERPNext, so one stack runs the whole product.
+`./deploy/bootstrap/up.sh` mounts both: it installs the platform app from this folder and Helpdesk from `../helpdesk` (the branch currently checked out there), plus pinned ERPNext, so one stack runs the whole product.
 
 ## What this repository holds
 
@@ -56,7 +56,7 @@ Frappe and ERPNext are **never vendored or copied here**; they are upstream tags
 Requires Docker with Compose v2 (Windows: run from Git Bash or WSL).
 
 ```bash
-./deploy/dev/up.sh -d                       # builds a bench and a site; first run is slow
+./deploy/bootstrap/up.sh -d                       # builds a bench and a site; first run is slow
 docker compose -p nxerp-dev logs -f bench   # wait for "ready:"
 # then open http://nxerp.localhost:8100 (ERPNext Desk at /app, Helpdesk at /helpdesk)
 ```

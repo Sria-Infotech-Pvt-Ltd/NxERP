@@ -14,7 +14,7 @@
 # backup of the failed state for forensics) -> maintenance mode off -> healthcheck.
 #
 # Compose services recreated: $NXERP_ROLLBACK_SERVICES (default "backend websocket queue-worker scheduler"). The compose
-# file must read the image tag from ${NXERP_IMAGE_TAG} (deploy/staging-like/compose.yaml does).
+# file must read the image tag from ${NXERP_IMAGE_TAG} (deploy/docker/compose/staging-like/compose.yaml does).
 set -euo pipefail
 # shellcheck source=deploy/scripts/lib.sh
 . "$(dirname "$0")/lib.sh"

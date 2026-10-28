@@ -82,7 +82,7 @@ The project rules live in the repository root: [CLAUDE.md](../CLAUDE.md) (non-ne
 | [runbooks/release.md](runbooks/release.md) | Cutting a release (the procedure behind [guides/release-process.md](guides/release-process.md)) |
 | [runbooks/deploy.md](runbooks/deploy.md) | Deploying, verifying and rolling back an environment |
 
-Further runbooks appear in [runbooks/](runbooks/) as the deployment owners add them. The build, environments, scripts and the staging-like stack are described in [../deploy/README.md](../deploy/README.md) and [../deploy/environments/README.md](../deploy/environments/README.md).
+Further runbooks appear in [runbooks/](runbooks/) as the deployment owners add them. The build, environments, scripts and the staging-like stack are described in [../deploy/README.md](../deploy/README.md) and [../deploy/env/README.md](../deploy/env/README.md).
 
 ## Governance
 

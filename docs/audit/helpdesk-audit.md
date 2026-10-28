@@ -151,7 +151,7 @@ FACT: `git diff --stat` = 43 files, +467 / -265. Untracked: see list. Nothing he
 | Build/CI wiring | modified `desk/package.json` (scripts `theme:build`, `theme:check`, `theme:audit`), `.github/workflows/lint.yml` (new job `theme-tokens`), `.pre-commit-config.yaml` (local hook `theme-audit`), untracked `.prettierignore` | Gate that generated files are fresh, contrast passes, no hard-coded colours |
 | Tailwind/CSS | modified `desk/tailwind.config.js`, `desk/src/index.css`, `desk/src/App.vue`, `desk/src/main.js` (icon class `text-ink-blue-5` -> `text-ink-accent-5`) | Applies generated theme as `theme.extend` plus a first-listed plugin |
 | Component recolouring | 25+ modified Vue/TS files (BarChartCard, LineChartCard, ThemeSwitcher, TicketStats, ChartItem, RecentFeedback, ticketStatus store, tiptap-extensions, call-logs utils, etc.) | Replace hex/blue classes with theme tokens; e.g. `AgentTicketsCard.vue` swaps hard-coded chart colours for `useChartTheme()` (diff verified) |
-| Boot/theme persistence | modified `helpdesk/www/helpdesk/index.py` (adds `desk_theme` to boot, +3 lines), modified `desk/index.html` (pre-paint theme script reading `boot.desk_theme`), untracked `helpdesk/api/theme.py` (`set_desk_theme`, POST, writes `User.desk_theme`), untracked `helpdesk/tests/api/test_theme.py` (3 tests), untracked `e2e/tests/theme.spec.ts` (3 tests) | Server-side persisted Light/Dark/Automatic choice shared with Frappe Desk |
+| Boot/theme persistence | modified `helpdesk/www/helpdesk/index.py` (adds `desk_theme` to boot, +3 lines), modified `desk/index.html` (pre-paint theme script reading `boot.desk_theme`), untracked `helpdesk/api/theme.py` (`set_desk_theme`, POST, writes `User.desk_theme`), untracked `helpdesk/tests/api/test_theme.py` (3 tests), untracked `apps/nxerp_platform/browser-tests/tests/theme.spec.ts` (3 tests) | Server-side persisted Light/Dark/Automatic choice shared with Frappe Desk |
 | Login theming | modified `helpdesk/www/login.html` (theme toggle, pre-paint script, links `nxerp-theme.css`), `helpdesk/www/login.py` (adds `context.nx_theme_version`; remaining diff is black-style re-wrapping), `helpdesk/public/nxerp_login/css/nxerp-login.css` (+300/-~100 lines); untracked `nxerp-theme.css`, `fonts/manrope-latin.woff2`, `fonts/space-grotesk-latin.woff2` | Light/dark login with `meta theme-color` changed `#081830` -> `#fcfcfb` |
 | Docs | modified `AGENTS.md` | NOT VERIFIED what changed (diff 4 lines, not read) |
 
@@ -174,7 +174,7 @@ FACT: `desk/src/theme/runtime/useAppTheme.ts:21` calls `helpdesk.api.theme.set_d
 - FACT: Frappe 16.53.0 `frappe/www/login.html` contains no `.btn-login` main submit class (submit button is `<button class="es-button w-full" data-variant="solid" type="submit">`, lines ~43-46), no `forgot-password-message` and no `login-divider` (grep counts 0; `grep -n "btn-login\b"` returned no match). `login_with_frappe_cloud_url` is referenced nowhere in Frappe 16.53.0 (grep returned nothing).
 - FACT: committed `www/login.html` JS and `nxerp-login.css` select `section.for-login .btn-login` (login.html:128,179), `.forgot-password-message` (login.html:131,136; css:200-208), `.login-divider` (login.html:159; css:256-260). On Frappe 16.53.0 these selectors do not match, so steps 2, 3 (keep me signed in), 5b and part of the CSS silently no-op (every JS step is wrapped in `try/catch`, login.html:106-263).
 - FACT: `login.py:42` sets `context.login_with_frappe_cloud_url = None`, which has no effect on Frappe 16.53.0.
-- FACT: the e2e login test expects a button named "Continue" (`e2e/tests/auth.spec.ts:13`), matching Frappe 16's stock button text.
+- FACT: the e2e login test expects a button named "Continue" (`apps/nxerp_platform/browser-tests/tests/auth.spec.ts:13`), matching Frappe 16's stock button text.
 - NOT VERIFIED: the Frappe 15.122 template (what `nxerp-stable` runs) structure. The selectors above are consistent with a v15-era template but this was not checked because no v15 source is available.
 
 ---
@@ -295,7 +295,7 @@ FACT: no test and no patch references NXERP. FACT: `locale/*.po` files were excl
 | Upstream `app_email` | `hooks.py:7` upstream company address | |
 | Docs/screenshots | `desk/public/{article,article-2,ticketActivity,timers}.png`, `screenshot.webp` | not inspected; NOT VERIFIED whether they show Frappe branding |
 
-FACT: `desk/src/components/UserMenu.vue:24` shows `config.brandName || "Helpdesk"`. Therefore after `apply_branding()` (brand_name = NXERP) the user-menu button reads "NXERP ..." and the e2e selector `/^Helpdesk /` in `e2e/tests/auth.spec.ts:17` would no longer match. Not run; derivation from code.
+FACT: `desk/src/components/UserMenu.vue:24` shows `config.brandName || "Helpdesk"`. Therefore after `apply_branding()` (brand_name = NXERP) the user-menu button reads "NXERP ..." and the e2e selector `/^Helpdesk /` in `apps/nxerp_platform/browser-tests/tests/auth.spec.ts:17` would no longer match. Not run; derivation from code.
 
 FACT: upstream strings reworded in the commit: "Login to Frappe Cloud", "Frappe Discuss", "A Frappe partner or consultant", "frappe.io" placeholders (diff in 3.1).
 
@@ -442,7 +442,7 @@ Observations (FACT about code, runtime NOT VERIFIED):
 | Biggest files | `hd_ticket/test_hd_ticket.py` 129, `integrations/erpnext/test_erpnext_integration.py` 45, `hd_saved_reply/test_hd_saved_reply.py` 32, `tests/test_core_comments.py` 28, `hd_customer/test_hd_customer.py` 27, `hd_agent_status` 23, `hd_agent` 22 | |
 | API tests | `helpdesk/tests/api/**` (agent_home, settings, article, assignment_rule, banners, contact, customer_portal_notice, dashboard, doc_fields, doc_filters, doc_list, onboarding, permission, tags, ticket_analytics, ticket_stats) | |
 | Base classes | `IntegrationTestCase` 29 files, `FrappeTestCase` 18 files, `UnitTestCase` 2 files | FACT `git grep -l`; Frappe 16.53.0 flags `FrappeTestCase` as deprecated (`frappe/tests/test_test_utils.py:43-56`) |
-| Playwright e2e | `e2e/tests/**` 28 `*.spec.ts` files, 145 `test(` calls (heuristic count) + `e2e/global.setup.ts`, 12 helpers; config `playwright.config.ts` (1 worker, Chromium, base URL `BASE_URL` or `http://localhost:8000`) | `yarn test:e2e` (`package.json:7`); CI `.github/workflows/ui-tests.yml` runs `npx playwright test --shard=N/2` |
+| Playwright e2e | `apps/nxerp_platform/browser-tests/tests/**` 28 `*.spec.ts` files, 145 `test(` calls (heuristic count) + `apps/nxerp_platform/browser-tests/global.setup.ts`, 12 helpers; config `playwright.config.ts` (1 worker, Chromium, base URL `BASE_URL` or `http://localhost:8000`) | `yarn test:e2e` (`package.json:7`); CI `.github/workflows/ui-tests.yml` runs `npx playwright test --shard=N/2` |
 | Vitest/Jest (frontend unit) | none: no vitest/jest in `desk/package.json` or `package.json`; no `*.test.*`/`*.spec.*` under `desk/` | FACT grep |
 | Login/branding tests | none (no test references the NXERP login, `login.py` or `nxerp_branding`) | FACT |
 
@@ -451,7 +451,7 @@ Observations (FACT about code, runtime NOT VERIFIED):
 | Workflow | Trigger | What it does | Note |
 |---|---|---|---|
 | `server-tests.yml` | PRs to main/main-hotfix/develop (paths-ignore js/css/md/html/csv) | MariaDB 10.6, Python 3.14, Node 24, `install.sh` (frappe `develop`, erpnext develop, telephony, helpdesk), `bench ... run-tests --app helpdesk --coverage`, upload to Codecov | needs Frappe 16 |
-| `ui-tests.yml` | PRs to develop touching `desk/**`, `e2e/**`, etc.; manual | bench with `FRAPPE_BRANCH=develop`, `bench build --apps frappe,helpdesk`, 2 Playwright shards, merges reports | |
+| `ui-tests.yml` | PRs to develop touching `desk/**`, `apps/nxerp_platform/browser-tests/**`, etc.; manual | bench with `FRAPPE_BRANCH=develop`, `bench build --apps frappe,helpdesk`, 2 Playwright shards, merges reports | |
 | `lint.yml` | PRs | commitlint, pre-commit (black 25.11.0, flake8 7.3.0 strict, prettier 2.6.2, isort 5.12.0), Semgrep rules; WIP adds `theme-tokens` job | |
 | `build.yml` | push main / tags / manual | builds a container from `frappe/frappe_docker`, `FRAPPE_BRANCH=version-15`, apps telephony develop + helpdesk main, verifies apps, pushes to ghcr.io. It builds upstream `frappe/helpdesk` `main`, not this fork | FACT `build.yml` lines (`apps.json` echo) |
 | `assets.yml` | push develop/main | prebuilds assets via `frappe/pilot` reusable workflow | |
@@ -466,7 +466,7 @@ Observations (FACT about code, runtime NOT VERIFIED):
 ### 9.4 Gaps relevant to the fork
 
 - FACT: existing e2e login test (`auth.spec.ts:7-23`) depends on text "Continue" and a user-menu button matching `/^Helpdesk /`; both are affected by NXERP branding choices (sections 3.4, 5.3).
-- FACT: no test covers the login page customisation, `apply_branding`, or the committed branding strings. The WIP adds 3 python tests (`helpdesk/tests/api/test_theme.py`) and 3 e2e tests (`e2e/tests/theme.spec.ts`).
+- FACT: no test covers the login page customisation, `apply_branding`, or the committed branding strings. The WIP adds 3 python tests (`helpdesk/tests/api/test_theme.py`) and 3 e2e tests (`apps/nxerp_platform/browser-tests/tests/theme.spec.ts`).
 
 ---
 

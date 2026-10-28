@@ -20,7 +20,7 @@ each promise below against the real registry, resolver, gate, launcher and route
 - [ ] Add it to `deploy/apps.json` at an **exact 40-character commit** (`name`, `url`, `branch`, `commit`), after the apps it needs and **before `nxerp`**, which must stay last (its `/login` only wins as the last installed app).
 - [ ] Update [ADR-002](../adr/ADR-002-version-matrix.md) (the version matrix) in the same pull request.
 - [ ] `python3 -I deploy/check_pins.py` passes. Never vendor or copy the app into this repo.
-- [ ] Rebuild the dev stack and install it on the site (`./deploy/dev/up.sh -d`; see [`../onboarding/day-1.md`](../onboarding/day-1.md)).
+- [ ] Rebuild the dev stack and install it on the site (`./deploy/bootstrap/up.sh -d`; see [`../onboarding/day-1.md`](../onboarding/day-1.md)).
 
 The registry entry is **active only while its Frappe app is installed** on the site (`AppEntry.app`). Declared but not installed means invisible everywhere.
 

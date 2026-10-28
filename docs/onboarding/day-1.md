@@ -91,20 +91,20 @@ pre-commit install                # ruff, ruff-format, bandit, shellcheck, gitle
 pre-commit run --all-files
 ```
 
-The first `pre-commit run` clones the hook repositories and builds `gitleaks` (needs network; several minutes); the `shellcheck` hook runs a small Docker image, so Docker must be up. `.venv/` is git-ignored. **As of 2026-10-28 two hooks fail on a clean checkout of this branch** (the `shellcheck` warnings in `e2e/*.sh` and `deploy/dev/up.sh`, and the `nxerp-architecture` hook on a host without a `python3` command): see the verification section; if they still fail when you read this, report it rather than skipping the hook.
+The first `pre-commit run` clones the hook repositories and builds `gitleaks` (needs network; several minutes); the `shellcheck` hook runs a small Docker image, so Docker must be up. `.venv/` is git-ignored. **As of 2026-10-28 two hooks fail on a clean checkout of this branch** (the `shellcheck` warnings in `apps/nxerp_platform/browser-tests/*.sh` and `deploy/bootstrap/up.sh`, and the `nxerp-architecture` hook on a host without a `python3` command): see the verification section; if they still fail when you read this, report it rather than skipping the hook.
 
 ## 4. Bring up the dev platform [stack]
 
 ```bash
-./deploy/dev/up.sh -d
+./deploy/bootstrap/up.sh -d
 docker compose -p nxerp-dev logs -f bench       # wait for the line "[bootstrap] ready:"
 ```
 
-- `up.sh` creates `deploy/dev/.env` with **random** passwords on first run (git-ignored; it holds the Administrator and MariaDB root passwords; never share or commit it), then starts the compose project `nxerp-dev`.
+- `up.sh` creates `deploy/bootstrap/.env` with **random** passwords on first run (git-ignored; it holds the Administrator and MariaDB root passwords; never share or commit it), then starts the compose project `nxerp-dev`.
 - A build from empty volumes took **408 s and 418 s** in Phase 1 with warm Docker caches ([`../audit/bootstrap-evidence.md`](../audit/bootstrap-evidence.md)); a first-ever run on a new machine downloads more.
-- Site: <http://nxerp.localhost:8100> (ERPNext Desk at `/desk`, Helpdesk at `/helpdesk`, login at `/login`); realtime on port 9100. Sign in as `Administrator` with the password from `deploy/dev/.env`.
+- Site: <http://nxerp.localhost:8100> (ERPNext Desk at `/desk`, Helpdesk at `/helpdesk`, login at `/login`); realtime on port 9100. Sign in as `Administrator` with the password from `deploy/bootstrap/.env`.
 - The first-run setup wizard is **pending by design**; the platform sends the Administrator to Desk so the wizard can run.
-- Stop: `./deploy/dev/up.sh down` (volumes kept). **Never** `docker compose down -v` to "fix" something: it destroys the dev site and database. The bench is in a named volume; your repo edits are visible in the container at once (`nxerp` is soft-linked from the `/workspace` mount), but the web process may need `docker restart nxerp-dev-bench-1` to load Python and hook changes.
+- Stop: `./deploy/bootstrap/up.sh down` (volumes kept). **Never** `docker compose down -v` to "fix" something: it destroys the dev site and database. The bench is in a named volume; your repo edits are visible in the container at once (`nxerp` is soft-linked from the `/workspace` mount), but the web process may need `docker restart nxerp-dev-bench-1` to load Python and hook changes.
 - Ports 8100 and 9100 and the project name `nxerp-dev` are chosen so this stack does not collide with other Frappe stacks. Do not start a second copy of the stack.
 
 ## 5. Seed fake users [stack]
@@ -125,9 +125,9 @@ No seeded user holds two apps: in Desk, give `manager@` the role `NXERP Access: 
 | What | Command | Needs |
 | --- | --- | --- |
 | Architecture unit tests | `python -m unittest nxerp.tests.test_architecture` | host only |
-| All `nxerp` integration, matrix and HTTP tests [stack] | `docker compose -p nxerp-dev exec -T -e NXERP_ADMIN_PASSWORD bench bash -lc 'cd ~/frappe-bench && bench --site nxerp.localhost run-tests --app nxerp'` (run `set -a; . deploy/dev/.env; set +a` first so the Administrator password is exported) | the stack |
+| All `nxerp` integration, matrix and HTTP tests [stack] | `docker compose -p nxerp-dev exec -T -e NXERP_ADMIN_PASSWORD bench bash -lc 'cd ~/frappe-bench && bench --site nxerp.localhost run-tests --app nxerp'` (run `set -a; . deploy/bootstrap/.env; set +a` first so the Administrator password is exported) | the stack |
 | One module [stack] | the same with `--module nxerp.tests.test_routing` | the stack |
-| Browser suite [stack] | `e2e/site.sh create`, `e2e/site.sh snapshot` once (about 10 minutes), then `e2e/run.sh` (about 25 minutes) | the stack; uses its own fresh site, never the dev site |
+| Browser suite [stack] | `apps/nxerp_platform/browser-tests/site.sh create`, `apps/nxerp_platform/browser-tests/site.sh snapshot` once (about 10 minutes), then `apps/nxerp_platform/browser-tests/run.sh` (about 25 minutes) | the stack; uses its own fresh site, never the dev site |
 
 On Windows Git Bash prefix `MSYS_NO_PATHCONV=1` to commands that contain a `/workspace/...` path. Do not run two heavy things in the container at the same time (the browser suite and the bench tests share it).
 The layers, the traps (60-second config cache, `throttle_user_limit`, never `bench execute` for fixtures) and the flaky-test policy are in [`../guides/testing.md`](../guides/testing.md).
@@ -198,16 +198,16 @@ A clone from GitHub was **not** done because the remote holds only `main` (check
 | `python -m venv .venv`, `pip install ruff pre-commit bandit` | ruff 0.17.3 installed |
 | `ruff check .` and `ruff format --check .` | `All checks passed!`; `52 files already formatted` |
 | `pre-commit install`, `pre-commit run --all-files` (hook cache kept in `..\pre-commit-cache`, first run 7 min 16 s, second run 11 s) | **14 hooks passed**, including ruff (import sorter, linter, formatter), bandit, gitleaks (built from source by pre-commit), detect-private-key and the file-hygiene hooks. **2 failed**, see below |
-| `docker compose --env-file deploy/versions.env --env-file <placeholders> -f deploy/dev/compose.yaml config -q` (validation only, nothing started) | exit 0 |
-| `bash -n` on `deploy/dev/up.sh`, `deploy/dev/bootstrap.sh`, `e2e/run.sh`, `e2e/site.sh` | all parse |
+| `docker compose --env-file deploy/versions.env --env-file <placeholders> -f deploy/docker/compose/dev/compose.yaml config -q` (validation only, nothing started) | exit 0 |
+| `bash -n` on `deploy/bootstrap/up.sh`, `deploy/bootstrap/bootstrap.sh`, `apps/nxerp_platform/browser-tests/run.sh`, `apps/nxerp_platform/browser-tests/site.sh` | all parse |
 | `docker compose -p nxerp-dev ps` from the clone root (no compose file there) | lists the running stack: the `-p nxerp-dev logs/exec` commands in this guide need no `-f` |
 
 **The two failing pre-commit hooks (findings, not fixed here):**
 
-1. `shellcheck` (runs the `koalaman/shellcheck:v0.10.0` Docker image, 19.3 MB, pulled by the hook): three warnings at the configured severity: `e2e/run.sh` line 12 and `e2e/site.sh` line 11 (SC2164, `cd` without `|| exit`) and `deploy/dev/up.sh` line 28 (SC2155, declare and assign separately). CI's lint job runs the same hook, so it would fail on these.
+1. `shellcheck` (runs the `koalaman/shellcheck:v0.10.0` Docker image, 19.3 MB, pulled by the hook): three warnings at the configured severity: `apps/nxerp_platform/browser-tests/run.sh` line 12 and `apps/nxerp_platform/browser-tests/site.sh` line 11 (SC2164, `cd` without `|| exit`) and `deploy/bootstrap/up.sh` line 28 (SC2155, declare and assign separately). CI's lint job runs the same hook, so it would fail on these.
 2. `nxerp-architecture` (`entry: python3 -I scripts/check_architecture.py`, `language: system`): exit code 9009 on this host because `python3` is the Store stub. The check itself passes when run as `python -I` (above). A `language: python` hook, or an entry that works on both, would fix it.
 
-**Not re-executed in the fresh clone (needs the bench container).** `./deploy/dev/up.sh -d` (bring-up), seeding users, `bench run-tests`, `e2e/run.sh`. Their record:
+**Not re-executed in the fresh clone (needs the bench container).** `./deploy/bootstrap/up.sh -d` (bring-up), seeding users, `bench run-tests`, `apps/nxerp_platform/browser-tests/run.sh`. Their record:
 
 - Bring-up from empty volumes: 408 s and 418 s, `[bootstrap] ready:` seen ([`../audit/bootstrap-evidence.md`](../audit/bootstrap-evidence.md) sections 2 and 8). **Not** re-run today.
 - Seeding the five fake users: executed in Phase 1 ([`../audit/bootstrap-evidence.md`](../audit/bootstrap-evidence.md) section 5). **Not** re-run today; the `-e NXERP_SEED_PASSWORD` form given in section 5 above is a rewrite of the documented command and was **not** executed.

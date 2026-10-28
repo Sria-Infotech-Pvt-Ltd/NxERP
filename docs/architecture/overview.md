@@ -133,9 +133,9 @@ shown only to multi-app users), `website_redirects` (`/login/<x>` to `/login`), 
 - `apps/nxerp_platform/nxerp/tests/`: Frappe `IntegrationTestCase` suites run with `bench --site nxerp.localhost run-tests --app nxerp`
   (registry, resolver, enforcement, persona x surface matrix, routing and about 35 hostile redirect payloads, customer leaks, grant migration,
   HTTP tests of login/router/launcher/kill-switch, a test-only third app, the add-an-app checklist) plus `test_architecture.py` (plain unittest, no site needed).
-- `e2e/`: Playwright (Chromium inside the bench container) on a **separate fresh site** `nxerp-e2e.localhost` served on port 8001, so the
-  first-run setup wizard is real and the dev site is never touched. `e2e/site.sh` creates, snapshots and resets that site;
-  `e2e/run.sh` runs the suites (`first-run`, `case3`, `journeys`, `flows`, `pages`, `recovery`). How to run each layer and what has and has not been
+- `apps/nxerp_platform/browser-tests/`: Playwright (Chromium inside the bench container) on a **separate fresh site** `nxerp-e2e.localhost` served on port 8001, so the
+  first-run setup wizard is real and the dev site is never touched. `apps/nxerp_platform/browser-tests/site.sh` creates, snapshots and resets that site;
+  `apps/nxerp_platform/browser-tests/run.sh` runs the suites (`first-run`, `case3`, `journeys`, `flows`, `pages`, `recovery`). How to run each layer and what has and has not been
   verified: [`../guides/testing.md`](../guides/testing.md) and [`../PROGRESS.md`](../PROGRESS.md).
 
 ## Version matrix

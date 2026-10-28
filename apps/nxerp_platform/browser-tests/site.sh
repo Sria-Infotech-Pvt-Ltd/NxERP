@@ -2,18 +2,18 @@
 # Creates (or drops) the FRESH site the browser suite runs against: nxerp-e2e.localhost, with the same apps as
 # the dev site and NO setup wizard completed, so the first-run flow is real. The dev site is never touched.
 #
-#   e2e/site.sh create    # ~10 minutes the first time
-#   e2e/site.sh drop      # remove it (and its database)
-#   e2e/site.sh snapshot  # save the pristine database (do this once, before any wizard)
-#   e2e/site.sh reset     # restore the pristine database: the first-run flow is repeatable
-#   e2e/site.sh status
+#   apps/nxerp_platform/browser-tests/site.sh create    # ~10 minutes the first time
+#   apps/nxerp_platform/browser-tests/site.sh drop      # remove it (and its database)
+#   apps/nxerp_platform/browser-tests/site.sh snapshot  # save the pristine database (do this once, before any wizard)
+#   apps/nxerp_platform/browser-tests/site.sh reset     # restore the pristine database: the first-run flow is repeatable
+#   apps/nxerp_platform/browser-tests/site.sh status
 set -uo pipefail
-cd "$(dirname "$0")/../deploy/dev" || exit 1
+cd "$(dirname "$0")/../../../deploy/bootstrap" || exit 1
 set -a
 # shellcheck disable=SC1091
 . ./.env
 set +a
-DC=(docker compose -p nxerp-dev -f compose.yaml)
+DC=(docker compose -p nxerp-dev -f ../docker/compose/dev/compose.yaml)
 SITE=nxerp-e2e.localhost
 
 inside() {
@@ -41,7 +41,7 @@ snapshot)
 		cp \$(ls -t e2e-fresh/*-database.sql.gz | head -1) e2e-fresh/fresh.sql.gz && ls -la e2e-fresh/fresh.sql.gz"
 	;;
 reset)
-	inside "cd ~/frappe-bench && test -f e2e-fresh/fresh.sql.gz || { echo 'no snapshot: run e2e/site.sh snapshot on a fresh site' >&2; exit 1; }
+	inside "cd ~/frappe-bench && test -f e2e-fresh/fresh.sql.gz || { echo 'no snapshot: run apps/nxerp_platform/browser-tests/site.sh snapshot on a fresh site' >&2; exit 1; }
 		bench --site $SITE restore e2e-fresh/fresh.sql.gz --db-root-password \"\$NXERP_DB_ROOT_PASSWORD\" --force 2>&1 | tail -2 &&
 		bench --site $SITE set-config developer_mode 1 && bench --site $SITE set-config allow_tests 1 &&
 		bench --site $SITE set-config mute_emails 1 && bench --site $SITE set-config -p throttle_user_limit 100000 &&

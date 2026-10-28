@@ -50,7 +50,7 @@ USER root
 RUN chmod 0755 /usr/local/bin/nxerp-entrypoint
 USER frappe
 WORKDIR /home/frappe/frappe-bench
-# No secrets are baked in: database host, redis URLs and credentials arrive at run time (see deploy/environments/).
+# No secrets are baked in: database host, redis URLs and credentials arrive at run time (see deploy/env/).
 ENV NXERP_VERSION=${NXERP_VERSION} \
     NXERP_REVISION=${NXERP_REVISION}
 EXPOSE 8000 9000

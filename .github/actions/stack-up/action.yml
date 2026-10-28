@@ -1,6 +1,6 @@
 name: stack-up
 description: >
-  Bring up the NXERP dev stack (deploy/dev) for a test job: fetch Helpdesk at its pinned commit, restore the cached stack
+  Bring up the NXERP dev stack (deploy/bootstrap) for a test job: fetch Helpdesk at its pinned commit, restore the cached stack
   volumes when a cache exists (otherwise bootstrap from empty volumes), start it, wait until ready, migrate the cached site
   to this checkout, and let the tests create users. A stack cannot be shared between GitHub jobs; the cache is what is shared.
 inputs:
@@ -31,7 +31,7 @@ runs:
       uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: ${{ runner.temp }}/stack-volumes
-        key: stack-${{ runner.os }}-${{ hashFiles('deploy/apps.json', 'deploy/versions.env', 'deploy/dev/bootstrap.sh', 'deploy/dev/compose.yaml', 'e2e/site.sh') }}
+        key: stack-${{ runner.os }}-${{ hashFiles('deploy/apps.json', 'deploy/versions.env', 'deploy/bootstrap/bootstrap.sh', 'deploy/docker/compose/dev/compose.yaml', 'apps/nxerp_platform/browser-tests/site.sh') }}
 
     - name: Load the cached volumes into Docker
       if: steps.cache.outputs.cache-hit == 'true'

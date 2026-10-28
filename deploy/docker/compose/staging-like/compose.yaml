@@ -4,9 +4,9 @@ name: nxerp-staging-like
 # Meant for rehearsing deploys, migrations, backups and rollbacks with the SAME image that is released; not a dev stack
 # (no source mounts, no developer_mode). No secret lives in this file: passwords come from the environment / --env-file.
 #
-#   cp deploy/staging-like/.env.example deploy/staging-like/.env     # then fill in the passwords (git-ignored)
-#   docker compose --env-file deploy/staging-like/.env -f deploy/staging-like/compose.yaml up -d
-#   docker compose --env-file deploy/staging-like/.env -f deploy/staging-like/compose.yaml --profile init run --rm create-site
+#   cp deploy/env/staging-like/.env.example deploy/env/staging-like/.env     # then fill in the passwords (git-ignored)
+#   docker compose --env-file deploy/env/staging-like/.env -f deploy/docker/compose/staging-like/compose.yaml up -d
+#   docker compose --env-file deploy/env/staging-like/.env -f deploy/docker/compose/staging-like/compose.yaml --profile init run --rm create-site
 #
 # STATUS: `docker compose config` validated; the stack itself has NOT been started (needs the image from deploy/docker/build.sh).
 

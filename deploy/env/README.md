@@ -1,4 +1,4 @@
-# deploy/environments/
+# deploy/env/
 
 Configuration templates for the two real environments. **Templates only: every value is a placeholder.** Status:
 **ready, not executed.** No staging or production host, registry, domain or secret exists yet
@@ -27,7 +27,7 @@ own `.env`, so the CI system never holds the keys to the database.
 
 ```
 /opt/nxerp/                 DEPLOY_PATH, owned by the deploy user
-  compose.yaml              copy of deploy/staging-like/compose.yaml (same file for staging and production, see below)
+  compose.yaml              copy of deploy/docker/compose/staging-like/compose.yaml (same file for staging and production, see below)
   nginx.conf.template
   scripts/                  copy of deploy/scripts/ (the workflows sync it from the tag being deployed)
   .env                      host secrets + NXERP_IMAGE_TAG (mode 600)

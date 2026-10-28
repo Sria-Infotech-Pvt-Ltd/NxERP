@@ -52,17 +52,17 @@ and note what you saw.
     `NXERP_IMAGE`). Confirm GHCR is acceptable (private package, organisation visibility), create a read-only pull token for the hosts
     (`REGISTRY_PULL_TOKEN`). *Ready, not executed.*
 12. [ ] **Staging host** and **production host**: Docker + Compose v2, a `deploy` user, the directory from
-    `deploy/environments/README.md`, firewall (only 443/22), time sync, disk for backups. *Ready, not executed.*
+    `deploy/env/README.md`, firewall (only 443/22), time sync, disk for backups. *Ready, not executed.*
 13. [ ] **Domains and TLS**: DNS names for staging and production, certificates, a TLS-terminating reverse proxy/load balancer in front of
     the compose `proxy` service (it speaks HTTP only), HSTS decision. *Ready, not executed.*
 14. [ ] **Deploy credentials**: an SSH key pair per environment (public key on the host's `deploy` user; private key as environment
     secret `DEPLOY_SSH_KEY`), `DEPLOY_KNOWN_HOSTS` from `ssh-keyscan`, restricted to the deploy directory. *Ready, not executed.*
 15. [ ] **GitHub Environments** `staging` and `production` with their variables (`DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_PATH`,
-    `NXERP_SITE`, `STAGING_URL`/`PRODUCTION_URL`, `NXERP_BACKUP_DIR`) and secrets (see `deploy/environments/*.env.example`). **`production`
+    `NXERP_SITE`, `STAGING_URL`/`PRODUCTION_URL`, `NXERP_BACKUP_DIR`) and secrets (see `deploy/env/*.env.example`). **`production`
     needs required reviewers and "prevent self-review" BEFORE any production secret is stored in it** (an Environment without reviewers
     deploys without approval). *Ready, not executed.*
 16. [ ] **Host secrets**: create `/opt/nxerp/.env` (mode 600) on each host with generated database root/admin passwords and
-    `NXERP_IMAGE_TAG` (`deploy/staging-like/.env.example`). The CI system never holds these. *Ready, not executed.*
+    `NXERP_IMAGE_TAG` (`deploy/env/staging-like/.env.example`). The CI system never holds these. *Ready, not executed.*
 17. [ ] **SMTP**: an outgoing mail account for each environment, configured as the site's default Email Account (staging should use a sink
     or a restricted domain, so test mail never reaches real people). The platform's mails are still titled "Login To Frappe" (branding
     not done). *Ready, not executed.*
@@ -74,7 +74,7 @@ and note what you saw.
 ## D. First release
 
 19. [ ] **Build the image once for real** on a machine with disk and network (`deploy/docker/build.sh`): only `docker buildx build --check`
-    passed so far; the build itself, its size, the SBOM and a `docker compose up` of `deploy/staging-like/` have NOT run. Fix what breaks.
+    passed so far; the build itself, its size, the SBOM and a `docker compose up` of `deploy/docker/compose/staging-like/` have NOT run. Fix what breaks.
 20. [ ] **First release candidate**: bump `__version__`, merge, tag `vX.Y.Z-rc.1` on `main` after `ci-gate` is green, watch `release.yml`
     then `deploy-staging.yml`, run the restore drill and the rollback drill on staging, then promote with `deploy-production.yml`.
     Follow `docs/runbooks/release.md`. The `upgrade-from-previous-tag` job only starts testing after the first stable tag exists.

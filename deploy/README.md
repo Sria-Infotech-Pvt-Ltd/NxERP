@@ -18,13 +18,13 @@ Everything needed to build a reproducible NXERP bench. No secrets live here.
 ## Bring up the dev platform
 
 ```bash
-./deploy/dev/up.sh -d
+./deploy/bootstrap/up.sh -d
 docker compose -p nxerp-dev logs -f bench     # wait for "[bootstrap] ready:"
 ```
 
 - Site: `http://nxerp.localhost:8100` (ERPNext Desk `/app`, Helpdesk `/helpdesk`, login `/login`). Realtime on `9100`.
-- `Administrator` password: the generated value in `deploy/dev/.env` (git-ignored; never share it).
-- Stop: `./deploy/dev/up.sh down` (volumes kept). Full reset (destroys the dev site and database): `docker compose -p nxerp-dev down -v`.
+- `Administrator` password: the generated value in `deploy/bootstrap/.env` (git-ignored; never share it).
+- Stop: `./deploy/bootstrap/up.sh down` (volumes kept). Full reset (destroys the dev site and database): `docker compose -p nxerp-dev down -v`.
 - Ports 8100/9100 and project name `nxerp-dev` are chosen so this stack never collides with other Frappe stacks on the machine.
 
 ### How it is put together

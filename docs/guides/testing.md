@@ -5,11 +5,11 @@ What kinds of tests exist, what each one is for, how to run it, and the traps th
 [`../audit/bootstrap-evidence.md`](../audit/bootstrap-evidence.md). **A workflow file in git is not a working pipeline**:
 `.github/workflows/ci.yml` runs the same commands, but per `docs/PROGRESS.md` it has not been run on GitHub from this machine.
 
-Conventions used below. `<dc>` means the dev stack's compose command, run from Git Bash in `deploy/dev` (Windows, Git Bash needs
+Conventions used below. `<dc>` means the dev stack's compose command, run from Git Bash in `deploy/bootstrap` (Windows, Git Bash needs
 `MSYS_NO_PATHCONV=1` in front whenever a command contains a `/workspace/...` path, or the path is rewritten to a Windows path):
 
 ```bash
-cd deploy/dev
+cd deploy/bootstrap
 set -a; . ./.env; set +a                    # exports NXERP_ADMIN_PASSWORD etc. into this shell (never echo them)
 <dc> = docker compose -p nxerp-dev -f compose.yaml
 ```
@@ -25,7 +25,7 @@ On Linux and macOS use `python3` where this page says `python`.
 | 3. Integration tests (in process) | registry, resolver, gate decisions, routing and redirect safety, guard, grant migration, the add-an-app checklist | yes: a Frappe site | `apps/nxerp_platform/nxerp/tests/test_*.py` (`IntegrationTestCase`) |
 | 4. Persona x surface matrix | who is allowed or refused on each enforcement surface, over real HTTP | yes | `apps/nxerp_platform/nxerp/tests/test_access_matrix.py`, `world.py`; writes `docs/security/phase2-matrix.md` |
 | 5. HTTP tests | real `/login`, `/nxerp/go`, `/nxerp/apps`, tile overrides, kill-switch, test-only third app, customer leaks | yes | `test_unified_experience.py`, `test_customer_leaks.py` |
-| 6. Browser (Playwright) | the real login form, redirects, launcher, special flows, accessibility basics, recovery runbook, first-run wizard | yes, plus a **separate fresh site** | `e2e/` |
+| 6. Browser (Playwright) | the real login form, redirects, launcher, special flows, accessibility basics, recovery runbook, first-run wizard | yes, plus a **separate fresh site** | `apps/nxerp_platform/browser-tests/` |
 | 7. Upstream regression | Helpdesk's own suite still passes with the access layer active | yes | `bench ... run-tests --app helpdesk` |
 
 The pyramid is deliberately wide at layer 3 (fast, many cases, every decision table) and thin at 6 (slow, a few journeys). A new
@@ -74,7 +74,7 @@ MSYS_NO_PATHCONV=1 <dc> exec -T bench bash -lc 'cd ~/frappe-bench && bench --sit
 <dc> exec -T bench bash -lc 'cd ~/frappe-bench && bench --site nxerp.localhost run-tests --app helpdesk'
 ```
 
-- `NXERP_ADMIN_PASSWORD` (from the git-ignored `deploy/dev/.env`) is needed only by the tests that sign in as Administrator (`test_unified_experience`); without it those are skipped, visibly. Pass it with `-e NXERP_ADMIN_PASSWORD` so the value is read from your shell and never typed or printed. The container's own environment can be stale: pass it explicitly.
+- `NXERP_ADMIN_PASSWORD` (from the git-ignored `deploy/bootstrap/.env`) is needed only by the tests that sign in as Administrator (`test_unified_experience`); without it those are skipped, visibly. Pass it with `-e NXERP_ADMIN_PASSWORD` so the value is read from your shell and never typed or printed. The container's own environment can be stale: pass it explicitly.
 - `NXERP_TEST_BASE` (default `http://localhost:8000`) is where the HTTP tests send requests: the dev web server **inside** the container. `NXERP_MATRIX_OUT=<path>` also writes the persona matrix as Markdown.
 - The suites create clearly fake users (`nxt-*@example.test`, committed so a rollback keeps them) and remove them; `purge_test_users()` at the start of each class clears leftovers from an aborted run.
 - Tests that must not depend on NXERP's deny layer call the app's own permission hook directly, not `frappe.has_permission` (a System Manager is refused Helpdesk records by the platform even when Helpdesk allows them).
@@ -93,23 +93,23 @@ The dev web server always answers with the default site, and the first-run wizar
 `nxerp-e2e.localhost`, served on port 8001 inside the same container. The dev site is never touched.
 
 ```bash
-e2e/site.sh create      # about 10 minutes the first time: a new site with the same apps, NO setup wizard done
-e2e/site.sh snapshot    # save the pristine database once, so the first-run flow is repeatable
-e2e/run.sh              # everything (about 25 minutes); or: e2e/run.sh journeys   (one file; "first-run" is the wizard suite)
-e2e/site.sh status | reset | drop
+apps/nxerp_platform/browser-tests/site.sh create      # about 10 minutes the first time: a new site with the same apps, NO setup wizard done
+apps/nxerp_platform/browser-tests/site.sh snapshot    # save the pristine database once, so the first-run flow is repeatable
+apps/nxerp_platform/browser-tests/run.sh              # everything (about 25 minutes); or: apps/nxerp_platform/browser-tests/run.sh journeys   (one file; "first-run" is the wizard suite)
+apps/nxerp_platform/browser-tests/site.sh status | reset | drop
 ```
 
-`e2e/run.sh` resets the site to the snapshot, runs the first-run flow (which completes the wizard), creates fake users with `nxerp.tests.e2e_fixtures`, runs `case3`, `journeys`, `flows`, `pages`, `recovery`, always removes the users and restores the site, and copies screenshots to `docs/evidence/phase3/`. Passwords are generated per run and passed through the environment.
+`apps/nxerp_platform/browser-tests/run.sh` resets the site to the snapshot, runs the first-run flow (which completes the wizard), creates fake users with `nxerp.tests.e2e_fixtures`, runs `case3`, `journeys`, `flows`, `pages`, `recovery`, always removes the users and restores the site, and copies screenshots to `docs/evidence/phase3/`. Passwords are generated per run and passed through the environment.
 Chromium is the one in the bench image; the script installs `playwright-core` into `/tmp` of the container.
 
-**Do not run `e2e/run.sh` while another browser run, or the bench test suites, are using the same container**: they share the fresh site, port 8001 and the container's CPU, and the second run's resets and fixtures corrupt the first.
+**Do not run `apps/nxerp_platform/browser-tests/run.sh` while another browser run, or the bench test suites, are using the same container**: they share the fresh site, port 8001 and the container's CPU, and the second run's resets and fixtures corrupt the first.
 
 ## Traps (each one cost time)
 
 - **Site config is cached for up to 60 seconds** in every web worker (`frappe/config.py`, `ttl=60`). `update_site_config(...)` or `bench set-config ...` (the kill-switch `nxerp_stock_login`, test-only apps `nxerp_test_apps`) is therefore seen by the web server **within a minute, not at once**. Tests **poll** for the effect (`wait_until(...)`, up to 80 s) instead of sleeping, and an in-process test that needs a different registry patches `registry.get_registry` instead of using site config. A restart makes a change immediate.
 - **`throttle_user_limit`.** Frappe refuses more than 60 new users per hour per site; the suites create many throwaway users. In process, `allow_many_test_users()` raises the limit for that process only. On a site that will run the suites: `bench --site <site> set-config -p throttle_user_limit 100000`. **`-p` matters**: `bench set-config` stores a *string* by default, and a string limit is silently useless. The same flag applies to every numeric setting, including `nxerp_stock_login` (`-p ... 1`). Seven Helpdesk tests failed with `Throttled` on a site that had been through repeated runs (Phase 1 evidence).
-- **Never run a fixture or a check with `bench execute`.** It swallows the function's real exception and prints a misleading result, so a broken fixture looks like it worked. Run fixtures with `python -m` from the bench's `sites` directory, as `e2e/run.sh` does: `cd ~/frappe-bench/sites && E2E_SITE=nxerp-e2e.localhost ../env/bin/python -W ignore -m nxerp.tests.e2e_fixtures setup`. (The documented seeding command for fake dev users, `nxerp.tests.seed_users.seed`, is a `bench execute` call and has no `python -m` entry: it prints one line per user, so check that output.)
-- **Do not `pgrep -f` for your own server from a shell that contains the pattern**: the shell matches itself. `e2e/run.sh` probes the port instead (`curl http://localhost:8001/login`) and kills with a bracketed pattern (`'bench_[h]elper...'`).
+- **Never run a fixture or a check with `bench execute`.** It swallows the function's real exception and prints a misleading result, so a broken fixture looks like it worked. Run fixtures with `python -m` from the bench's `sites` directory, as `apps/nxerp_platform/browser-tests/run.sh` does: `cd ~/frappe-bench/sites && E2E_SITE=nxerp-e2e.localhost ../env/bin/python -W ignore -m nxerp.tests.e2e_fixtures setup`. (The documented seeding command for fake dev users, `nxerp.tests.seed_users.seed`, is a `bench execute` call and has no `python -m` entry: it prints one line per user, so check that output.)
+- **Do not `pgrep -f` for your own server from a shell that contains the pattern**: the shell matches itself. `apps/nxerp_platform/browser-tests/run.sh` probes the port instead (`curl http://localhost:8001/login`) and kills with a bracketed pattern (`'bench_[h]elper...'`).
 - **Git Bash rewrites `/workspace/...`** in command arguments into a Windows path; prefix `MSYS_NO_PATHCONV=1`.
 - **Developer mode puts tracebacks in JSON errors**; the dev site has it on, so "no traceback in the response" assertions only run where a production site would behave that way (`no_traceback(...)` in `test_unified_experience.py`).
 - **Frappe skips Version records during tests** unless the code saves with `ignore_version=False` (the grant API does, so the audit trail is real).
@@ -123,7 +123,7 @@ Chromium is the one in the bench image; the script installs `playwright-core` in
 | New or changed gate rule, route, role | layer 3 decision test, a matrix or HTTP row for the surface, and both a "with grant" and a "without grant" persona; guest too |
 | Redirect handling | add the payload to `HOSTILE` in `test_routing.py` (it is reused by the HTTP and browser suites) |
 | New app | [`how-to-add-an-app.md`](how-to-add-an-app.md): the checklist test, matrix rows, `check_architecture.py --app-path` |
-| Login page or launcher UI | browser test (`e2e/`) and the accessibility basics in `e2e/a11y.mjs` |
+| Login page or launcher UI | browser test (`apps/nxerp_platform/browser-tests/`) and the accessibility basics in `apps/nxerp_platform/browser-tests/a11y.mjs` |
 | Pin bump | `check_pins.py`, rebuild from empty volumes, run layers 3 to 7 |
 | Patch or migration | run it twice on a copy and show the second run changes nothing |
 

@@ -2,7 +2,7 @@
 # Runs INSIDE the image build (see deploy/docker/Dockerfile).
 #   install_apps.sh pinned     bench init + every app in apps.json except nxerp, each at its exact pinned commit
 #   install_apps.sh platform   the nxerp app from /tmp/build/nxerp-src, then the one asset build
-# A pin that resolves to a different commit fails the build on purpose (same rule as deploy/dev/bootstrap.sh).
+# A pin that resolves to a different commit fails the build on purpose (same rule as deploy/bootstrap/bootstrap.sh).
 # FRAPPE_REPO, FRAPPE_REF and FRAPPE_COMMIT come from the image ENV (set from deploy/versions.env by build.sh).
 set -euo pipefail
 

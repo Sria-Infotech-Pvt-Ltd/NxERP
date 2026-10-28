@@ -33,7 +33,7 @@ Types: `feat`, `fix`, `docs`, `chore`, `ci`, `test`, `refactor`. No secrets, no 
 ```bash
 pre-commit install            # ruff, shellcheck, gitleaks, file hygiene
 pre-commit run --all-files
-./deploy/dev/up.sh -d         # dev platform; see deploy/README.md
+./deploy/bootstrap/up.sh -d         # dev platform; see deploy/README.md
 docker compose -p nxerp-dev exec bench bash -lc 'cd frappe-bench && bench --site nxerp.localhost run-tests --app nxerp'
 ```
 

@@ -10,7 +10,7 @@ set -uo pipefail
 
 BASE=${1:-http://localhost:8100}
 : "${NXERP_SEED_PASSWORD:?set the password used by nxerp.tests.seed_users}"
-: "${NXERP_ADMIN_PASSWORD:?set the Administrator password (deploy/dev/.env)}"
+: "${NXERP_ADMIN_PASSWORD:?set the Administrator password (deploy/bootstrap/.env)}"
 jars=$(mktemp -d)
 trap 'rm -rf "$jars"' EXIT
 

@@ -6,16 +6,16 @@ calls were exercised against the dev stack as listed at the end.
 
 ## Topology (staging, production and the staging-like rehearsal)
 
-One Docker host per environment running `deploy/staging-like/compose.yaml`: image `nxerp:<tag>` as `backend` (gunicorn), `websocket`,
+One Docker host per environment running `deploy/docker/compose/staging-like/compose.yaml`: image `nxerp:<tag>` as `backend` (gunicorn), `websocket`,
 `queue-worker`, `scheduler`; MariaDB 11.8; two Redis; an nginx `proxy` on port 8080 (HTTP only: TLS terminates in front of it).
-Host layout and which values are secrets: `deploy/environments/README.md`. Configuration is written into `sites/common_site_config.json`
+Host layout and which values are secrets: `deploy/env/README.md`. Configuration is written into `sites/common_site_config.json`
 by the image entrypoint from non-secret environment variables; secrets stay in the host's `.env` (mode 600).
 
 ## First deployment of an environment (once)
 
 ```bash
 cd /opt/nxerp                                   # after the workflow (or you) copied compose.yaml, nginx.conf.template, scripts/
-cp /path/to/filled/.env .env && chmod 600 .env  # from deploy/staging-like/.env.example
+cp /path/to/filled/.env .env && chmod 600 .env  # from deploy/env/staging-like/.env.example
 scripts/deploy.sh --tag 0.1.0 --init            # pulls the image, starts the stack, creates the site, installs the apps, healthcheck
 ```
 
@@ -53,7 +53,7 @@ Maintenance mode shows users a "site is being updated" page for the duration of 
 - `smoke.sh` against `http://localhost:8100` (dev site): all 8 checks pass; exits 1 when the URL is unreachable. The status codes it
   expects (301/302 to `/login`, 403) were observed on that site.
 - `backup.sh`, `restore.sh`, `migrate.sh` on `nxerp-e2e.localhost`: see `backup-restore.md` / `migration-planning.md`.
-- `docker compose config` of `deploy/staging-like/compose.yaml` with dummy values renders (and fails clearly without `NXERP_IMAGE_TAG`);
+- `docker compose config` of `deploy/docker/compose/staging-like/compose.yaml` with dummy values renders (and fails clearly without `NXERP_IMAGE_TAG`);
   the nginx template passes `nginx -t` in the `nginx:1.27-alpine` image.
 - **Not tested:** starting the staging-like stack (needs the image), `deploy.sh`, `rollback.sh` execution, the SSH/registry steps, TLS, the
   GitHub Environment approval.

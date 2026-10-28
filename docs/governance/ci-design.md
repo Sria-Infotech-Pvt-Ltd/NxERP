@@ -18,7 +18,7 @@ accepted only when the owner sets `CODEQL_ENABLED=false`). Job names are stable 
 | `access-matrix` | `test_access_matrix`; uploads `docs/security/phase2-matrix.md` as artifact `access-matrix` | yes |
 | `erpnext-smoke` | `test_erpnext_smoke` | yes |
 | `helpdesk-regression` | `bench run-tests --app helpdesk` with the access layer active | yes |
-| `e2e` | Playwright via `e2e/run.sh <suite>`, 6 shards (`first-run journeys flows case3 recovery pages`); uploads `docs/evidence/phase3` per shard | yes (+ fresh e2e site) |
+| `e2e` | Playwright via `apps/nxerp_platform/browser-tests/run.sh <suite>`, 6 shards (`first-run journeys flows case3 recovery pages`); uploads `docs/evidence/phase3` per shard | yes (+ fresh e2e site) |
 | `fresh-install-migrate` | bootstrap from EMPTY volumes (no cache), apps installed and `nxerp` last, second `migrate`, `healthcheck.sh`, `backup.sh` + `restore.sh` round trip | its own |
 | `upgrade-from-previous-tag` | install the previous release tag on empty volumes, seed fake users, switch to this commit on the same volumes, `migrate`, health, a few tests. **Skips with a clear notice when no `vX.Y.Z` tag exists (today)** | its own |
 | `dependency-audit` | resolves Frappe + pinned apps' Python deps (`scripts/resolve_python_deps.py`), `pip-audit`, `npm audit` (e2e), `yarn audit` (Helpdesk SPA) | no |
@@ -40,7 +40,7 @@ pays the cold build (408 s measured locally, `docs/PROGRESS.md`; more on a share
 serially: no duplicate build but the serial test time is far beyond 20 minutes (the browser suite alone took about 25 min); (c)
 **chosen:** build the stack once, save its three Docker volumes (bench with all apps installed and built, MariaDB data, vendor clones;
 3.9 GB on the dev machine before compression) in `actions/cache` keyed on `hash(deploy/apps.json, versions.env, bootstrap.sh,
-compose.yaml, e2e/site.sh)`, restore them in each stack job, run `bench migrate` so the cached site matches the checkout, and run the
+compose.yaml, apps/nxerp_platform/browser-tests/site.sh)`, restore them in each stack job, run `bench migrate` so the cached site matches the checkout, and run the
 test jobs in parallel. A pin change correctly invalidates the cache. `fresh-install-migrate` and `upgrade-from-previous-tag` bypass it on
 purpose because they prove installation, not tests.
 
@@ -57,12 +57,12 @@ for `stack-cache`, so 25-35 minutes. The 20-minute goal is therefore a design in
   private: `HELPDESK_READ_TOKEN` is required then.
 - **Known failing today, independent of GitHub:** the local browser run of 2026-10-28 (`/tmp/e2e-full.log`) had failing tests in
   `flows`, `journeys`, `pages` (alt text on the login logo, accessibility) and `recovery`; the `e2e` job will report them.
-- The cached site was installed with the random passwords of `deploy/dev/.env`, so that file is saved into the cache with the volumes
+- The cached site was installed with the random passwords of `deploy/bootstrap/.env`, so that file is saved into the cache with the volumes
   (a throwaway CI stack's values, used nowhere else; readable by anyone who can read the repository's caches).
 - **Volume cache** is unproven on GitHub: restoring a MariaDB data directory from a tarball taken after a clean `down` is assumed safe;
   the extracted volume must be about 4 GB of free disk (the jobs free ~25 GB first). If it misbehaves, set the key to something new or
   drop `stack-cache` and let each job bootstrap (the code path exists: no cache hit means a cold start).
-- `pre-commit` (all hooks except gitleaks) passed locally on every tracked and new file on 2026-10-28, after the `cd ... || exit` fix in `e2e/*.sh`
+- `pre-commit` (all hooks except gitleaks) passed locally on every tracked and new file on 2026-10-28, after the `cd ... || exit` fix in `apps/nxerp_platform/browser-tests/*.sh`
   that its shellcheck hook needed (the hook runs on every `*.sh` at `--severity=warning`).
 - **Dependency audit** reports advisories (59 in Frappe's resolved set on 2026-10-28) without failing until `AUDIT_ENFORCE=true`.
 - **CodeQL** on a private repository needs GitHub Advanced Security.
@@ -81,6 +81,6 @@ for `stack-cache`, so 25-35 minutes. The 20-minute goal is therefore a design in
 | `scripts/check_licenses.py` | ran on Frappe's resolved set (142 packages): 0 outside policy after tuning, 2 `PENDING` exceptions |
 | `pip-audit` on Frappe's resolved set | 59 advisories / 5 packages |
 | `pip install --dry-run --report` for Frappe alone | works (143 packages); the all-apps resolution was not run (ERPNext does not check out on Windows: path length) |
-| gitleaks 8.28.0 with `.gitleaks.toml` on this repository (22 commits + working tree) | no findings in git history; one finding in the git-ignored local `deploy/dev/.env` (a real local secret, not committed) |
+| gitleaks 8.28.0 with `.gitleaks.toml` on this repository (22 commits + working tree) | no findings in git history; one finding in the git-ignored local `deploy/bootstrap/.env` (a real local secret, not committed) |
 | `docker compose config`, nginx `-t`, `buildx --check` | pass |
 | everything that needs GitHub (runners, caches, artifacts, environments, secrets, CodeQL, the cache restore) | **not run** |
