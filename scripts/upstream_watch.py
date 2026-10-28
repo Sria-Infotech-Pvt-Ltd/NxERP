@@ -1,7 +1,7 @@
 """Compare the pinned upstream versions with what upstream has published, and list recent security advisories. Stdlib + git.
 
-	python3 -I tools/upstream_watch.py                    # markdown report on stdout
-	python3 -I tools/upstream_watch.py --days 30          # advisory look-back window (default 14)
+	python3 -I scripts/upstream_watch.py                    # markdown report on stdout
+	python3 -I scripts/upstream_watch.py --days 30          # advisory look-back window (default 14)
 
 Reads deploy/versions.env (Frappe) and deploy/apps.json (ERPNext, payments, telephony, Helpdesk fork). Helpdesk is pinned to a
 commit of the company fork, so its upstream base release is recorded in HELPDESK_UPSTREAM_BASE below and must equal ADR-002.

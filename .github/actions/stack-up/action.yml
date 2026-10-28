@@ -36,11 +36,11 @@ runs:
     - name: Load the cached volumes into Docker
       if: steps.cache.outputs.cache-hit == 'true'
       shell: bash
-      run: tools/ci_stack.sh volumes restore "$RUNNER_TEMP/stack-volumes"
+      run: scripts/ci_stack.sh volumes restore "$RUNNER_TEMP/stack-volumes"
 
     - name: Start the stack and wait for it
       shell: bash
-      run: tools/ci_stack.sh up
+      run: scripts/ci_stack.sh up
 
     - name: Apply this checkout's migrations to the cached site
       if: steps.cache.outputs.cache-hit == 'true'
@@ -50,12 +50,12 @@ runs:
       run: |
         set -euo pipefail
         # the cache was built from an earlier commit: new patches and schema changes of THIS checkout apply here
-        tools/ci_stack.sh bench migrate
+        scripts/ci_stack.sh bench migrate
         if [ "$WITH_E2E" = true ]; then
-          tools/ci_stack.sh sh 'bench --site nxerp-e2e.localhost migrate'
+          scripts/ci_stack.sh sh 'bench --site nxerp-e2e.localhost migrate'
           ./e2e/site.sh snapshot   # the site is still pristine (no wizard run): re-save it at this schema
         fi
 
     - name: Allow tests and lift the new-user throttle
       shell: bash
-      run: tools/ci_stack.sh prep
+      run: scripts/ci_stack.sh prep

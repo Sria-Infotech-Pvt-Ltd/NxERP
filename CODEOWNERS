@@ -31,7 +31,7 @@
 /deploy/                       @Sria-Infotech-Pvt-Ltd/nxerp-devops @Sria-Infotech-Pvt-Ltd/nxerp-security
 /.github/                      @Sria-Infotech-Pvt-Ltd/nxerp-devops @Sria-Infotech-Pvt-Ltd/nxerp-security
 /.gitleaks.toml                @Sria-Infotech-Pvt-Ltd/nxerp-security
-/tools/                        @Sria-Infotech-Pvt-Ltd/nxerp-devops @Sria-Infotech-Pvt-Ltd/nxerp-platform
+/scripts/                        @Sria-Infotech-Pvt-Ltd/nxerp-devops @Sria-Infotech-Pvt-Ltd/nxerp-platform
 /docs/governance/              @Sria-Infotech-Pvt-Ltd/nxerp-devops @Sria-Infotech-Pvt-Ltd/nxerp-security
 /docs/runbooks/                @Sria-Infotech-Pvt-Ltd/nxerp-devops @Sria-Infotech-Pvt-Ltd/nxerp-security
 /CODEOWNERS                    @Sria-Infotech-Pvt-Ltd/nxerp-maintainers @Sria-Infotech-Pvt-Ltd/nxerp-security

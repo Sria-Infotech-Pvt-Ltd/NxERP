@@ -1,9 +1,9 @@
 """Check commit subjects (and a PR title) against the Conventional Commits rules in docs/governance/contribution-policy.md.
 Stdlib only.
 
-	python3 -I tools/check_commits.py                      # origin/main..HEAD, or every commit when there is no origin/main
-	python3 -I tools/check_commits.py --range main..HEAD
-	python3 -I tools/check_commits.py --title "feat(access): add grant API"   # a PR title (squash merges use it as the commit)
+	python3 -I scripts/check_commits.py                      # origin/main..HEAD, or every commit when there is no origin/main
+	python3 -I scripts/check_commits.py --range main..HEAD
+	python3 -I scripts/check_commits.py --title "feat(access): add grant API"   # a PR title (squash merges use it as the commit)
 
 Format:  type(scope)!: summary     scope optional; `!` marks a breaking change; several types may be joined with a comma
 (`docs,ci: ...`, used in this repository's history). Types: feat fix docs chore ci test refactor perf build style revert.

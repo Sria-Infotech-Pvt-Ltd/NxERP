@@ -20,7 +20,7 @@ On Linux and macOS use `python3` where this page says `python`.
 
 | Layer | What it proves | Needs the dev stack? | Where |
 | --- | --- | --- | --- |
-| 1. Static checks | formatting, lint, security patterns, pins, architecture rules | no (host or CI) | `ruff`, `bandit`, `deploy/check_pins.py`, `tools/check_architecture.py`, pre-commit |
+| 1. Static checks | formatting, lint, security patterns, pins, architecture rules | no (host or CI) | `ruff`, `bandit`, `deploy/check_pins.py`, `scripts/check_architecture.py`, pre-commit |
 | 2. Plain Python tests | the architecture checker catches violations | no | `apps/nxerp_platform/nxerp/tests/test_architecture.py` |
 | 3. Integration tests (in process) | registry, resolver, gate decisions, routing and redirect safety, guard, grant migration, the add-an-app checklist | yes: a Frappe site | `apps/nxerp_platform/nxerp/tests/test_*.py` (`IntegrationTestCase`) |
 | 4. Persona x surface matrix | who is allowed or refused on each enforcement surface, over real HTTP | yes | `apps/nxerp_platform/nxerp/tests/test_access_matrix.py`, `world.py`; writes `docs/security/phase2-matrix.md` |
@@ -35,18 +35,18 @@ access rule needs a layer 3 test and a matrix or HTTP row; a UI change needs a b
 
 ```bash
 python -I deploy/check_pins.py            # pins are exact, nxerp is last
-python -I tools/check_architecture.py     # architecture rules, see below
+python -I scripts/check_architecture.py     # architecture rules, see below
 pre-commit run --all-files                # ruff, ruff-format, bandit, shellcheck, gitleaks, file hygiene
 ruff check . && ruff format --check .     # what pre-commit runs for Python
 bandit -r nxerp -x apps/nxerp_platform/nxerp/tests -q && bandit -r apps/nxerp_platform/nxerp/tests -s B101,B105,B106,B311 -q
 ```
 
-`tools/check_architecture.py` (stdlib only) fails when: `nxerp` imports another Frappe app in any form (import, from, `importlib.import_module("x")`, `__import__("x")`;
+`scripts/check_architecture.py` (stdlib only) fails when: `nxerp` imports another Frappe app in any form (import, from, `importlib.import_module("x")`, `__import__("x")`;
 `frappe.get_attr("x.y")` strings are fine); `nxerp` declares `required_apps` or lists another app in `pyproject.toml`; the repo holds a second Frappe app; and,
 **when given the other apps' checkouts**, an app imports `nxerp` or carries platform code (the `/login` page, `www/nxerp/`, the login assets, a copy of the resolver):
 
 ```bash
-python -I tools/check_architecture.py --app-path helpdesk=../helpdesk     # or: NXERP_APP_PATHS="helpdesk=../helpdesk"
+python -I scripts/check_architecture.py --app-path helpdesk=../helpdesk     # or: NXERP_APP_PATHS="helpdesk=../helpdesk"
 ```
 
 Without `--app-path` the other-app checks are **skipped** and the output says so ("SKIPPED ... NOT verified by this run"); a green line without them

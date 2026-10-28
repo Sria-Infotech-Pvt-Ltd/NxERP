@@ -12,7 +12,7 @@ accepted only when the owner sets `CODEQL_ENABLED=false`). Job names are stable 
 | Job | What it runs | Needs the stack? |
 | --- | --- | --- |
 | `lint` | pre-commit (hygiene, ruff, bandit, shellcheck), `ruff check/format`, bandit, Conventional Commit check (PR title strict, commits format-only) | no |
-| `pins-and-architecture` | `deploy/check_pins.py`, `tools/check_architecture.py`, actionlint, `bash -n` on scripts, `docker compose config` of the staging-like file, `docker buildx build --check` | no |
+| `pins-and-architecture` | `deploy/check_pins.py`, `scripts/check_architecture.py`, actionlint, `bash -n` on scripts, `docker compose config` of the staging-like file, `docker buildx build --check` | no |
 | `frontend` | Helpdesk SPA (separate repo, checked out at its pin): `yarn install --frozen-lockfile`, `theme:check`, `theme:audit`, `yarn build` | no |
 | `nxerp-tests` | every `apps/nxerp_platform/nxerp/tests/test_*.py` module except the matrix and the ERPNext smoke | yes |
 | `access-matrix` | `test_access_matrix`; uploads `docs/security/phase2-matrix.md` as artifact `access-matrix` | yes |
@@ -21,10 +21,10 @@ accepted only when the owner sets `CODEQL_ENABLED=false`). Job names are stable 
 | `e2e` | Playwright via `e2e/run.sh <suite>`, 6 shards (`first-run journeys flows case3 recovery pages`); uploads `docs/evidence/phase3` per shard | yes (+ fresh e2e site) |
 | `fresh-install-migrate` | bootstrap from EMPTY volumes (no cache), apps installed and `nxerp` last, second `migrate`, `healthcheck.sh`, `backup.sh` + `restore.sh` round trip | its own |
 | `upgrade-from-previous-tag` | install the previous release tag on empty volumes, seed fake users, switch to this commit on the same volumes, `migrate`, health, a few tests. **Skips with a clear notice when no `vX.Y.Z` tag exists (today)** | its own |
-| `dependency-audit` | resolves Frappe + pinned apps' Python deps (`tools/resolve_python_deps.py`), `pip-audit`, `npm audit` (e2e), `yarn audit` (Helpdesk SPA) | no |
+| `dependency-audit` | resolves Frappe + pinned apps' Python deps (`scripts/resolve_python_deps.py`), `pip-audit`, `npm audit` (e2e), `yarn audit` (Helpdesk SPA) | no |
 | `secret-scan` | gitleaks 8.28.0 CLI image over the full history with `.gitleaks.toml` | no |
 | `codeql` | CodeQL for `python` and `javascript-typescript` | no |
-| `license-check` | `tools/check_licenses.py` for PyPI metadata of the Python set and npm (`license-checker-rseidelsohn`) for e2e and the SPA against `.github/license-policy/` | no |
+| `license-check` | `scripts/check_licenses.py` for PyPI metadata of the Python set and npm (`license-checker-rseidelsohn`) for e2e and the SPA against `.github/license-policy/` | no |
 | `docker-build` | builds `deploy/docker/Dockerfile` (no push), then asserts `apps.txt` ends with `nxerp` and `bench version` works | no |
 | `stack-cache` | helper: builds the shared stack cache when missing; consumed by the stack jobs | builds it |
 | `ci-gate` | aggregate | no |
@@ -75,10 +75,10 @@ for `stack-cache`, so 25-35 minutes. The 20-minute goal is therefore a design in
 | --- | --- |
 | `actionlint` on all workflows | clean |
 | YAML parse (python yaml) of workflows, composite actions, dependabot, compose | clean |
-| `tools/check_commits.py` | runs; found nine over-long subjects in local history (hence the 150 limit for commits) |
-| `tools/changelog.py`, `tools/upstream_watch.py` | ran; real output |
+| `scripts/check_commits.py` | runs; found nine over-long subjects in local history (hence the 150 limit for commits) |
+| `scripts/changelog.py`, `scripts/upstream_watch.py` | ran; real output |
 | `pre-commit run --files <all tracked + new files>` with `SKIP=gitleaks` | all hooks passed (ruff, bandit, shellcheck 0.10.0, check-yaml, architecture) |
-| `tools/check_licenses.py` | ran on Frappe's resolved set (142 packages): 0 outside policy after tuning, 2 `PENDING` exceptions |
+| `scripts/check_licenses.py` | ran on Frappe's resolved set (142 packages): 0 outside policy after tuning, 2 `PENDING` exceptions |
 | `pip-audit` on Frappe's resolved set | 59 advisories / 5 packages |
 | `pip install --dry-run --report` for Frappe alone | works (143 packages); the all-apps resolution was not run (ERPNext does not check out on Windows: path length) |
 | gitleaks 8.28.0 with `.gitleaks.toml` on this repository (22 commits + working tree) | no findings in git history; one finding in the git-ignored local `deploy/dev/.env` (a real local secret, not committed) |

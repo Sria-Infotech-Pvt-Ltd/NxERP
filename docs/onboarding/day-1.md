@@ -22,7 +22,7 @@ This guide has been followed literally from a clean clone. What was and was not 
 | Git | any recent (2.47 was used) | clone, branches |
 | Docker with Compose v2 | Docker Desktop 29.x, Compose v5.1.4 was used; give Docker at least 8 GB RAM | the dev stack is Docker-only: `bench` and MariaDB do not run natively on Windows (ADR-006) |
 | Disk | tens of GB free (ASSUMPTION: about 30 GB; the dev workstation had 12 GB free and was tight) | images and three named volumes |
-| Python **3.14** on the host | needed for the host-side checks only (`deploy/check_pins.py`, `tools/check_architecture.py`, the architecture unit test). The checker needs `tomllib` (3.11+; Python 3.7 failed with `ModuleNotFoundError` when tried) and parses the platform's 3.14-only `except A, B:` syntax (ASSUMPTION for 3.11 to 3.13: not tried) | the platform targets 3.14 (`pyproject.toml`) |
+| Python **3.14** on the host | needed for the host-side checks only (`deploy/check_pins.py`, `scripts/check_architecture.py`, the architecture unit test). The checker needs `tomllib` (3.11+; Python 3.7 failed with `ModuleNotFoundError` when tried) and parses the platform's 3.14-only `except A, B:` syntax (ASSUMPTION for 3.11 to 3.13: not tried) | the platform targets 3.14 (`pyproject.toml`) |
 | Node | **not needed** on the host | the browser suite runs inside the container with its own Node 24 and Chromium |
 | `gh` (GitHub CLI) | optional, for opening PRs | |
 | Windows | run everything from **Git Bash** (or WSL). On Windows the interpreter is usually `python`, not `python3`; use whichever prints 3.14 | |
@@ -72,8 +72,8 @@ From the repo root:
 
 ```bash
 python -I deploy/check_pins.py                                  # pins are exact commits, nxerp is last
-python -I tools/check_architecture.py                           # architecture rules (ADR-005)
-python -I tools/check_architecture.py --app-path helpdesk=../helpdesk   # also: no app imports nxerp, no platform code in Helpdesk
+python -I scripts/check_architecture.py                           # architecture rules (ADR-005)
+python -I scripts/check_architecture.py --app-path helpdesk=../helpdesk   # also: no app imports nxerp, no platform code in Helpdesk
 python -m unittest nxerp.tests.test_architecture                # the checker and a proof that it catches violations
 ```
 
@@ -183,7 +183,7 @@ Followed literally on 2026-10-28 on the Windows 11 dev workstation, from Git Bas
 steps marked [stack] were **not** re-executed in the clone. Statements below are what was run and seen.
 
 **Clone.** `git clone --branch phase-4/release-readiness <local path> nxerp-platform` (HEAD `bb859fa`) and `git clone --branch feature/nxerp-platform-login <local path> helpdesk` (HEAD `3897718c6`) both worked.
-A clone from GitHub was **not** done because the remote holds only `main` (checked with `git ls-remote`). The documentation, `tools/check_architecture.py` and the two new test files had not been committed yet and were copied into the clone.
+A clone from GitHub was **not** done because the remote holds only `main` (checked with `git ls-remote`). The documentation, `scripts/check_architecture.py` and the two new test files had not been committed yet and were copied into the clone.
 
 **Executed in the clean clone (all from the repo root):**
 
@@ -191,9 +191,9 @@ A clone from GitHub was **not** done because the remote holds only `main` (check
 | --- | --- |
 | `git --version`, `docker --version`, `docker compose version`, `python --version` | git 2.47.1, Docker 29.6.1, Compose v5.1.4, Python 3.14.3. `python3` printed "Python was not found" (the Microsoft Store stub): on this host the command is `python` (now stated in the guide) |
 | `python -I deploy/check_pins.py` | `OK: 5 apps pinned, versions.env complete` |
-| `python -I tools/check_architecture.py` | `OK: nxerp imports no other app, declares no required_apps, and the repo holds one app; SKIPPED the other-app checks (R3, R4b) ...` |
-| `python -I tools/check_architecture.py --app-path helpdesk=../helpdesk` | `OK: ... checked other apps: helpdesk` (the Helpdesk branch `feature/nxerp-platform-login`: no import of `nxerp`, no platform code) |
-| Python 3.7.0 `-I tools/check_architecture.py` | `ModuleNotFoundError: No module named 'tomllib'` (so the host needs a modern Python) |
+| `python -I scripts/check_architecture.py` | `OK: nxerp imports no other app, declares no required_apps, and the repo holds one app; SKIPPED the other-app checks (R3, R4b) ...` |
+| `python -I scripts/check_architecture.py --app-path helpdesk=../helpdesk` | `OK: ... checked other apps: helpdesk` (the Helpdesk branch `feature/nxerp-platform-login`: no import of `nxerp`, no platform code) |
+| Python 3.7.0 `-I scripts/check_architecture.py` | `ModuleNotFoundError: No module named 'tomllib'` (so the host needs a modern Python) |
 | `python -m unittest nxerp.tests.test_architecture` | `Ran 17 tests ... OK` |
 | `python -m venv .venv`, `pip install ruff pre-commit bandit` | ruff 0.17.3 installed |
 | `ruff check .` and `ruff format --check .` | `All checks passed!`; `52 files already formatted` |
@@ -205,7 +205,7 @@ A clone from GitHub was **not** done because the remote holds only `main` (check
 **The two failing pre-commit hooks (findings, not fixed here):**
 
 1. `shellcheck` (runs the `koalaman/shellcheck:v0.10.0` Docker image, 19.3 MB, pulled by the hook): three warnings at the configured severity: `e2e/run.sh` line 12 and `e2e/site.sh` line 11 (SC2164, `cd` without `|| exit`) and `deploy/dev/up.sh` line 28 (SC2155, declare and assign separately). CI's lint job runs the same hook, so it would fail on these.
-2. `nxerp-architecture` (`entry: python3 -I tools/check_architecture.py`, `language: system`): exit code 9009 on this host because `python3` is the Store stub. The check itself passes when run as `python -I` (above). A `language: python` hook, or an entry that works on both, would fix it.
+2. `nxerp-architecture` (`entry: python3 -I scripts/check_architecture.py`, `language: system`): exit code 9009 on this host because `python3` is the Store stub. The check itself passes when run as `python -I` (above). A `language: python` hook, or an entry that works on both, would fix it.
 
 **Not re-executed in the fresh clone (needs the bench container).** `./deploy/dev/up.sh -d` (bring-up), seeding users, `bench run-tests`, `e2e/run.sh`. Their record:
 

@@ -3,11 +3,11 @@
 # An exception is a legal/product decision: do not add one in the same PR that introduces the dependency without review by the
 # security owners (CODEOWNERS). Empty on purpose: nothing has been reviewed yet.
 #
-# NOTE the apps NXERP deploys are not third-party packages for this check and are excluded by tools/resolve_python_deps.py:
+# NOTE the apps NXERP deploys are not third-party packages for this check and are excluded by scripts/resolve_python_deps.py:
 # ERPNext is GPL-3.0 and Helpdesk is AGPL-3.0 (their own licence files). The obligations of shipping them together with a
 # proprietary nxerp app are an OWNER/LEGAL decision (docs/governance/owner-action-list.md); this file does not settle it.
 
-# --- found by the first run of tools/check_licenses.py against Frappe's own dependency set (PyPI metadata, 2026-10-28) ---
+# --- found by the first run of scripts/check_licenses.py against Frappe's own dependency set (PyPI metadata, 2026-10-28) ---
 # These two pass ONLY because they are listed as PENDING; the approver field must become a real name and date after review.
 pip:mysqlclient | GPL-2.0-or-later (PyPI classifier) | MariaDB driver required by Frappe; GPL obligations when shipped in a proprietary image need review | PENDING legal review
 pip:typst | no licence metadata on PyPI | pulled in by Frappe (PDF/print); read the upstream repository's licence | PENDING engineering review

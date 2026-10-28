@@ -57,7 +57,7 @@ Nothing is granted by this layer: Frappe's DocType, field and record permissions
 
 ## Rules for an app author
 
-- Do not import `nxerp` from your app and do not import other apps (ADR-005; `tools/check_architecture.py`).
+- Do not import `nxerp` from your app and do not import other apps (ADR-005; `scripts/check_architecture.py`).
 - A DocType belongs to your app through its **module**. Do not put app data in Frappe's own modules: they are the
   shared set (`docs/security/shared-set.md`) and are not app-gated.
 - `implied_roles` is for roles your app already uses to mean "staff" (Helpdesk: `Agent`, `Agent Manager`) so the

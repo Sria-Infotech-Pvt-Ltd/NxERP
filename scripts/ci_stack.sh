@@ -2,13 +2,13 @@
 # CI helper around the dev stack (deploy/dev). Used by .github/workflows/ci.yml and .github/actions/stack-up; also runnable
 # locally. It never prints the generated passwords.
 #
-#   tools/ci_stack.sh up                bring the stack up (deploy/dev/up.sh -d) and wait for "[bootstrap] ready:"
-#   tools/ci_stack.sh prep              allow tests on the dev site and lift Frappe's per-hour new-user throttle
-#   tools/ci_stack.sh bench ARGS...     bench --site <site> ARGS... inside the container
-#   tools/ci_stack.sh sh 'COMMAND'      a shell command inside the container, in the bench directory
-#   tools/ci_stack.sh down              stop the stack (volumes kept)
-#   tools/ci_stack.sh logs              last 300 lines of the bench service
-#   tools/ci_stack.sh volumes save|restore DIR   tar the three data volumes (and deploy/dev/.env) to/from DIR (CI cache; stack must be down)
+#   scripts/ci_stack.sh up                bring the stack up (deploy/dev/up.sh -d) and wait for "[bootstrap] ready:"
+#   scripts/ci_stack.sh prep              allow tests on the dev site and lift Frappe's per-hour new-user throttle
+#   scripts/ci_stack.sh bench ARGS...     bench --site <site> ARGS... inside the container
+#   scripts/ci_stack.sh sh 'COMMAND'      a shell command inside the container, in the bench directory
+#   scripts/ci_stack.sh down              stop the stack (volumes kept)
+#   scripts/ci_stack.sh logs              last 300 lines of the bench service
+#   scripts/ci_stack.sh volumes save|restore DIR   tar the three data volumes (and deploy/dev/.env) to/from DIR (CI cache; stack must be down)
 #
 # NXERP_CI_READY_TIMEOUT: seconds to wait for readiness (default 3600; a cold bootstrap measured 408 s on a workstation).
 set -euo pipefail

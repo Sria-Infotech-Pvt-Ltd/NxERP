@@ -59,7 +59,7 @@ and [`../security/shared-set.md`](../security/shared-set.md).
 - [ ] **Errors:** fail closed, generic message, no traceback, no names of apps or roles.
 - [ ] **Secrets and PII:** none in code, config, fixtures, logs, docs or the PR text.
 - [ ] **Dev-only code** is guarded by `developer_mode`/`allow_tests` and inert in production.
-- [ ] **Architecture rule:** no app imports another; `tools/check_architecture.py` passes.
+- [ ] **Architecture rule:** no app imports another; `scripts/check_architecture.py` passes.
 - [ ] **Docs and ADR updated** if an access rule, a route or a pin changed.
 - [ ] **What was not verified** is written down in the PR.
 

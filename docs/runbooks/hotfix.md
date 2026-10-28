@@ -33,4 +33,4 @@ successful staging deployment of that commit, so for a true emergency the produc
 
 ## What was tested
 
-Nothing of this flow has executed (no tag, no remote CI). `tools/check_commits.py` accepts `fix(scope): ...` titles (run locally).
+Nothing of this flow has executed (no tag, no remote CI). `scripts/check_commits.py` accepts `fix(scope): ...` titles (run locally).

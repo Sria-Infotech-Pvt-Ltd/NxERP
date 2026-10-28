@@ -77,10 +77,10 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           if [ "$EVENT" = pull_request ]; then
-            python3 -I tools/check_commits.py --title "$PR_TITLE"
+            python3 -I scripts/check_commits.py --title "$PR_TITLE"
             # commits: format only (length limit relaxed to 150: nine existing commits are 103-128 characters; the PR title is what
             # a squash merge keeps, and it is held to 100)
-            python3 -I tools/check_commits.py --range "$BASE_SHA..$HEAD_SHA" --max-length 150
+            python3 -I scripts/check_commits.py --range "$BASE_SHA..$HEAD_SHA" --max-length 150
           else
             echo "not a pull request: commit messages are checked on PRs only"
           fi
@@ -99,12 +99,12 @@ jobs:
       - name: Version pins are exact (ADR-002), Dockerfile defaults equal versions.env
         run: python3 -I deploy/check_pins.py
       - name: Architecture rules (ADR-005)
-        run: python3 -I tools/check_architecture.py
+        run: python3 -I scripts/check_architecture.py
       - name: Workflow files (actionlint)
         run: docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.12 -color
       - name: Shell syntax of deploy and CI scripts
         run: |
-          for f in deploy/scripts/*.sh deploy/docker/*.sh deploy/dev/*.sh e2e/*.sh tools/*.sh; do bash -n "$f"; done
+          for f in deploy/scripts/*.sh deploy/docker/*.sh deploy/dev/*.sh e2e/*.sh scripts/*.sh; do bash -n "$f"; done
       - name: Staging-like compose file renders (config only; dummy values, nothing is started)
         run: |
           printf 'NXERP_IMAGE_TAG=0.0.0-ci\nNXERP_SITE=staging.example.test\nNXERP_DB_ROOT_PASSWORD=dummy\nNXERP_ADMIN_PASSWORD=dummy\n' > "$RUNNER_TEMP/dummy.env"
@@ -168,7 +168,7 @@ jobs:
           token: ${{ secrets.HELPDESK_READ_TOKEN }}
       - name: Cold bootstrap from empty volumes
         if: steps.lookup.outputs.cache-hit != 'true'
-        run: tools/ci_stack.sh up
+        run: scripts/ci_stack.sh up
       - name: Create the fresh browser-test site and snapshot it (pristine, no setup wizard)
         if: steps.lookup.outputs.cache-hit != 'true'
         run: |
@@ -177,8 +177,8 @@ jobs:
       - name: Stop the stack cleanly and save its volumes
         if: steps.lookup.outputs.cache-hit != 'true'
         run: |
-          tools/ci_stack.sh down
-          tools/ci_stack.sh volumes save "$RUNNER_TEMP/stack-volumes"
+          scripts/ci_stack.sh down
+          scripts/ci_stack.sh volumes save "$RUNNER_TEMP/stack-volumes"
           du -sh "$RUNNER_TEMP"/stack-volumes/* | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Save the cache
         if: steps.lookup.outputs.cache-hit != 'true'
@@ -188,7 +188,7 @@ jobs:
           key: ${{ steps.lookup.outputs.cache-primary-key }}
       - name: Logs on failure
         if: failure()
-        run: tools/ci_stack.sh logs
+        run: scripts/ci_stack.sh logs
 
   # ------------------------------------------------------------------------------------------ stack jobs (parallel)
   nxerp-tests:
@@ -212,13 +212,13 @@ jobs:
               nxerp.tests.test_access_matrix | nxerp.tests.test_erpnext_smoke) continue ;;
             esac
             echo "::group::$module"
-            tools/ci_stack.sh bench run-tests --app nxerp --module "$module" || failed=1
+            scripts/ci_stack.sh bench run-tests --app nxerp --module "$module" || failed=1
             echo "::endgroup::"
           done
           exit "$failed"
       - name: Logs on failure
         if: failure()
-        run: tools/ci_stack.sh logs
+        run: scripts/ci_stack.sh logs
 
   access-matrix:
     name: access-matrix
@@ -235,7 +235,7 @@ jobs:
       - name: Persona x surface matrix (writes the matrix document)
         env:
           NXERP_MATRIX_OUT: /workspace/docs/security/phase2-matrix.md
-        run: tools/ci_stack.sh bench run-tests --app nxerp --module nxerp.tests.test_access_matrix
+        run: scripts/ci_stack.sh bench run-tests --app nxerp --module nxerp.tests.test_access_matrix
       - name: Does the regenerated matrix differ from the committed one? (information, not a gate)
         if: always()
         run: git diff --stat -- docs/security/phase2-matrix.md | tee -a "$GITHUB_STEP_SUMMARY" || true
@@ -248,7 +248,7 @@ jobs:
           if-no-files-found: warn
       - name: Logs on failure
         if: failure()
-        run: tools/ci_stack.sh logs
+        run: scripts/ci_stack.sh logs
 
   erpnext-smoke:
     name: erpnext-smoke
@@ -263,10 +263,10 @@ jobs:
         with:
           token: ${{ secrets.HELPDESK_READ_TOKEN }}
       - name: ERPNext keeps working with the platform layer active
-        run: tools/ci_stack.sh bench run-tests --app nxerp --module nxerp.tests.test_erpnext_smoke
+        run: scripts/ci_stack.sh bench run-tests --app nxerp --module nxerp.tests.test_erpnext_smoke
       - name: Logs on failure
         if: failure()
-        run: tools/ci_stack.sh logs
+        run: scripts/ci_stack.sh logs
 
   helpdesk-regression:
     name: helpdesk-regression
@@ -281,10 +281,10 @@ jobs:
         with:
           token: ${{ secrets.HELPDESK_READ_TOKEN }}
       - name: Helpdesk's own suite, with the access layer active (569 tests passed locally on 2026-10-27)
-        run: tools/ci_stack.sh bench run-tests --app helpdesk
+        run: scripts/ci_stack.sh bench run-tests --app helpdesk
       - name: Logs on failure
         if: failure()
-        run: tools/ci_stack.sh logs
+        run: scripts/ci_stack.sh logs
 
   e2e:
     name: e2e
@@ -321,7 +321,7 @@ jobs:
           if-no-files-found: warn
       - name: Logs on failure
         if: failure()
-        run: tools/ci_stack.sh logs
+        run: scripts/ci_stack.sh logs
 
   # ------------------------------------------------------------------------------------------ install and upgrade proofs
   fresh-install-migrate:
@@ -340,15 +340,15 @@ jobs:
           use-cache: "false" # the point of this job: install from empty volumes
       - name: Every app is installed, nxerp last
         run: |
-          apps=$(tools/ci_stack.sh bench list-apps | awk 'NF {print $1}' | tr '\n' ' ')
+          apps=$(scripts/ci_stack.sh bench list-apps | awk 'NF {print $1}' | tr '\n' ' ')
           echo "installed: $apps"
           for app in frappe payments erpnext telephony helpdesk nxerp; do
             case " $apps " in *" $app "*) ;; *) echo "::error::$app is not installed"; exit 1 ;; esac
           done
-          last=$(tools/ci_stack.sh sh 'tail -n 1 sites/apps.txt')
+          last=$(scripts/ci_stack.sh sh 'tail -n 1 sites/apps.txt')
           [ "$last" = nxerp ] || { echo "::error::nxerp must be the last entry of apps.txt, got $last"; exit 1; }
       - name: Migrate a second time on the fresh site (must be a no-op that succeeds)
-        run: tools/ci_stack.sh bench migrate
+        run: scripts/ci_stack.sh bench migrate
       - name: Deploy scripts against this stack
         env:
           NXERP_COMPOSE_FILE: deploy/dev/compose.yaml
@@ -365,7 +365,7 @@ jobs:
           NXERP_DB_ROOT_PASSWORD="$NXERP_DB_ROOT_PASSWORD" deploy/scripts/restore.sh --yes "$backup_dir"
       - name: Logs on failure
         if: failure()
-        run: tools/ci_stack.sh logs
+        run: scripts/ci_stack.sh logs
 
   upgrade-from-previous-tag:
     name: upgrade-from-previous-tag
@@ -380,7 +380,7 @@ jobs:
       - name: Find the previous release tag
         id: prev
         run: |
-          tag=$(tools/ci_upgrade_test.sh previous-tag)
+          tag=$(scripts/ci_upgrade_test.sh previous-tag)
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
           if [ -z "$tag" ]; then
             msg="SKIPPED: no previous release tag (vX.Y.Z) exists yet, so there is nothing to upgrade from. This is expected until the first release is tagged."
@@ -402,7 +402,7 @@ jobs:
           git worktree add --detach "$RUNNER_TEMP/prev/nxerp-platform" "refs/tags/$TAG"
           {
             echo "### upgrade-from-previous-tag: $TAG -> $GITHUB_SHA"
-            echo "pins since $TAG: $(tools/ci_upgrade_test.sh pin-diff "$TAG")"
+            echo "pins since $TAG: $(scripts/ci_upgrade_test.sh pin-diff "$TAG")"
             echo
             echo "Only nxerp code and schema are upgraded. If the pins changed, Frappe/ERPNext/Helpdesk stay at the old tag's versions in this bench (rehearse those on the staging-like environment)."
           } | tee -a "$GITHUB_STEP_SUMMARY"
@@ -419,13 +419,13 @@ jobs:
           NXERP_ROOT: ${{ runner.temp }}/prev/nxerp-platform
         run: |
           set -euo pipefail
-          tools/ci_stack.sh up
+          scripts/ci_stack.sh up
           # shellcheck disable=SC2016  # the single quotes are deliberate: the command expands inside the container
           # fake users on example.test; the previous tag may not have the seeder, which is not a failure of the upgrade
-          tools/ci_stack.sh sh 'NXERP_SEED_PASSWORD=$(python3 -c "import secrets; print(secrets.token_urlsafe(16))") bench --site nxerp.localhost execute nxerp.tests.seed_users.seed >/dev/null' \
+          scripts/ci_stack.sh sh 'NXERP_SEED_PASSWORD=$(python3 -c "import secrets; print(secrets.token_urlsafe(16))") bench --site nxerp.localhost execute nxerp.tests.seed_users.seed >/dev/null' \
             || echo "::warning::seed_users is not available in the previous tag; upgrading an empty site"
-          tools/ci_stack.sh bench list-apps | tee "$RUNNER_TEMP/apps-before.txt"
-          tools/ci_stack.sh down
+          scripts/ci_stack.sh bench list-apps | tee "$RUNNER_TEMP/apps-before.txt"
+          scripts/ci_stack.sh down
       - name: Reuse the previous stack's generated passwords (the old site was installed with them)
         if: steps.prev.outputs.tag != ''
         run: install -m 600 "$RUNNER_TEMP/prev/nxerp-platform/deploy/dev/.env" deploy/dev/.env
@@ -438,8 +438,8 @@ jobs:
       - name: Migrate the old site with this commit's code
         if: steps.prev.outputs.tag != ''
         run: |
-          tools/ci_stack.sh bench migrate
-          tools/ci_stack.sh bench list-apps | tee "$RUNNER_TEMP/apps-after.txt"
+          scripts/ci_stack.sh bench migrate
+          scripts/ci_stack.sh bench list-apps | tee "$RUNNER_TEMP/apps-after.txt"
           diff "$RUNNER_TEMP/apps-before.txt" "$RUNNER_TEMP/apps-after.txt" || echo "::notice::app versions changed during the upgrade (expected for nxerp)"
       - name: Site is healthy and the platform tests that need no fixtures pass
         if: steps.prev.outputs.tag != ''
@@ -452,11 +452,11 @@ jobs:
         run: |
           deploy/scripts/healthcheck.sh
           for module in nxerp.tests.test_scaffold nxerp.tests.test_registry nxerp.tests.test_access_resolver; do
-            tools/ci_stack.sh bench run-tests --app nxerp --module "$module"
+            scripts/ci_stack.sh bench run-tests --app nxerp --module "$module"
           done
       - name: Logs on failure
         if: failure() && steps.prev.outputs.tag != ''
-        run: tools/ci_stack.sh logs
+        run: scripts/ci_stack.sh logs
 
   # ------------------------------------------------------------------------------------------ supply chain
   dependency-audit:
@@ -471,7 +471,7 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
-          cache-dependency-path: tools/resolve_python_deps.py
+          cache-dependency-path: scripts/resolve_python_deps.py
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -482,7 +482,7 @@ jobs:
       - name: Resolve the whole bench's Python dependency set (Frappe + every pinned app) without installing it
         env:
           GIT_READ_TOKEN: ${{ secrets.HELPDESK_READ_TOKEN }}
-        run: python3 -I tools/resolve_python_deps.py --out build/deps
+        run: python3 -I scripts/resolve_python_deps.py --out build/deps
       - name: pip-audit
         # Frappe does not lock its Python dependencies, so this set is what a fresh image build would install TODAY.
         # The first local run (Frappe alone, 2026-10-28) found 59 advisories in 5 packages. Until the owner has triaged them
@@ -566,7 +566,7 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
-          cache-dependency-path: tools/resolve_python_deps.py
+          cache-dependency-path: scripts/resolve_python_deps.py
       - uses: ./.github/actions/helpdesk-fetch
         with:
           dest: ${{ github.workspace }}/helpdesk-src
@@ -579,9 +579,9 @@ jobs:
       - name: Resolve the Python dependency set
         env:
           GIT_READ_TOKEN: ${{ secrets.HELPDESK_READ_TOKEN }}
-        run: python3 -I tools/resolve_python_deps.py --out build/deps
+        run: python3 -I scripts/resolve_python_deps.py --out build/deps
       - name: Python licences (PyPI metadata) against .github/license-policy
-        run: python3 -I tools/check_licenses.py pypi build/deps/requirements.txt
+        run: python3 -I scripts/check_licenses.py pypi build/deps/requirements.txt
       - name: npm licences, browser tests
         working-directory: e2e
         run: |

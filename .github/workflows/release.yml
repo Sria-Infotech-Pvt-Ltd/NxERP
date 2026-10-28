@@ -1,7 +1,7 @@
 name: Release
 
 # STATUS: NEVER run on GitHub. No tag exists, no registry package exists, and no one has write access to test it. Pieces that
-# WERE run locally: tools/changelog.py (against this repository's history), deploy/docker/Dockerfile's `buildx build --check`.
+# WERE run locally: scripts/changelog.py (against this repository's history), deploy/docker/Dockerfile's `buildx build --check`.
 # The image build itself, the registry push, the SBOM and the GitHub release creation have NOT been executed.
 #
 # Trigger: push a tag vX.Y.Z (release) or vX.Y.Z-rc.N (release candidate -> GitHub pre-release, which deploy-staging.yml follows).
@@ -170,7 +170,7 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: |
           set -euo pipefail
-          python3 -I tools/changelog.py --version "$VERSION" --to "$TAG" > release-notes.md
+          python3 -I scripts/changelog.py --version "$VERSION" --to "$TAG" > release-notes.md
           {
             echo
             echo "## Image"

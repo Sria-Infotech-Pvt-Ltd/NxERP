@@ -20,11 +20,11 @@ type(scope)!: summary                    breaking change; explain it in the body
 
 - Types: `feat fix docs chore ci test refactor perf build style revert`. Scope is the area (`access`, `login`, `deploy`, `ci`, `adr`...).
 - Subject up to 100 characters, no trailing period. The PR title is what a squash merge keeps, so it is the one that matters.
-- **Machine check:** `tools/check_commits.py` (job `lint`) validates the PR title strictly and every commit's format. Run it locally:
-  `python3 -I tools/check_commits.py --range origin/main..HEAD --max-length 150` or `... --title "feat(x): y"`.
+- **Machine check:** `scripts/check_commits.py` (job `lint`) validates the PR title strictly and every commit's format. Run it locally:
+  `python3 -I scripts/check_commits.py --range origin/main..HEAD --max-length 150` or `... --title "feat(x): y"`.
   FACT (run 2026-10-28 on the 22 local commits): all match the format; nine subjects are 103-128 characters, which is why commits get
   a 150 limit and only the PR title is held to 100. History is not rewritten for this.
-- Release notes are generated from these messages (`tools/changelog.py`), so a vague message is a vague changelog.
+- Release notes are generated from these messages (`scripts/changelog.py`), so a vague message is a vague changelog.
 
 ## Pull requests
 

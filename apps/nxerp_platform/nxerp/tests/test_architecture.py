@@ -1,4 +1,4 @@
-"""The architecture rules (ADR-005), enforced by tools/check_architecture.py, and a proof that the checker
+"""The architecture rules (ADR-005), enforced by scripts/check_architecture.py, and a proof that the checker
 really catches each violation.
 
 Plain unittest: nothing here needs a site, so it also runs on a developer's host:
@@ -17,7 +17,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 REPO = Path(__file__).resolve().parents[4]
-CHECKER = REPO / "tools" / "check_architecture.py"
+CHECKER = REPO / "scripts" / "check_architecture.py"
 
 CLEAN_HOOKS = "app_name = 'nxerp'\nrequired_apps = []\n"
 CLEAN_PYPROJECT = """
@@ -70,7 +70,7 @@ def other_app(base: Path, name: str, **extra):
 	return root / name
 
 
-@unittest.skipUnless(CHECKER.is_file(), "tools/check_architecture.py is not part of this deployment")
+@unittest.skipUnless(CHECKER.is_file(), "scripts/check_architecture.py is not part of this deployment")
 class TestArchitectureRules(unittest.TestCase):
 	@classmethod
 	def setUpClass(cls):

@@ -1,6 +1,6 @@
 """Release notes from Conventional Commits. Stdlib + git.
 
-	python3 -I tools/changelog.py --version 0.1.0 [--from v0.0.9] [--to HEAD]
+	python3 -I scripts/changelog.py --version 0.1.0 [--from v0.0.9] [--to HEAD]
 
 `--from` defaults to the newest stable release tag (vX.Y.Z) before `--to`; with none, the whole history is used. Output is Markdown
 on stdout. Types without a section are listed under "Other changes"; breaking changes (`type!:` or a `BREAKING CHANGE:` footer)

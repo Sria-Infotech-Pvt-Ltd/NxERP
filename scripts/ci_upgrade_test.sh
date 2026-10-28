@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Helpers for the CI job `upgrade-from-previous-tag` (.github/workflows/ci.yml). Runnable locally.
 #
-#   tools/ci_upgrade_test.sh previous-tag     print the newest stable release tag (vX.Y.Z, no suffix) that is an ancestor of HEAD;
+#   scripts/ci_upgrade_test.sh previous-tag     print the newest stable release tag (vX.Y.Z, no suffix) that is an ancestor of HEAD;
 #                                             print nothing (exit 0) when there is none, which is the case until the first release
-#   tools/ci_upgrade_test.sh pin-diff TAG     say whether deploy/apps.json or deploy/versions.env changed since TAG
+#   scripts/ci_upgrade_test.sh pin-diff TAG     say whether deploy/apps.json or deploy/versions.env changed since TAG
 #
 # What the job proves: a site installed from the PREVIOUS release's code (nxerp from tag TAG, with the upstream apps that tag
 # pinned) migrates cleanly to THIS commit's nxerp code and then serves. What it does NOT prove: an upgrade of Frappe, ERPNext or

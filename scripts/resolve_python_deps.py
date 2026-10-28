@@ -4,7 +4,7 @@ Fetches Frappe (deploy/versions.env) and every app in deploy/apps.json at its pi
 (`pip install --dry-run --report`), and writes `requirements.txt` (name==version, one per line, our own apps excluded).
 CI feeds that file to pip-audit (job `dependency-audit`) and pip-licenses (job `license-check`).
 
-	python3 -I tools/resolve_python_deps.py --out build/deps
+	python3 -I scripts/resolve_python_deps.py --out build/deps
 
 A private app repository needs a read token in the environment variable named by --token-env (default GIT_READ_TOKEN); it is
 sent as an HTTP header for the one fetch and is never written to disk or printed.

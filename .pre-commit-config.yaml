@@ -54,7 +54,7 @@ repos:
     hooks:
       - id: nxerp-architecture
         name: NXERP architecture rules (ADR-005)
-        entry: python -I tools/check_architecture.py
+        entry: python -I scripts/check_architecture.py
         language: python
         pass_filenames: false
         files: ^apps/nxerp_platform/nxerp/

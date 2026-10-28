@@ -3,7 +3,7 @@
 # baseline: rerun after adding the app gate and compare. It changes nothing on the site.
 #
 #   NXERP_SEED_PASSWORD=<password used when seeding> NXERP_ADMIN_PASSWORD=<admin password> \
-#     tools/access_baseline.sh [base-url]
+#     scripts/access_baseline.sh [base-url]
 #
 # Prints status codes only; never prints credentials.
 set -uo pipefail

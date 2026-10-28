@@ -10,7 +10,7 @@ rule nobody checks is not a standard.
 - **Run the tools, do not hand-format:** `pre-commit run --all-files`, or directly `ruff check .` and `ruff format --check .`. CI runs the same through pre-commit.
 - **Python 3.14 only.** `ruff format` for the `py314` target writes `except A, B:` without parentheses (PEP 758; see `apps/nxerp_platform/nxerp/registry.py`). That is valid only on 3.14 and only without `as`. Do not "fix" it by hand, and do not run the code on an older interpreter.
 - Imports sorted by ruff (`I`). Type hints use the modern forms (`str | None`, `list`, not `Optional`/`List`).
-- **No cross-app imports (ADR-005).** `nxerp` never imports `erpnext`, `helpdesk`, `hrms`, `payments`, `telephony` or any app listed in `deploy/apps.json`, and no app imports `nxerp`. A dotted path in a **string** for `frappe.get_attr`, a hook or a registry entry is not an import and is fine. `nxerp` declares no `required_apps`. `python3 -I tools/check_architecture.py` and `apps/nxerp_platform/nxerp/tests/test_architecture.py` enforce this ([testing.md](testing.md)).
+- **No cross-app imports (ADR-005).** `nxerp` never imports `erpnext`, `helpdesk`, `hrms`, `payments`, `telephony` or any app listed in `deploy/apps.json`, and no app imports `nxerp`. A dotted path in a **string** for `frappe.get_attr`, a hook or a registry entry is not an import and is fine. `nxerp` declares no `required_apps`. `python3 -I scripts/check_architecture.py` and `apps/nxerp_platform/nxerp/tests/test_architecture.py` enforce this ([testing.md](testing.md)).
 - **Platform code goes in `nxerp/`; an app's code stays in its repo.** Do not park platform code (login, launcher, resolver, registry) inside an app, and do not copy an app's code here.
 - **Hyphenated `www` pages need underscore controllers.** Frappe resolves the controller of `www/nxerp/no-access.html` as `no_access.py`. A controller named `no-access.py` is silently never run (this happened in Phase 2 and left a page unguarded). Rule: a page named `a-b` has a controller `a_b.py`, and a test must prove the controller runs (a guard that was never executed is not a guard).
 - **Patches are idempotent and listed in `patches.txt`** (`[post_model_sync]` for anything that needs the DocTypes). A patch that runs twice must change nothing the second time. Fixtures and migrations are versioned.
@@ -36,7 +36,7 @@ rule nobody checks is not a standard.
 
 ## JavaScript, Vue and TypeScript
 
-- **This repo has no Vue or TypeScript.** The only JavaScript here is the browser test suite under `e2e/` (`.mjs`, tabs, no build step) and two scripts under `tools/`.
+- **This repo has no Vue or TypeScript.** The only JavaScript here is the browser test suite under `e2e/` (`.mjs`, tabs, no build step) and two scripts under `scripts/`.
 - The Helpdesk SPA and the palette generator live in the **Helpdesk repo** and follow that repo's tooling: `.prettierrc.json`, `.eslintrc.js`, `commitlint.config.mjs`. Run its own checks there. Colours come from the generated palette tokens only (`yarn theme:audit` fails on a hard-coded colour); never edit the generated CSS under `apps/nxerp_platform/nxerp/public/css/` by hand (`yarn theme:build` in the Helpdesk repo regenerates it).
 - **Server-side first:** the frontend is never the security boundary. Hiding a button, a tile or a route is display; the server must refuse the request ([security-guidelines.md](security-guidelines.md)).
 

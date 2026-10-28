@@ -52,7 +52,7 @@ It also lists the exact pins (copy of `deploy/versions.env` and `deploy/apps.jso
 ## Release checklist (copy into the release PR)
 
 - [ ] `main` is green: static checks, all test layers, Helpdesk regression, browser suite; each result linked, and anything not run is listed as not run.
-- [ ] `python -I deploy/check_pins.py` and `python -I tools/check_architecture.py --app-path helpdesk=<path>` pass.
+- [ ] `python -I deploy/check_pins.py` and `python -I scripts/check_architecture.py --app-path helpdesk=<path>` pass.
 - [ ] All pins are exact commits that exist on a remote; the Helpdesk fork commit is pushed.
 - [ ] ADRs and docs match the code ([`../README.md`](../README.md)); `docs/PROGRESS.md` is current.
 - [ ] `apps/nxerp_platform/nxerp/__init__.py` version bumped; `CHANGELOG.md` section written, including upgrade notes and what is not verified.

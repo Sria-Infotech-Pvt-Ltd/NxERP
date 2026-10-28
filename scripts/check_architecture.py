@@ -1,6 +1,6 @@
 """Enforce ADR-005: the platform app and the other apps stay independent. Stdlib only.
 
-Run with `python3 -I tools/check_architecture.py` (on a Windows host without a `python3` shim: `python -I ...`).
+Run with `python3 -I scripts/check_architecture.py` (on a Windows host without a `python3` shim: `python -I ...`).
 
 Rules (each is a failure, exit code 1):
 

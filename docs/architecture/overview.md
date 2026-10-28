@@ -175,7 +175,7 @@ CI (`.github/workflows/ci.yml`) is authored but, per `docs/PROGRESS.md`, has not
 ## Rules this overview implies
 
 1. One login (Frappe `/login`), one identity per person. Authentication, authorisation, application visibility and routing are four separate concerns.
-2. The platform app does not import apps and apps do not import the platform (ADR-005). Enforced by `tools/check_architecture.py` and `apps/nxerp_platform/nxerp/tests/test_architecture.py`.
+2. The platform app does not import apps and apps do not import the platform (ADR-005). Enforced by `scripts/check_architecture.py` and `apps/nxerp_platform/nxerp/tests/test_architecture.py`.
 3. Hiding an icon is not security: enforcement happens on the server ([`../research/frappe-access-and-routing.md`](../research/frappe-access-and-routing.md) has the surface-by-surface table).
 4. A unified experience is not merged code: Frappe and ERPNext are pinned upstream tags, Helpdesk is a pinned company fork, `nxerp` is our own app.
 

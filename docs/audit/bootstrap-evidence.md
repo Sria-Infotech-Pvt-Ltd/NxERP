@@ -82,7 +82,7 @@ First-time setup: `Installed Application.is_setup_complete = 0` for frappe, erpn
 | Helpdesk backend (fork `1c6981cc5`, run on the shared ERPNext site) | `bench ... run-tests --app helpdesk` | First run: 492 pass, 67 error (all `freezegun` missing). After `bench setup requirements --dev`: **552 pass, 7 error** of 559 |
 | Helpdesk 7 remaining errors | | All `frappe.exceptions.ValidationError: Throttled` (contact/invitation tests: `test_manager_role_is_applied_on_add`, `test_manager_role_survives_demotion_when_manager_elsewhere`, `test_permission_query_scopes_list`, `test_primary_contact_*`, `test_setting_primary_contact_makes_them_manager`). Probable cause: invitation throttling after repeated runs on one site (ASSUMPTION, not investigated; the same suite ran on a site that had been through two earlier runs) |
 | Helpdesk Playwright e2e (28 specs) | not run | NOT RUN (needs the Helpdesk dev tooling and browsers) |
-| Lint | `ruff check .`, `ruff format --check .` (ruff 0.17.2, isolated venv); YAML/JSON parse; `bash -n`; `deploy/check_pins.py`; `tools/check_architecture.py` (also with a planted violation, which it rejected) | pass |
+| Lint | `ruff check .`, `ruff format --check .` (ruff 0.17.2, isolated venv); YAML/JSON parse; `bash -n`; `deploy/check_pins.py`; `scripts/check_architecture.py` (also with a planted violation, which it rejected) | pass |
 | `pre-commit` hooks (gitleaks, shellcheck) | not run locally | NOT RUN |
 | GitHub Actions `ci.yml` | **has not run on GitHub** | NOT RUN |
 
@@ -92,7 +92,7 @@ First-time setup: `Installed Application.is_setup_complete = 0` for frappe, erpn
 
 ## 6. Access baseline (HTTP status per user, today)
 
-Produced by `tools/access_baseline.sh` against the rebuilt site. `guest` = no session. This is the behaviour Phase 2 must change deliberately; the matching static analysis is in `docs/research/`.
+Produced by `scripts/access_baseline.sh` against the rebuilt site. `guest` = no session. This is the behaviour Phase 2 must change deliberately; the matching static analysis is in `docs/research/`.
 
 ```
 request (HTTP status)                                                 guest  admin  agent  manager erpuser customer
@@ -139,12 +139,12 @@ Realtime room checks, `before_request` vs token ordering, private-file/print che
 - `yarn theme:check`, in the container against the real frappe-ui: generated files up to date; coverage 384 frappe-ui tokens per mode, accent family complete (frappe-ui 1.0.0-rc.1); contrast 99 checks passed in light and dark; synced copies up to date. `yarn theme:audit`: no hardcoded colors.
 - `bench run-tests --app nxerp`: 5 tests OK (adds the Desk-palette hook/asset test). `--module helpdesk.tests.api.test_theme`: 3 tests OK. `GET /assets/nxerp/css/nxerp-desk-theme.css`: 200.
 - Found and fixed: the Helpdesk repo's `.gitignore` excluded `desk/src/theme/build/` and `build/lib/` (generic `build/`, `lib/` rules), so the palette generator was never in git.
-- Screenshots (headless Chromium via `tools/screenshots.mjs`, light and dark): login; Helpdesk home and tickets; ERPNext Desk (Administrator is sent to the first-run setup wizard, which shows the palette). Observed: warm paper/sand surfaces, charcoal/amber actions, charcoal dark mode; the NXERP and ERPNext logo marks stay blue (brand assets) and status chips stay category colours. Images are not stored in the repository.
+- Screenshots (headless Chromium via `scripts/screenshots.mjs`, light and dark): login; Helpdesk home and tickets; ERPNext Desk (Administrator is sent to the first-run setup wizard, which shows the palette). Observed: warm paper/sand surfaces, charcoal/amber actions, charcoal dark mode; the NXERP and ERPNext logo marks stay blue (brand assets) and status chips stay category colours. Images are not stored in the repository.
 - Not run: Helpdesk Playwright `theme.spec.ts`.
 
 ## 9. Palette coverage and the nxerp-stable port (2026-10-27)
 
-- **Coverage scan** (`tools/palette_scan.mjs`, headless Chromium, 1440x900, with `tools/seed_demo_data.py` data: 25 tickets over every status/priority): agent role 14 routes, Settings 15 tabs plus the first New/Add form of each (19 views), customer role 4 pages, guest 3 pages, desk role (ERPNext Desk report, ToDo, Sales Invoice form, `/me`, `/update-password`). Leaks (cool/violet colours outside status chips): 0 in Helpdesk, guest and customer views. In Desk, one Frappe status pill ("Enabled", Frappe's own blue indicator) and the ERPNext app icon remain. Status/tag chips (SLA states) are category colours by design.
+- **Coverage scan** (`scripts/palette_scan.mjs`, headless Chromium, 1440x900, with `scripts/seed_demo_data.py` data: 25 tickets over every status/priority): agent role 14 routes, Settings 15 tabs plus the first New/Add form of each (19 views), customer role 4 pages, guest 3 pages, desk role (ERPNext Desk report, ToDo, Sales Invoice form, `/me`, `/update-password`). Leaks (cool/violet colours outside status chips): 0 in Helpdesk, guest and customer views. In Desk, one Frappe status pill ("Enabled", Frappe's own blue indicator) and the ERPNext app icon remain. Status/tag chips (SLA states) are category colours by design.
 - **Scanner self-check:** the first Settings run reported zeros because its "New/Add" click had matched a sidebar item; screenshots showed it, the click was restricted to the content pane, and the rerun opened the real forms (New SLA Policy, New Team).
 - **Static gaps the scan could not see, found and fixed:** `#FFFFFF` mask-icon colour in `desk/index.html`; PWA manifest `background_color: #ffffff` and no `theme_color`; stock blue-grey hexes in email templates and the welcome-ticket HTML; a stock green in a dashboard chart; a stock gray default in the ticket report. Guards added: server-side audit (a literal colour in backend files must be a palette value), `check-tracked`.
 - **Git guard proven both ways:** with the `.gitignore` exceptions removed, `check-tracked` fails and lists every ignored generator file; restored, it passes (29 palette files tracked, none ignored).

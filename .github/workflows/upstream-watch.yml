@@ -1,6 +1,6 @@
 name: upstream-watch
 
-# STATUS: this workflow has NEVER run on GitHub. The script it calls (tools/upstream_watch.py) WAS run locally on 2026-10-28 and
+# STATUS: this workflow has NEVER run on GitHub. The script it calls (scripts/upstream_watch.py) WAS run locally on 2026-10-28 and
 # produced a real report (Frappe v16.54.0 newer than the v16.53.0 pin; five frappe/frappe advisories, all fixed at or below the pin).
 #
 # What it does: compares Frappe, ERPNext and Helpdesk's upstream base with deploy/versions.env, deploy/apps.json and ADR-002, reads
@@ -40,7 +40,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DAYS: ${{ inputs.days || '14' }}
         run: |
-          python3 -I tools/upstream_watch.py --days "$DAYS" > report.md 2> status.txt || { cat status.txt; exit 1; }
+          python3 -I scripts/upstream_watch.py --days "$DAYS" > report.md 2> status.txt || { cat status.txt; exit 1; }
           changes=$(sed -n 's/^CHANGES=//p' status.txt)
           echo "changes=${changes:-0}" >> "$GITHUB_OUTPUT"
           cat report.md >> "$GITHUB_STEP_SUMMARY"

@@ -18,7 +18,7 @@ Image tags: `<version>-<12-char git sha>` (immutable record) and `<version>`; `d
 1. `main` is green: `ci-gate` passed on the commit you will tag (the release workflow checks this and refuses otherwise).
 2. `docs/PROGRESS.md`/ADRs current; pins and ADR-002 agree (`python3 -I deploy/check_pins.py`).
 3. Bump `__version__` in a PR, merge.
-4. Preview the notes: `python3 -I tools/changelog.py --version 0.1.0 --to HEAD` (Conventional Commits since the previous stable tag;
+4. Preview the notes: `python3 -I scripts/changelog.py --version 0.1.0 --to HEAD` (Conventional Commits since the previous stable tag;
    non-conforming commits show under "Unclassified"; fix the PR titles, not history).
 5. Tag the **merge commit on `main`** and push the tag (needs write access; do not tag from a branch):
    ```bash
@@ -52,7 +52,7 @@ installed on the machine used so far, so no SBOM has been generated locally**; i
   metadata; it does not run any step).
 - `deploy/check_pins.py` (now also checks that the Dockerfile's default build args equal `versions.env`; a drifted copy was tested to fail).
 - `deploy/docker/build.sh --dry-run` prints the expected command; `bash -n`/`shellcheck` clean on every script.
-- `tools/changelog.py` ran against this repository's history and produced grouped notes.
+- `scripts/changelog.py` ran against this repository's history and produced grouped notes.
 - `actionlint` 1.7.12 (with shellcheck) reports no problem in any workflow.
 
 **Not validated:** the build itself (`bench init`, app installs at the pinned commits, `bench build`, image size), the SBOM, the

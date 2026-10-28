@@ -21,7 +21,7 @@ and note what you saw.
    read-only access to that one repository; store it as repository secret `HELPDESK_READ_TOKEN`. Used by every job that checks Helpdesk
    out and by the image build (BuildKit secret). *Ready, not executed.*
 5. [ ] **Read the first CI run** (`.github/workflows/ci.yml`). It has never run on GitHub; expect to fix workflow problems. Check in
-   particular: the stack-cache restore (`tools/ci_stack.sh volumes restore`), the e2e shards, the volume cache and runner disk (see "Risks" in
+   particular: the stack-cache restore (`scripts/ci_stack.sh volumes restore`), the e2e shards, the volume cache and runner disk (see "Risks" in
    `docs/governance/ci-design.md`), and runner disk space. *Not executed.*
 
 ## B. Teams, protection, settings (needs organisation/repository admin)

@@ -1,11 +1,11 @@
 """Check dependency licences against .github/license-policy/. Stdlib only.
 
-	python3 -I tools/check_licenses.py pypi build/deps/requirements.txt     # name==version lines; queries pypi.org
+	python3 -I scripts/check_licenses.py pypi build/deps/requirements.txt     # name==version lines; queries pypi.org
 	pip-licenses --format=json --from=mixed > py.json                       # alternative: an installed environment
-	python3 -I tools/check_licenses.py pip py.json
+	python3 -I scripts/check_licenses.py pip py.json
 
 	license-checker-rseidelsohn --production --json > js.json
-	python3 -I tools/check_licenses.py npm js.json
+	python3 -I scripts/check_licenses.py npm js.json
 
 Exit 1 when a package has a licence outside allowed-licenses.txt (and no reviewed exception) or no determinable licence.
 """

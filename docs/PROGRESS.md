@@ -31,7 +31,7 @@ on the repository (Phase 4 handles git). Nothing was pushed.
 
 - `bench run-tests --app nxerp` on the dev site: **160 tests OK** (includes 19 routing tests with about 35 hostile redirect payloads,
   24 HTTP tests of login/router/launcher/kill-switch/third app, grant migration, the Phase 2 matrix). Helpdesk's own suite: **569 OK**.
-  ruff, ruff format and bandit clean; `tools/check_architecture.py` OK. (The 160-test run was before the final two commits' small
+  ruff, ruff format and bandit clean; `scripts/check_architecture.py` OK. (The 160-test run was before the final two commits' small
   test edits; the migration tests were rerun alone and pass.)
 - Browser (Chromium, fresh site `nxerp-e2e.localhost`, real login form): first-run wizard flow 4/4; Case 3 3/3; journeys 20 of 21
   (Cases 1 and 2, customer, deep links, expired session, logout, wrong password, disabled user, five tampered `redirect-to`
@@ -97,7 +97,7 @@ One workspace folder, `frapper sria/`: `nxerp-platform/` (this repo, branch `pha
 - The platform serves the Desk palette (`app_include_css`), so ERPNext/Framework Desk is themed from the platform, not from one app.
 - Verified: `theme:check` (generated fresh, 384 frappe-ui tokens covered per mode, 99 contrast checks), `theme:audit` (no hard-coded colours), 5 platform tests + 3 Helpdesk theme tests, and screenshots in light and dark of the login, Helpdesk home/tickets and ERPNext Desk.
 - **Extended 2026-10-27 (second pass):** server-rendered output (emails, welcome ticket, dashboard chart, report defaults, app shell, PWA manifest) now uses palette values from a generated `helpdesk/theme_tokens.py`; the audit covers backend files and `desk/index.html`/`vite.config.js`; `check-tracked` fails when any palette file is untracked or git-ignored (wired into `theme:check`, CI and pre-commit); generated files are pinned to LF.
-- **Coverage measured, not assumed:** `tools/palette_scan.mjs` renders real pages in headless Chromium and flags any cool/violet colour that is not a status chip. Result on the dev site with seeded data: 0 leaks across all agent pages, all 15 Settings tabs and their New/Add forms, customer portal pages, login/forgot, and ERPNext Desk list/form/report pages. Remaining blue = NXERP/ERPNext logo marks (brand assets) and Frappe's own status pills.
+- **Coverage measured, not assumed:** `scripts/palette_scan.mjs` renders real pages in headless Chromium and flags any cool/violet colour that is not a status chip. Result on the dev site with seeded data: 0 leaks across all agent pages, all 15 Settings tabs and their New/Add forms, customer portal pages, login/forgot, and ERPNext Desk list/form/report pages. Remaining blue = NXERP/ERPNext logo marks (brand assets) and Frappe's own status pills.
 - **Pushed to the company fork's `nxerp-stable` branch** (Frappe 15 line, frappe-ui beta.24): palette ported as 4 commits (see below).
 - Remaining (Phase 2): move the token source out of the Helpdesk repo into the platform repo (the palette is platform-wide); recolour logo assets (brand decision); theme the portal/website pages when the login moves to the platform; Helpdesk Playwright theme spec not run.
 
@@ -106,7 +106,7 @@ One workspace folder, `frapper sria/`: `nxerp-platform/` (this repo, branch `pha
 - Audit: `docs/audit/helpdesk-audit.md` (enhancements (a)-(f): none clearly IMPLEMENTED; (a) ABSENT, (b) ABSENT, (c) PARTIAL, (d) PARTIAL, (e) ABSENT on create, (f) PARTIAL)
 - Research: `docs/research/frappe-access-and-routing.md` + two parts, including the surface coverage table
 - ADR-001 to ADR-006, all Accepted
-- Platform app `nxerp` (scaffold only, 4 tests passing), `deploy/` pins + dev stack, `tools/` checks, governance files, minimal CI
+- Platform app `nxerp` (scaffold only, 4 tests passing), `deploy/` pins + dev stack, `scripts/` checks, governance files, minimal CI
 - One command (`./deploy/dev/up.sh -d`) brought up frappe + payments + erpnext + telephony + helpdesk + nxerp on one site in 408 s from empty volumes
 
 ## Decisions made (see ADRs)
@@ -115,7 +115,7 @@ One workspace folder, `frapper sria/`: `nxerp-platform/` (this repo, branch `pha
 - DECISION ADR-002: Frappe 16.53.0, ERPNext 16.52.1, Python 3.14, Node 24, MariaDB 11.8, Redis 8.6; Helpdesk target = upstream v1.31.0 plus the company commits (clean cherry-pick verified); interim pin = fork commit 1c6981cc5
 - DECISION ADR-003: hybrid (roles stay the data source of truth; one thin resolver plus an `auth_hooks` app gate in `nxerp`)
 - DECISION ADR-004: `/login`, `/nxerp/go`, `/nxerp/apps`, `/nxerp/no-access`, `/helpdesk/home`, `/desk` (`/app` redirects)
-- DECISION ADR-005: platform owns login/launcher/branding; apps never import each other; enforced by `tools/check_architecture.py`
+- DECISION ADR-005: platform owns login/launcher/branding; apps never import each other; enforced by `scripts/check_architecture.py`
 - DECISION ADR-006: Docker Compose dev stack
 
 ## Facts the next phase must respect (all verified on the dev site)
@@ -147,7 +147,7 @@ One workspace folder, `frapper sria/`: `nxerp-platform/` (this repo, branch `pha
 4. (Done 2026-10-27) The amended bootstrap was re-run from empty volumes and passed.
 5. Investigate the 7 `Throttled` Helpdesk test errors on a fresh site; decide whether Helpdesk tests run on a Helpdesk-only site in CI.
 6. Spikes to prove before building: `auth_hooks` sees the right user for cookie, token and socket requests and can return 403 before dispatch; one landing target converges both redirect engines; Administrator first-run (setup wizard) is preserved.
-7. Run the remaining unverified checks (realtime, private files/print, `before_request` ordering, 2FA on non-password routes) and extend `tools/access_baseline.sh` into automated Phase 2 acceptance tests: one per row of the coverage table.
+7. Run the remaining unverified checks (realtime, private files/print, `before_request` ordering, 2FA on non-password routes) and extend `scripts/access_baseline.sh` into automated Phase 2 acceptance tests: one per row of the coverage table.
 8. Decide the Helpdesk-to-ERPNext Customer bridge policy (mirrored User Permissions/DocShares).
 9. Review `desk_access` of the Agent roles and the implicit-role default (`desk_access = 1`).
 10. Build real CI/CD: GitHub-hosted run of `ci.yml`, a registry, staging, secrets management. None of that exists yet.

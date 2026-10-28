@@ -115,7 +115,7 @@ A `redirect-to` into the app is honoured after sign-in only for someone who may 
 - [ ] `bench --site nxerp.localhost run-tests --app nxerp --module nxerp.tests.test_add_app_checklist` stays green (it uses a dummy entry, so it does not depend on your app).
 - [ ] Add the app's real surfaces as rows to `apps/nxerp_platform/nxerp/tests/test_access_matrix.py` (a URL, a method, a resource, a file): a user without the grant must be refused on each, by URL and by API, and the guest case too.
 - [ ] Extend `apps/nxerp_platform/nxerp/tests/test_registry.py` for ownership (`entry_for_doctype` of one of the app's DocTypes returns your entry; Frappe core DocTypes still return none).
-- [ ] `python3 -I tools/check_architecture.py --app-path <app>=<path-to-the-app-checkout>` passes: no import of `nxerp` from the app, no platform code inside it.
+- [ ] `python3 -I scripts/check_architecture.py --app-path <app>=<path-to-the-app-checkout>` passes: no import of `nxerp` from the app, no platform code inside it.
 - [ ] Add a persona (a user holding only the new app) to the HTTP and, if the app has a UI, browser tests ([`testing.md`](testing.md)).
 
 What the exercised test proves, and where each is asserted in `test_add_app_checklist.py`:

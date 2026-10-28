@@ -1,13 +1,13 @@
 # Runbook: upstream security update (Frappe, ERPNext, Helpdesk, Python/JS dependencies)
 
 **When to use:** `upstream-watch` opens/updates an issue, GitHub Dependabot or an advisory email arrives, or the weekly review (ADR-002)
-finds a newer upstream release. **Status:** `tools/upstream_watch.py` was run locally and produced a real report (below); the scheduled
+finds a newer upstream release. **Status:** `scripts/upstream_watch.py` was run locally and produced a real report (below); the scheduled
 workflow has never run; no upstream update has been applied through this process yet.
 
 ## 0. Triage (same day)
 
 1. Read the advisory/release notes. Is the pinned version affected? `upstream-watch` already compares the advisory's `patched_versions`
-   with the pin (`python3 -I tools/upstream_watch.py --days 30`). Do not guess: "pin vs fix UNKNOWN" means read it yourself.
+   with the pin (`python3 -I scripts/upstream_watch.py --days 30`). Do not guess: "pin vs fix UNKNOWN" means read it yourself.
 2. Is the vulnerable code reachable in NXERP (customer portal, login, API, guest routes)? Security lead decides severity; record it.
 3. SLA (ASSUMPTION from ADR-002, owner to confirm): critical within 7 days, others in the monthly batch.
 
@@ -46,7 +46,7 @@ advisories with a dated reason. Until decided the audit job reports without fail
 
 ## What was run (FACT)
 
-`python3 -I tools/upstream_watch.py --days 30` on 2026-10-28 reported: Frappe pinned `v16.53.0`, upstream latest `v16.54.0` (newer release
+`python3 -I scripts/upstream_watch.py --days 30` on 2026-10-28 reported: Frappe pinned `v16.53.0`, upstream latest `v16.54.0` (newer release
 available); ERPNext `v16.52.1` current; Helpdesk upstream base `v1.31.0` current; payments/telephony branches unmoved; five published
 `frappe/frappe` advisories in the window, all with `patched_versions` at or below `16.35.0`, i.e. fixed at or below the pinned
 `v16.53.0`. (That is GitHub's metadata, not an independent code check.) Whether to take `v16.54.0` has not been decided; nothing was changed.

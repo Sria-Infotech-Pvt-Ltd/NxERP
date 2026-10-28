@@ -20,7 +20,7 @@
    - Apps never import `nxerp` or each other.
    - Cross-app facts flow through Frappe's own channels: hooks (`add_to_apps_screen`, a future declared registry hook), roles and permissions in the database, and public HTTP/whitelisted APIs, never Python imports.
    - A new app is added by a pin in `deploy/apps.json` plus a registration, not by editing platform code.
-5. **Enforcement of the rules:** `tools/check_architecture.py` (run in CI and pre-commit) fails if `nxerp/` imports another app or declares `required_apps`. `nxerp` must be the last entry in `deploy/apps.json` so that its `www/login` wins and its hooks run after the apps it resolves.
+5. **Enforcement of the rules:** `scripts/check_architecture.py` (run in CI and pre-commit) fails if `nxerp/` imports another app or declares `required_apps`. `nxerp` must be the last entry in `deploy/apps.json` so that its `www/login` wins and its hooks run after the apps it resolves.
 
 ## Alternatives considered
 
