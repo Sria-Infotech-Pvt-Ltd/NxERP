@@ -1,0 +1,141 @@
+name: nxerp-staging-like
+
+# "Staging-like" environment: the production-style NXERP image + MariaDB + Redis + a reverse proxy, on one Docker host.
+# Meant for rehearsing deploys, migrations, backups and rollbacks with the SAME image that is released; not a dev stack
+# (no source mounts, no developer_mode). No secret lives in this file: passwords come from the environment / --env-file.
+#
+#   cp deploy/staging-like/.env.example deploy/staging-like/.env     # then fill in the passwords (git-ignored)
+#   docker compose --env-file deploy/staging-like/.env -f deploy/staging-like/compose.yaml up -d
+#   docker compose --env-file deploy/staging-like/.env -f deploy/staging-like/compose.yaml --profile init run --rm create-site
+#
+# STATUS: `docker compose config` validated; the stack itself has NOT been started (needs the image from deploy/docker/build.sh).
+
+x-nxerp: &nxerp
+  image: ${NXERP_IMAGE:-ghcr.io/sria-infotech-pvt-ltd/nxerp}:${NXERP_IMAGE_TAG:?set NXERP_IMAGE_TAG, e.g. 0.1.0-ab12cd34ef56}
+  restart: unless-stopped
+  environment:
+    NXERP_CONFIGURE: "0"
+  volumes:
+    - sites:/home/frappe/frappe-bench/sites
+  depends_on:
+    configurator:
+      condition: service_completed_successfully
+
+services:
+  mariadb:
+    image: ${MARIADB_IMAGE:-mariadb:11.8}
+    restart: unless-stopped
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --skip-character-set-client-handshake
+    environment:
+      MARIADB_ROOT_PASSWORD: ${NXERP_DB_ROOT_PASSWORD:?set NXERP_DB_ROOT_PASSWORD in the env file}
+      MARIADB_AUTO_UPGRADE: "1"
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  redis-cache:
+    image: ${REDIS_IMAGE:-redis:8.6-alpine}
+    restart: unless-stopped
+
+  redis-queue:
+    image: ${REDIS_IMAGE:-redis:8.6-alpine}
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-queue-data:/data
+
+  # one-shot: writes sites/common_site_config.json from environment (no secrets in it)
+  configurator:
+    <<: *nxerp
+    restart: "no"
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    environment:
+      NXERP_CONFIGURE: "1"
+      NXERP_DB_HOST: mariadb
+      NXERP_REDIS_CACHE: redis://redis-cache:6379
+      NXERP_REDIS_QUEUE: redis://redis-queue:6379
+    command: ["true"]
+
+  # one-shot, profile "init": creates the site and installs every app in sites/apps.txt (frappe, then apps.json order).
+  create-site:
+    <<: *nxerp
+    profiles: ["init"]
+    restart: "no"
+    depends_on:
+      configurator:
+        condition: service_completed_successfully
+      mariadb:
+        condition: service_healthy
+    environment:
+      NXERP_CONFIGURE: "0"
+      NXERP_SITE: ${NXERP_SITE:?set NXERP_SITE}
+      NXERP_DB_ROOT_PASSWORD: ${NXERP_DB_ROOT_PASSWORD:?set NXERP_DB_ROOT_PASSWORD}
+      NXERP_ADMIN_PASSWORD: ${NXERP_ADMIN_PASSWORD:?set NXERP_ADMIN_PASSWORD}
+    command:
+      - bash
+      - -c
+      - |
+        set -euo pipefail
+        if [ -d "sites/$$NXERP_SITE" ]; then echo "site $$NXERP_SITE already exists"; exit 0; fi
+        bench new-site "$$NXERP_SITE" --mariadb-root-password "$$NXERP_DB_ROOT_PASSWORD" \
+          --admin-password "$$NXERP_ADMIN_PASSWORD" --no-mariadb-socket
+        for app in $$(grep -vx frappe sites/apps.txt); do bench --site "$$NXERP_SITE" install-app "$$app"; done
+        bench --site "$$NXERP_SITE" set-config host_name "$${NXERP_PUBLIC_URL:-http://localhost:8080}"
+        bench use "$$NXERP_SITE"
+
+  backend:
+    <<: *nxerp
+    depends_on:
+      configurator:
+        condition: service_completed_successfully
+      mariadb:
+        condition: service_healthy
+      redis-cache:
+        condition: service_started
+      redis-queue:
+        condition: service_started
+
+  websocket:
+    <<: *nxerp
+    command: ["node", "/home/frappe/frappe-bench/apps/frappe/socketio.js"]
+    healthcheck:
+      disable: true
+
+  queue-worker:
+    <<: *nxerp
+    command: ["bench", "worker", "--queue", "short,default,long"]
+    healthcheck:
+      disable: true
+
+  scheduler:
+    <<: *nxerp
+    command: ["bench", "schedule"]
+    healthcheck:
+      disable: true
+
+  proxy:
+    image: ${NGINX_IMAGE:-nginx:1.27-alpine}
+    restart: unless-stopped
+    environment:
+      NXERP_SITE: ${NXERP_SITE:?set NXERP_SITE}
+    volumes:
+      - ./nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
+    ports:
+      - "${NXERP_HTTP_PORT:-8080}:8080"
+    depends_on:
+      - backend
+      - websocket
+
+volumes:
+  mariadb-data:
+  redis-queue-data:
+  sites:

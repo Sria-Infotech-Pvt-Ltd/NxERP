@@ -51,7 +51,7 @@ test("Case 1: a switch-app route leads back to the launcher from Helpdesk and fr
 		frappe.boot.navbar_settings.settings_dropdown.find((i) => i.item_label === "All applications"),
 	);
 	assert.equal(row.route, "/nxerp/apps");
-	assert.equal(await page.evaluate((c) => frappe.utils.eval(c), row.condition), true, "the row is shown to a multi-app user");
+	assert.ok(await page.evaluate((c) => Boolean(frappe.utils.eval(c)), row.condition), "the row is shown to a multi-app user");
 	await context.close();
 });
 

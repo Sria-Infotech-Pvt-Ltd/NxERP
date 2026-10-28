@@ -450,7 +450,8 @@ body[data-path="login"] footer { display: none !important; }
 @media (max-width: 900px) {
 	.nx-shell { --u: 1px; display: block; }
 	.nx-hero { display: none; }
-	.nx-panel { min-height: 100%; justify-content: flex-start; padding: 84px 16px 28px; }
+	/* min-width: the desktop panel's 440px floor pushed the card past a 390px phone and clipped its right edge */
+	.nx-panel { min-width: 0; width: 100%; min-height: 100%; justify-content: flex-start; padding: 84px 16px 28px; }
 	.nx-top { top: 18px; right: 16px; }
 	.nx-card { max-width: 460px; padding: 34px 24px 30px; border-radius: 22px; }
 	.nx-shell .nx-card .page-card-head .app-logo { width: min(240px, 70%); margin-bottom: 28px; }
@@ -487,3 +488,6 @@ body[data-path="login"] footer { display: none !important; }
 	--nx-icon-eye: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ccc6be' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z'/%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3C/svg%3E");
 	--nx-icon-eye-off: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ccc6be' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M17.9 17.9A10.4 10.4 0 0 1 12 19c-6.4 0-10-7-10-7a17.7 17.7 0 0 1 4.1-4.9M9.9 5.2A9.7 9.7 0 0 1 12 5c6.4 0 10 7 10 7a17.8 17.8 0 0 1-2.2 3.2M1 1l22 22'/%3E%3Cpath d='M9.9 9.9a3 3 0 0 0 4.2 4.2'/%3E%3C/svg%3E");
 }
+
+/* visually hidden, still read by assistive technology (the page's one h1 on narrow screens, where the hero is hidden) */
+.nx-sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }

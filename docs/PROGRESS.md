@@ -8,7 +8,14 @@ Resume point for the next session. Update this file in every PR that changes pha
 | --- | --- |
 | 1: Audit, research, ADRs, foundation | **Complete locally; not yet pushed** (see "Publishing") |
 | 2: Platform access layer and server-side enforcement | **Complete locally; not pushed, no PR** (see "Phase 2") |
-| 3: Unified login, launcher, routing | **Code and docs complete locally; browser verification partial; not pushed, no PR** (see "Phase 3") |
+| 3: Unified login, launcher, routing | **Complete locally and browser-verified (55/55); not pushed, no PR** |
+| 4: Helpdesk parity, CI/CD, release readiness, acceptance | **Built locally; nothing ran on GitHub; see `docs/acceptance/acceptance-report.md`** (9 BLOCKED-NEEDS-OWNER, most others PARTIAL) |
+
+## Phase 4 (2026-10-28)
+
+See `docs/acceptance/acceptance-report.md` (traceability matrix), `docs/parity/helpdesk-parity.md`, `docs/governance/owner-action-list.md`.
+The Phase 3 "NOT verified" items below were run on 2026-10-28: pages, recovery, journeys and flows all pass now (55/55 browser tests across suites);
+the full run found and fixed 5 real defects (login redirects bypassing the router, phone login clipped, missing alt/h1/skip link). Python: nxerp 211 OK, Helpdesk 577 OK.
 
 ## Phase 3 (2026-10-27): unified login, launcher, routing
 

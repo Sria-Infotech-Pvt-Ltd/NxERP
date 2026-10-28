@@ -1,0 +1,51 @@
+name: helpdesk-fetch
+description: >
+  Fetch the Helpdesk app (a SEPARATE company-fork repository) at the exact commit pinned in deploy/apps.json.
+  The pin is the single source of truth: there is no branch name or ref to configure here.
+inputs:
+  dest:
+    description: Directory to create (outside the nxerp checkout; deploy/dev/up.sh expects ../helpdesk next to it)
+    required: true
+  apps-json:
+    description: Path of the apps.json that holds the pin
+    default: deploy/apps.json
+  token:
+    description: Read token for the Helpdesk repository (secrets.HELPDESK_READ_TOKEN); empty works only for a public repository
+    default: ""
+  branch:
+    description: Local branch name to create at the pinned commit (deploy/dev/up.sh installs the branch checked out in ../helpdesk)
+    default: ci-pinned
+runs:
+  using: composite
+  steps:
+    - name: Fetch Helpdesk at the pinned commit
+      shell: bash
+      env:
+        DEST: ${{ inputs.dest }}
+        APPS_JSON: ${{ inputs.apps-json }}
+        GIT_READ_TOKEN: ${{ inputs.token }}
+        BRANCH: ${{ inputs.branch }}
+      run: |
+        set -euo pipefail
+        read -r url commit < <(python3 -I - "$APPS_JSON" <<'PY'
+        import json, sys
+        app = next(a for a in json.load(open(sys.argv[1])) if a["name"] == "helpdesk")
+        print(app["url"], app["commit"])
+        PY
+        )
+        echo "helpdesk pin: ${url} @ ${commit:0:10}"
+        rm -rf "$DEST"
+        git init -q "$DEST"
+        git -C "$DEST" remote add origin "$url"
+        auth=()
+        if [ -n "$GIT_READ_TOKEN" ]; then
+          echo "::add-mask::$GIT_READ_TOKEN"
+          auth=(-c "http.extraheader=AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GIT_READ_TOKEN" | base64 -w0)")
+        fi
+        if ! git -C "$DEST" "${auth[@]}" fetch -q --depth 1 origin "$commit"; then
+          echo "::error title=Helpdesk pin not fetchable::commit ${commit:0:10} is not reachable at ${url}. Either the commit was never pushed to the fork (deploy/apps.json must point at a pushed commit) or HELPDESK_READ_TOKEN is missing/invalid."
+          exit 1
+        fi
+        git -C "$DEST" checkout -q -B "$BRANCH" FETCH_HEAD
+        git -C "$DEST" remote remove origin   # nothing in the checkout keeps the token or the remote
+        echo "helpdesk at $(git -C "$DEST" rev-parse --short=10 HEAD) on branch $BRANCH"

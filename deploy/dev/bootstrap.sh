@@ -43,7 +43,8 @@ fetch_local() {
 	if [ ! -d "$dir/.git" ]; then
 		git init -q "$dir"
 	fi
-	git -C "$dir" fetch -q "$src" "$ref"
+	# --update-shallow: the source checkout may itself be a shallow clone (CI fetches the pin at depth 1)
+	git -C "$dir" fetch -q --update-shallow "$src" "$ref"
 	git -C "$dir" checkout -q --detach FETCH_HEAD
 	log "$name @ $(git -C "$dir" rev-parse --short=10 HEAD) (local $src $ref)"
 }

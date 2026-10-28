@@ -1,0 +1,88 @@
+name: Deploy staging
+
+# STATUS: NEVER run. There is no staging host, registry package, GitHub Environment or secret yet (see
+# docs/governance/owner-action-list.md). The scripts it calls (deploy/scripts/*.sh) were syntax-checked and, where possible, tested
+# against the dev stack; the SSH, registry and Environment parts have not been executed by anyone.
+#
+# Trigger: the Release workflow finished successfully for a release candidate tag (vX.Y.Z-rc.N), or a manual run with a tag.
+# Steps on the host (deploy.sh): pull image -> verified backup -> maintenance mode -> migrate -> healthcheck; automatic rollback to
+# the previous tag with the pre-migration backup when migrate or the healthcheck fails. Then, from the runner, black-box smoke.
+#
+# KNOWN GAP (DECISION, not built): the browser journeys in e2e/ cannot run against a remote URL. They create their fixtures with
+# bench commands inside the container that runs Chromium (e2e/lib.mjs) and need developer_mode, which a staging site must not have.
+# Until a staging-safe mode exists, the post-deploy gate is smoke.sh (anonymous behaviour: login page, redirects, 403s) plus the
+# healthcheck. The full journeys run in CI against the dev stack (job `e2e`).
+
+on:
+  workflow_run:
+    workflows: [Release]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release candidate tag, e.g. v0.1.0-rc.1"
+        required: true
+
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && contains(github.event.workflow_run.head_branch, '-rc.'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment:
+      name: staging
+      url: ${{ vars.STAGING_URL }}
+    steps:
+      - name: Resolve and validate the tag
+        id: tag
+        env:
+          INPUT_TAG: ${{ inputs.tag }}
+          RUN_TAG: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          set -euo pipefail
+          tag="${INPUT_TAG:-$RUN_TAG}"
+          [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$ ]] || { echo "::error::'$tag' is not vX.Y.Z or vX.Y.Z-rc.N"; exit 1; }
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "version=${tag#v}" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: refs/tags/${{ steps.tag.outputs.tag }}
+          persist-credentials: false
+      - name: Backup, migrate, health check (rollback on failure) on the staging host
+        uses: ./.github/actions/ssh-deploy
+        with:
+          host: ${{ vars.DEPLOY_HOST }}
+          user: ${{ vars.DEPLOY_USER }}
+          path: ${{ vars.DEPLOY_PATH }}
+          ssh-key: ${{ secrets.DEPLOY_SSH_KEY }}
+          known-hosts: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          registry-user: ${{ github.repository_owner }}
+          registry-token: ${{ secrets.REGISTRY_PULL_TOKEN }}
+          command: >-
+            NXERP_SITE='${{ vars.NXERP_SITE }}'
+            NXERP_BACKUP_DIR='${{ vars.NXERP_BACKUP_DIR || '/var/backups/nxerp' }}'
+            ./scripts/deploy.sh --tag '${{ steps.tag.outputs.version }}'
+      - name: Smoke test from outside (anonymous behaviour)
+        env:
+          NXERP_BASE_URL: ${{ vars.STAGING_URL }}
+        run: deploy/scripts/smoke.sh
+      - name: Summary
+        if: always()
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+          URL: ${{ vars.STAGING_URL }}
+        run: |
+          {
+            echo "### Staging deploy of $TAG"
+            echo "- url: $URL"
+            echo "- gate: deploy.sh (backup, migrate, healthcheck) + smoke.sh"
+            echo "- NOT covered: browser journeys against staging (see the KNOWN GAP note in this workflow)"
+          } >> "$GITHUB_STEP_SUMMARY"

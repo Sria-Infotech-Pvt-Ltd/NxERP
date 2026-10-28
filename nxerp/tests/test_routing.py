@@ -227,3 +227,34 @@ class TestRouting(IntegrationTestCase):
 		routing.on_session_creation()
 		self.assertEqual(frappe.local.flags.home_page, "/nxerp/go")
 		frappe.local.flags.home_page = None
+
+	# --- logins that end in a redirect (emailed link, SSO) ---------------------------------------
+
+	def redirect_after_login(self, location, signed_in=True, status=302):
+		from types import SimpleNamespace
+
+		from werkzeug.wrappers import Response
+
+		frappe.local.flags.nxerp_signed_in = signed_in or None
+		response = Response(status=status, headers={"Location": location})
+		routing.after_request(response, SimpleNamespace(host="site.example"))
+		frappe.local.flags.nxerp_signed_in = None
+		return response.headers["Location"]
+
+	def test_a_login_redirect_is_pointed_at_the_router_with_the_original_target(self):
+		self.assertEqual(self.redirect_after_login("/desk"), "/nxerp/go?redirect-to=%2Fdesk")
+		self.assertEqual(
+			self.redirect_after_login("https://site.example/helpdesk/home?x=1"),
+			"/nxerp/go?redirect-to=%2Fhelpdesk%2Fhome%3Fx%3D1",
+		)
+
+	def test_a_foreign_login_redirect_is_dropped_not_forwarded(self):
+		self.assertEqual(self.redirect_after_login("https://evil.example/x"), "/nxerp/go")
+		self.assertEqual(self.redirect_after_login("//evil.example"), "/nxerp/go")
+
+	def test_other_responses_are_left_alone(self):
+		self.assertEqual(self.redirect_after_login("/desk", signed_in=False), "/desk")  # not a login request
+		self.assertEqual(
+			self.redirect_after_login("/nxerp/go?redirect-to=%2Fdesk"), "/nxerp/go?redirect-to=%2Fdesk"
+		)
+		self.assertEqual(self.redirect_after_login("/desk", status=200), "/desk")

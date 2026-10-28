@@ -62,10 +62,13 @@ at *Authentication Log* in Desk, and consider disabling the account.
 bench --site SITE add-system-manager recovery@your-company.example --first-name Recovery
 ```
 
-The command prompts for the password if `--password` is omitted. A System Manager can open Desk to manage users and
-roles but, by design, has **no application grant** (ADR-003): they land on the "No access" page, which links to
-*Manage user access*. Grant the app roles they need from there, fix the real problem, then delete the
-break-glass user in Desk. Record who created it and when.
+The command prompts for the password if `--password` is omitted. **FACT (tested):** Frappe gives a user created this way
+every role, including both `NXERP Access:` roles, so they sign in to the launcher with every app (the same as the person who
+finished the setup wizard). Treat it as a full administrator: fix the real problem, then delete the break-glass user in Desk and
+record who created it and when.
+
+A System Manager who was *not* created this way holds no app by default (ADR-003): they land on the "No access" page, which
+links to *Manage user access* in Desk, where an `NXERP Access:` role can be granted.
 
 ## 5. The platform itself is the problem
 

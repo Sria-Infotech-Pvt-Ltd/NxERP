@@ -20,8 +20,8 @@
   {
     "name": "helpdesk",
     "url": "https://github.com/Sriainfotech/Frappe-Help-Desk",
-    "branch": "feature/nxerp-login-page",
-    "commit": "1c6981cc515af58b8cdfbad7a7525b33236e399b"
+    "branch": "phase-4/helpdesk-parity",
+    "commit": "8f77254e9fe92c29956e6e543dd3814f9a22cd75"
   },
   {
     "name": "nxerp",

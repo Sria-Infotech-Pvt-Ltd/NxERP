@@ -37,6 +37,22 @@ if env.get("BENCH_IMAGE") and "@sha256:" not in env["BENCH_IMAGE"]:
 if "nxerp" in names and names[-1] != "nxerp":
 	errors.append("nxerp must be the last app so it installs after the apps it resolves")
 
+# the Dockerfile's default build args must equal versions.env (build.sh passes versions.env explicitly; these defaults
+# only matter for a bare `docker build`), so a drifted copy fails here instead of building a different matrix
+dockerfile = DEPLOY / "docker" / "Dockerfile"
+if dockerfile.exists():
+	defaults = dict(
+		re.findall(
+			r"^ARG (BENCH_IMAGE|FRAPPE_REPO|FRAPPE_REF|FRAPPE_COMMIT)=(\S+)$", dockerfile.read_text(), re.M
+		)
+	)
+	for key, value in defaults.items():
+		if value != env.get(key):
+			errors.append(f"deploy/docker/Dockerfile: ARG {key} default differs from versions.env")
+	for key in ("BENCH_IMAGE", "FRAPPE_REF", "FRAPPE_COMMIT"):
+		if key not in defaults:
+			errors.append(f"deploy/docker/Dockerfile: missing ARG {key} default")
+
 if errors:
 	print("\n".join(f"ERROR: {e}" for e in errors))
 	sys.exit(1)

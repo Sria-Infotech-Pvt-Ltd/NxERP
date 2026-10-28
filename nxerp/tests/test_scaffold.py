@@ -26,7 +26,9 @@ class TestScaffold(IntegrationTestCase):
 		hooks = frappe.get_hooks(app_name="nxerp")
 		# Phase 2: the access layer
 		self.assertEqual(hooks.get("auth_hooks"), ["nxerp.enforcement.auth_hook"])
-		self.assertEqual(hooks.get("after_request"), ["nxerp.enforcement.after_request"])
+		self.assertEqual(
+			hooks.get("after_request"), ["nxerp.enforcement.after_request", "nxerp.routing.after_request"]
+		)
 		self.assertEqual(hooks.get("has_permission"), {"*": ["nxerp.enforcement.has_permission"]})
 		self.assertEqual(
 			hooks.get("permission_query_conditions"), {"*": ["nxerp.enforcement.permission_query_conditions"]}
