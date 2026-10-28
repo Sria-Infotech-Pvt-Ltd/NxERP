@@ -686,7 +686,7 @@ Defined in `helpdesk/hooks.py`:
 ### 10.1 Environment Commands
 * **Start Containerized App**:
   ```powershell
-  cd "C:\Users\darla\OneDrive\Desktop\frapper sria\frappe-helpdesk-docker"
+  cd deploy/docker/helpdesk-local-dev
   docker compose start
   ```
 * **Run Frontend Dev Server** (with hot reload):
