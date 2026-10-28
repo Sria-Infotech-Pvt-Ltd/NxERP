@@ -48,7 +48,7 @@ after_migrate = "nxerp.install.after_migrate"
 auth_hooks = ["nxerp.enforcement.auth_hook"]
 
 # remove assignment and comment metadata from API responses to portal-only users (customers)
-after_request = ["nxerp.enforcement.after_request"]
+after_request = ["nxerp.enforcement.after_request", "nxerp.routing.after_request"]
 
 # document level (files, print, realtime rooms, check_permission) and list level (get_list, reports)
 has_permission = {"*": ["nxerp.enforcement.has_permission"]}

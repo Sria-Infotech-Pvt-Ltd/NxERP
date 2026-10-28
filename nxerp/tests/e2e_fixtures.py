@@ -34,6 +34,10 @@ PERSONAS = {
 	"both": (["Agent Manager", ERP_ACCESS], {}),  # two apps
 	"manager": (["Agent Manager", TEST_APP_ROLE], {}),  # Case 3: Helpdesk plus the test-only app
 	"none": ([PLAIN_DESK_ROLE], {}),  # signed in, no application
+	"sysmgr": (
+		["System Manager"],
+		{},
+	),  # an administrator with no app grant: the friendly page plus the admin hint
 	"customer": (["HD Customer"], {"user_type": "Website User"}),
 	"disabled": (["Agent"], {"enabled": 0}),
 	"reset": (["Agent"], {}),  # password-reset flow
@@ -87,7 +91,11 @@ def teardown():
 	frappe.set_user("Administrator")
 	update_site_config("nxerp_test_apps", [])
 	update_site_config("nxerp_stock_login", 0)
-	delete_users([email(k) for k in (*PERSONAS, "owner")])
+	frappe.flags.in_patch = True  # the last-administrator guard must not stop cleaning up fixtures
+	try:
+		delete_users([email(k) for k in (*PERSONAS, "owner")])
+	finally:
+		frappe.flags.in_patch = False
 	if frappe.db.exists("Role", TEST_APP_ROLE):
 		frappe.delete_doc("Role", TEST_APP_ROLE, force=True, ignore_permissions=True)
 

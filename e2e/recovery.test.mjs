@@ -3,7 +3,7 @@
 import assert from "node:assert/strict";
 import { execSync } from "node:child_process";
 import test, { after, before } from "node:test";
-import { ADMIN_PASSWORD, BASE, PASSWORD, SITE, fixture, here, launch, open, session, setConfig, shot, signIn, tiles, url, waitForConfig } from "./lib.mjs";
+import { ADMIN_PASSWORD, BASE, PASSWORD, SITE, email, fixture, here, launch, open, session, setConfig, shot, signIn, tiles, url, waitForConfig } from "./lib.mjs";
 
 let browser;
 before(async () => (browser = await launch()));
@@ -59,18 +59,26 @@ test("runbook 2: set-admin-password replaces the Administrator password; the old
 	assert.equal(await login(ADMIN_PASSWORD), 200, "the original password is restored for the other suites");
 });
 
-test("runbook 4: a break-glass System Manager can sign in, reaches the friendly page with the way to grant access", async () => {
+test("runbook 4: add-system-manager makes a working administrator (Frappe gives it every role)", async () => {
 	const user = "nxt-e2e-breakglass@example.test";
 	bench(`add-system-manager ${user} --first-name Recovery --password "$E2E_PW"`, { E2E_PW: PASSWORD });
 	try {
 		const { context, page } = await session(browser);
 		await signIn(page, user, PASSWORD);
-		assert.equal(url(page).pathname, "/nxerp/no-access", "a System Manager holds no application by default");
-		assert.equal(await page.locator("a[data-admin-hint]").count(), 1);
-		await Promise.all([page.waitForURL(/\/desk\/user/, { timeout: 90000 }), page.click("a[data-admin-hint]")]);
-		assert.match(here(page), /^\/desk\/user/, "the administrator can reach the place where access is granted");
+		assert.equal(url(page).pathname, "/nxerp/apps", `landed on ${here(page)}`);
+		assert.deepEqual(await tiles(page), ["erpnext", "helpdesk"]);
 		await context.close();
 	} finally {
 		await fixture("delete_user", { user });
 	}
+});
+
+test("a System Manager with no app grant gets the friendly page and the way to grant access", async () => {
+	const { context, page } = await session(browser);
+	await signIn(page, email("sysmgr"), PASSWORD);
+	assert.equal(url(page).pathname, "/nxerp/no-access", "a System Manager holds no application by default");
+	assert.equal(await page.locator("a[data-admin-hint]").count(), 1);
+	await Promise.all([page.waitForURL(/\/desk\/user/, { timeout: 90000 }), page.click("a[data-admin-hint]")]);
+	assert.match(here(page), /^\/desk\/user/, "the administrator can reach the place where access is granted");
+	await context.close();
 });

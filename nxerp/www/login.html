@@ -69,7 +69,7 @@
 				<span>{{ _("People") }}</span><span>{{ _("Process") }}</span><span>{{ _("Technology") }}</span><span>{{ _("Growth") }}</span>
 			</p>
 
-			<h1 class="nx-headline">{{ _("Smarter Systems") }}<br>{{ _("for a") }} <em>{{ _("Brighter Tomorrow") }}</em></h1>
+			<h2 class="nx-headline">{{ _("Smarter Systems") }}<br>{{ _("for a") }} <em>{{ _("Brighter Tomorrow") }}</em></h2>
 			<p class="nx-lede">{{ _("Integrated digital solutions to streamline your business and accelerate growth.") }}</p>
 
 			<ul class="nx-features">
@@ -99,6 +99,7 @@
 	</aside>
 
 	<main class="nx-panel">
+		<h1 class="nx-sr-only">{{ _("Sign in to {0}").format(app_name) }}</h1>
 		<div class="nx-top">
 			<button class="nx-theme-toggle" id="nx-theme-toggle" type="button" aria-label="{{ _('Toggle theme') }}" title="{{ _('Toggle theme') }}">
 				<svg class="nx-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
@@ -133,6 +134,14 @@
 {% block script %}
 {{ super() }}
 {% if not nx_stock %}
+<script>
+	// The framework's login sections render their logo without alt text; name it for assistive technology
+	(function () {
+		document.querySelectorAll("img.app-logo:not([alt])").forEach(function (img) {
+			img.setAttribute("alt", {{ app_name | tojson }});
+		});
+	})();
+</script>
 <script>
 	// Theme toggle. Writes the same "theme" key the helpdesk app reads, and swaps to the light logo on a dark card.
 	(function () {

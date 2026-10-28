@@ -131,3 +131,26 @@ def on_session_creation(login_manager=None):
 	that survives both, so a fresh login, and every flow that asks for the home page, lands on the router.
 	"""
 	frappe.local.flags.home_page = ROUTER_ROUTE
+	frappe.local.flags.nxerp_signed_in = True  # lets `after_request` re-point a redirect issued by this login
+
+
+def after_request(response, request=None):
+	"""Registered under `after_request`. A login that ends in a redirect (the emailed login link, social / SSO
+	sign-in, any other Frappe flow that calls `redirect_post_login`) is pointed at the router.
+
+	Frappe builds those redirects from its own default path, which would skip the router and let a user land
+	somewhere they hold no grant. Only a response that follows a login in THIS request is touched, and the
+	original same-origin destination is handed to the router as `redirect-to`, which still decides.
+	"""
+	if not frappe.local.flags.get("nxerp_signed_in"):
+		return
+	if response.status_code not in (301, 302, 303, 307, 308):
+		return
+	original = response.headers.get("Location", "")
+	if original.split("?")[0].rstrip("/") == ROUTER_ROUTE:
+		return
+	host = getattr(request, "host", None) or frappe.local.request.host
+	parts = urlsplit(original)
+	same_origin = not parts.netloc or parts.netloc == host
+	path = (parts.path + (f"?{parts.query}" if parts.query else "")) if same_origin else ""
+	response.headers["Location"] = ROUTER_ROUTE + (f"?redirect-to={quote(path, safe='')}" if path else "")
