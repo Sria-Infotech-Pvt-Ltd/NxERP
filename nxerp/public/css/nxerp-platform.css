@@ -1,0 +1,34 @@
+/* Platform pages (launcher, no-access). Colors come only from the generated palette tokens in
+   nxerp-theme.css (`yarn theme:build` in the Helpdesk repo): no literal colors here. */
+* { box-sizing: border-box; }
+.nxp-body {
+	margin: 0; min-height: 100vh; display: flex; flex-direction: column;
+	font-family: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+	background: var(--surface-base); color: var(--ink-gray-9);
+}
+.nxp-skip { position: absolute; left: -999px; top: 0; background: var(--surface-accent-6); color: var(--ink-accent-on); padding: .5rem 1rem; z-index: 10; }
+.nxp-skip:focus { left: 1rem; top: 1rem; }
+.nxp-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem clamp(1rem, 4vw, 3rem); border-bottom: 1px solid var(--outline-gray-2); }
+.nxp-logo { height: 32px; width: auto; }
+.nxp-user { display: flex; align-items: center; gap: 1rem; font-size: .9rem; color: var(--ink-gray-6); }
+.nxp-link { color: var(--ink-accent-link); text-decoration: underline; text-underline-offset: 2px; }
+.nxp-main { flex: 1; width: 100%; max-width: 62rem; margin: 0 auto; padding: clamp(1.5rem, 6vw, 4rem) clamp(1rem, 4vw, 3rem); }
+.nxp-center { max-width: 34rem; text-align: center; align-self: center; display: flex; flex-direction: column; justify-content: center; }
+.nxp-title { font-size: clamp(1.5rem, 4vw, 2rem); margin: 0 0 .5rem; letter-spacing: -.01em; }
+.nxp-sub { margin: 0 0 2rem; color: var(--ink-gray-6); line-height: 1.5; }
+.nxp-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr)); }
+.nxp-tile {
+	display: flex; flex-direction: column; align-items: center; gap: .9rem; padding: 1.75rem 1rem;
+	background: var(--surface-gray-1); border: 1px solid var(--outline-gray-2); border-radius: .9rem;
+	color: var(--ink-gray-9); text-decoration: none; transition: border-color .15s, transform .15s;
+}
+.nxp-tile:hover { border-color: var(--surface-accent-6); transform: translateY(-2px); }
+.nxp-tile:focus-visible, .nxp-button:focus-visible, .nxp-link:focus-visible { outline: 3px solid var(--surface-accent-6); outline-offset: 3px; }
+.nxp-mark { width: 4rem; height: 4rem; display: grid; place-items: center; background: var(--surface-base); border-radius: 1rem; border: 1px solid var(--outline-gray-2); }
+.nxp-mark img { width: 2.5rem; height: 2.5rem; object-fit: contain; }
+.nxp-tile-title { font-weight: 600; font-size: 1.05rem; }
+.nxp-actions { display: flex; gap: 1.25rem; justify-content: center; align-items: center; flex-wrap: wrap; margin: 0; }
+.nxp-button { display: inline-block; background: var(--surface-gray-9); color: var(--ink-gray-1); padding: .7rem 1.4rem; border-radius: .6rem; text-decoration: none; font-weight: 600; }
+.nxp-button:hover { background: var(--surface-gray-8); }
+@media (max-width: 520px) { .nxp-user .nxp-name { display: none; } .nxp-grid { grid-template-columns: 1fr 1fr; } }
+@media (prefers-reduced-motion: reduce) { .nxp-tile { transition: none; } .nxp-tile:hover { transform: none; } }

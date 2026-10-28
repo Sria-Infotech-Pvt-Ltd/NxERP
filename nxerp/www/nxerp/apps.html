@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="{{ frappe.lang or 'en' }}">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="robots" content="noindex" />
+	<title>{{ title }} | NXERP</title>
+	<link rel="icon" href="/assets/nxerp/nxerp_login/images/nxerp-favicon.png" />
+	<script>
+		(function () {
+			try {
+				var t = localStorage.getItem("theme");
+				if (t !== "light" && t !== "dark" && t !== "system") t = "system";
+				var dark = t === "dark" || (t === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
+				document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+			} catch (e) {}
+		})();
+	</script>
+	<link rel="stylesheet" href="/assets/nxerp/css/nxerp-theme.css" />
+	<link rel="stylesheet" href="/assets/nxerp/css/nxerp-platform.css" />
+</head>
+<body class="nxp-body">
+	<a class="nxp-skip" href="#apps">{{ _("Skip to applications") }}</a>
+	<header class="nxp-header">
+		<img class="nxp-logo" src="/assets/nxerp/nxerp_login/images/nxerp-wordmark.png" data-light="/assets/nxerp/nxerp_login/images/nxerp-wordmark-light.png" alt="NXERP" />
+		<nav class="nxp-user" aria-label="{{ _('Account') }}">
+			<span class="nxp-name">{{ full_name | e }}</span>
+			<a class="nxp-link" href="/logout">{{ _("Sign out") }}</a>
+		</nav>
+	</header>
+	<main class="nxp-main" id="main">
+		<h1 class="nxp-title">{{ _("Choose an application") }}</h1>
+		<p class="nxp-sub">{{ _("You have access to these applications.") }}</p>
+		<ul class="nxp-grid" id="apps" aria-label="{{ _('Applications') }}">
+			{% for app in apps %}
+			<li>
+				<a class="nxp-tile" href="{{ app.route | e }}" data-app="{{ app.key | e }}">
+					<span class="nxp-mark">{% if app.logo %}<img src="{{ app.logo | e }}" alt="" />{% endif %}</span>
+					<span class="nxp-tile-title">{{ app.title | e }}</span>
+				</a>
+			</li>
+			{% endfor %}
+		</ul>
+	</main>
+	<script>
+		(function () {
+			var dark = document.documentElement.getAttribute("data-theme") === "dark";
+			var logo = document.querySelector(".nxp-logo");
+			if (dark && logo && logo.dataset.light) logo.src = logo.dataset.light;
+		})();
+	</script>
+</body>
+</html>
