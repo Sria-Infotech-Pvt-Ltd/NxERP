@@ -368,7 +368,7 @@ const ticket = createDocumentResource({
 
 ### Development
 
-- `docker/` — Docker setup for containerized development
+- `hd-docker/` — Docker setup for containerized development
 
 ## Code Quality & Standards
 
