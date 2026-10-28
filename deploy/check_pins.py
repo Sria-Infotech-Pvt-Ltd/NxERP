@@ -13,13 +13,19 @@ apps = json.loads((DEPLOY / "apps.json").read_text())
 names = [app.get("name") for app in apps]
 if len(names) != len(set(names)):
 	errors.append(f"duplicate app names: {names}")
+REPO = DEPLOY.parent
 for app in apps:
+	if app.get("path"):
+		# an app that lives in this repository is pinned by the repository commit itself
+		if not (REPO / app["path"] / "pyproject.toml").is_file():
+			errors.append(f"{app.get('name', '?')}: path {app['path']} has no pyproject.toml")
+		continue
 	for key in ("name", "url", "branch"):
 		if not app.get(key):
 			errors.append(f"{app.get('name', '?')}: missing {key}")
 	commit = app.get("commit")
-	# every third-party app must be pinned to an exact commit; only our own platform app may follow a branch
-	if app.get("name") != "nxerp" and not (commit and SHA.match(commit)):
+	# every third-party app must be pinned to an exact commit
+	if not (commit and SHA.match(commit)):
 		errors.append(f"{app.get('name')}: needs a 40-char commit pin")
 
 env = dict(

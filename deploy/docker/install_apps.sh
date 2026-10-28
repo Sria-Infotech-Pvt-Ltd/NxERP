@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Runs INSIDE the image build (see deploy/docker/Dockerfile).
-#   install_apps.sh pinned     bench init + every app in apps.json except nxerp, each at its exact pinned commit
-#   install_apps.sh platform   the nxerp app from /tmp/build/nxerp-src, then the one asset build
+#   install_apps.sh pinned     bench init + every third-party app in apps.json (those with a url), each at its exact pinned commit
+#   install_apps.sh platform   the apps of this repository (those with a path, in apps.json order: helpdesk, then nxerp) from
+#                              /tmp/build/src/<name>, then the one asset build
 # A pin that resolves to a different commit fails the build on purpose (same rule as deploy/bootstrap/bootstrap.sh).
 # FRAPPE_REPO, FRAPPE_REF and FRAPPE_COMMIT come from the image ENV (set from deploy/versions.env by build.sh).
 set -euo pipefail
@@ -38,11 +39,11 @@ pinned)
 	[ "$(git -C "$BENCH_DIR/apps/frappe" rev-parse HEAD)" = "$FRAPPE_COMMIT" ] \
 		|| die "frappe $FRAPPE_REF resolved to $(git -C "$BENCH_DIR/apps/frappe" rev-parse HEAD), expected $FRAPPE_COMMIT"
 	cd "$BENCH_DIR"
-	# name|url|commit, in install order; the platform app is installed in the next stage
+	# name|url|commit, in install order; the apps of this repository (with a path) are installed in the next stage
 	mapfile -t APPS < <(python3 -I - "$BUILD/apps.json" <<'PY'
 import json, sys
 for app in json.load(open(sys.argv[1])):
-    if app["name"] != "nxerp":
+    if not app.get("path"):
         print("|".join([app["name"], app["url"], app.get("commit", "")]))
 PY
 )
@@ -54,13 +55,22 @@ PY
 	;;
 platform)
 	git config --global --add safe.directory '*'
-	# bench get-app needs a git repository; the build context carries none (see .dockerignore)
-	cd "$BUILD/nxerp-src"
-	git init -q
-	git add -A
-	git -c user.name=build -c user.email=build@example.test commit -q -m "nxerp ${NXERP_REVISION:-unknown}"
-	cd "$BENCH_DIR"
-	bench get-app --skip-assets "$BUILD/nxerp-src"
+	mapfile -t LOCAL < <(python3 -I - "$BUILD/apps.json" <<'PY'
+import json, sys
+for app in json.load(open(sys.argv[1])):
+    if app.get("path"):
+        print(app["name"])
+PY
+)
+	for name in "${LOCAL[@]}"; do
+		# bench get-app needs a git repository; the build context carries none (see .dockerignore)
+		cd "$BUILD/src/$name"
+		git init -q
+		git add -A
+		git -c user.name=build -c user.email=build@example.test commit -q -m "$name ${NXERP_REVISION:-unknown}"
+		cd "$BENCH_DIR"
+		bench get-app --skip-assets "$BUILD/src/$name"
+	done
 	log "bench build"
 	bench build
 	# the order of installed apps is the order of sites/apps.txt; nxerp must be last (ADR-005)

@@ -37,23 +37,22 @@ fetch_pinned() {
 	log "$name @ $(git -C "$dir" rev-parse --short=10 HEAD)"
 }
 
-# fetch_local NAME PATH REF -> $VENDOR/NAME at REF taken from a local checkout (dev only)
-fetch_local() {
-	local name=$1 src=$2 ref=$3 dir=$VENDOR/$1
-	if [ ! -d "$dir/.git" ]; then
-		git init -q "$dir"
-	fi
-	# --update-shallow: the source checkout may itself be a shallow clone (CI fetches the pin at depth 1)
-	git -C "$dir" fetch -q --update-shallow "$src" "$ref"
-	git -C "$dir" checkout -q --detach FETCH_HEAD
-	log "$name @ $(git -C "$dir" rev-parse --short=10 HEAD) (local $src $ref)"
+# copy_local NAME SRC -> $VENDOR/NAME: a one-commit git snapshot of the folder SRC (node_modules and caches left out)
+copy_local() {
+	local name=$1 src=$2 dir=$VENDOR/$1
+	rm -rf "$dir" && mkdir -p "$dir"
+	tar -C "$src" --exclude=node_modules --exclude=__pycache__ --exclude=.git -cf - . | tar -C "$dir" -xf -
+	git -C "$dir" init -q
+	git -C "$dir" add -A
+	git -C "$dir" -c user.name=bootstrap -c user.email=bootstrap@example.test commit -q -m "$name snapshot of $(git -C "$src" rev-parse --short=10 HEAD 2>/dev/null || echo local)"
+	log "$name copied from $src"
 }
 
-# name|url|branch|commit, in install order
+# name|url|branch|commit|path, in install order (an entry with a path lives in this repository)
 mapfile -t APPS < <(python3 -I - "$APPS_JSON" <<'PY'
 import json, sys
 for app in json.load(open(sys.argv[1])):
-    print("|".join([app["name"], app["url"], app["branch"], app.get("commit", "")]))
+    print("|".join([app["name"], app.get("url", ""), app.get("branch", ""), app.get("commit", ""), app.get("path", "")]))
 PY
 )
 
@@ -74,15 +73,17 @@ if [ ! -d "$BENCH_DIR/apps/frappe" ]; then
 	bench set-config -g socketio_port 9000
 
 	for row in "${APPS[@]}"; do
-		IFS='|' read -r name url branch commit <<<"$row"
+		IFS='|' read -r name url branch commit path <<<"$row"
 		if [ "$name" = nxerp ] && [ -n "${NXERP_SRC:-}" ]; then
 			# dev: live checkout, edits apply without a rebuild
 			log "get-app $name (soft link to $NXERP_SRC)"
 			bench get-app --soft-link --skip-assets "$NXERP_SRC"
-		elif [ "$name" = helpdesk ] && [ -n "${HELPDESK_REF:-}" ] && [ -d /helpdesk-src/.git ]; then
-			fetch_local helpdesk /helpdesk-src "$HELPDESK_REF"
-			log "get-app helpdesk (clone of $VENDOR/helpdesk)"
-			bench get-app --skip-assets "$VENDOR/helpdesk"
+		elif [ -n "$path" ]; then
+			# an app of this repository: a real copy (a snapshot with its own git history, as bench needs), because
+			# Helpdesk's frontend resolves ../../frappe/ui and ../../../../sites from its real path inside apps/
+			copy_local "$name" "$WORKSPACE/$path"
+			log "get-app $name (copy of $path)"
+			bench get-app --skip-assets "$VENDOR/$name"
 		else
 			# Pinned apps are real clones inside apps/: some build configs (e.g. erpnext's
 			# banking/vite.config.ts) resolve ../../sites relative to the app's real path,

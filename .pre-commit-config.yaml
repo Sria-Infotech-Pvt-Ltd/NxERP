@@ -1,4 +1,4 @@
-exclude: 'node_modules|\.git/'
+exclude: 'node_modules|\.git/|^apps/helpdesk/'  # Helpdesk keeps its own tooling (apps/helpdesk/.pre-commit-config.yaml); gitleaks and CI still scan it
 default_stages: [pre-commit]
 fail_fast: false
 

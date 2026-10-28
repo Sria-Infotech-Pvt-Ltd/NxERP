@@ -19,13 +19,10 @@
   },
   {
     "name": "helpdesk",
-    "url": "https://github.com/Sriainfotech/Frappe-Help-Desk",
-    "branch": "phase-4/helpdesk-parity",
-    "commit": "8f77254e9fe92c29956e6e543dd3814f9a22cd75"
+    "path": "apps/helpdesk"
   },
   {
     "name": "nxerp",
-    "url": "https://github.com/Sria-Infotech-Pvt-Ltd/NxERP",
-    "branch": "main"
+    "path": "apps/nxerp_platform"
   }
 ]

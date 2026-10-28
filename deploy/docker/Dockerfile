@@ -30,7 +30,9 @@ RUN --mount=type=secret,id=git_token,uid=1000,required=false \
 # ---------------------------------------------------------------- stage 2: the platform app from this checkout + assets
 FROM apps AS build
 ARG NXERP_REVISION=unknown
-COPY --chown=frappe:frappe . /tmp/build/nxerp-src
+# the apps of this repository (deploy/apps.json entries with a path), one folder each
+COPY --chown=frappe:frappe apps/helpdesk /tmp/build/src/helpdesk
+COPY --chown=frappe:frappe apps/nxerp_platform /tmp/build/src/nxerp
 RUN NXERP_REVISION="${NXERP_REVISION}" bash /tmp/build/install_apps.sh platform \
     && rm -rf /tmp/build /home/frappe/.cache /home/frappe/.npm
 

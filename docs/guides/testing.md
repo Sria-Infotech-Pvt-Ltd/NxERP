@@ -37,7 +37,7 @@ access rule needs a layer 3 test and a matrix or HTTP row; a UI change needs a b
 python -I deploy/check_pins.py            # pins are exact, nxerp is last
 python -I scripts/check_architecture.py     # architecture rules, see below
 pre-commit run --all-files                # ruff, ruff-format, bandit, shellcheck, gitleaks, file hygiene
-ruff check . --config apps/nxerp_platform/pyproject.toml --config src=["apps/nxerp_platform"] --config extend-exclude=["docs"] && ruff format --check . --config apps/nxerp_platform/pyproject.toml --config src=["apps/nxerp_platform"] --config extend-exclude=["docs"]   # what pre-commit runs for Python
+ruff check . --config apps/nxerp_platform/pyproject.toml --config src=["apps/nxerp_platform"] --config extend-exclude=["docs","apps/helpdesk"] && ruff format --check . --config apps/nxerp_platform/pyproject.toml --config src=["apps/nxerp_platform"] --config extend-exclude=["docs","apps/helpdesk"]   # what pre-commit runs for Python
 bandit -r nxerp -x apps/nxerp_platform/nxerp/tests -q && bandit -r apps/nxerp_platform/nxerp/tests -s B101,B105,B106,B311 -q
 ```
 

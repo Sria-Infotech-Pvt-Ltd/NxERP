@@ -69,8 +69,8 @@ def main():
 	fetch("frappe", env["FRAPPE_REPO"], env["FRAPPE_COMMIT"], src / "frappe", token)
 	targets.append(str(src / "frappe"))
 	for app in apps:
-		if app["name"] == "nxerp":
-			targets.append(str(ROOT / "apps" / "nxerp_platform"))  # the platform app lives in this checkout
+		if app.get("path"):
+			targets.append(str(ROOT / app["path"]))  # an app that lives in this checkout
 			continue
 		fetch(app["name"], app["url"], app["commit"], src / app["name"], token)
 		targets.append(str(src / app["name"]))

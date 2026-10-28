@@ -1,6 +1,6 @@
 name: stack-up
 description: >
-  Bring up the NXERP dev stack (deploy/bootstrap) for a test job: fetch Helpdesk at its pinned commit, restore the cached stack
+  Bring up the NXERP dev stack (deploy/bootstrap) for a test job: restore the cached stack
   volumes when a cache exists (otherwise bootstrap from empty volumes), start it, wait until ready, migrate the cached site
   to this checkout, and let the tests create users. A stack cannot be shared between GitHub jobs; the cache is what is shared.
 inputs:
@@ -20,11 +20,6 @@ outputs:
 runs:
   using: composite
   steps:
-    - uses: ./.github/actions/helpdesk-fetch
-      with:
-        dest: ${{ github.workspace }}/../helpdesk
-        token: ${{ inputs.token }}
-
     - name: Restore the stack-volume cache
       id: cache
       if: inputs.use-cache == 'true'
@@ -53,7 +48,7 @@ runs:
         scripts/ci_stack.sh bench migrate
         if [ "$WITH_E2E" = true ]; then
           scripts/ci_stack.sh sh 'bench --site nxerp-e2e.localhost migrate'
-          ./e2e/site.sh snapshot   # the site is still pristine (no wizard run): re-save it at this schema
+          ./apps/nxerp_platform/browser-tests/site.sh snapshot   # the site is still pristine (no wizard run): re-save it at this schema
         fi
 
     - name: Allow tests and lift the new-user throttle

@@ -18,9 +18,9 @@ name: CI
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, develop]
   push:
-    branches: [main]
+    branches: [main, develop]
   schedule:
     # weekly: GitHub evicts caches not used for 7 days, so refresh the stack cache on main
     - cron: "17 3 * * 1"
@@ -63,8 +63,8 @@ jobs:
         run: pre-commit run --all-files --show-diff-on-failure
       - name: ruff lint and format
         run: |
-          ruff check . --config apps/nxerp_platform/pyproject.toml --config src=["apps/nxerp_platform"] --config extend-exclude=["docs"]
-          ruff format --check . --config apps/nxerp_platform/pyproject.toml --config src=["apps/nxerp_platform"] --config extend-exclude=["docs"]
+          ruff check . --config apps/nxerp_platform/pyproject.toml --config src=["apps/nxerp_platform"] --config extend-exclude=["docs","apps/helpdesk"]
+          ruff format --check . --config apps/nxerp_platform/pyproject.toml --config src=["apps/nxerp_platform"] --config extend-exclude=["docs","apps/helpdesk"]
       - name: bandit (platform app, then its tests with the test-only rules relaxed)
         run: |
           bandit -r apps/nxerp_platform/nxerp -x apps/nxerp_platform/nxerp/tests -q
@@ -120,26 +120,22 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      # Helpdesk is a separate repository (company fork); fetch it at the commit pinned in deploy/apps.json
-      - uses: ./.github/actions/helpdesk-fetch
-        with:
-          dest: ${{ github.workspace }}/helpdesk-src
-          token: ${{ secrets.HELPDESK_READ_TOKEN }}
+      # Helpdesk lives in this repository (apps/helpdesk)
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: yarn
-          cache-dependency-path: helpdesk-src/desk/yarn.lock
+          cache-dependency-path: apps/helpdesk/hd-frontend/yarn.lock
       - name: Install the SPA's dependencies (lockfile enforced)
-        working-directory: helpdesk-src/desk
+        working-directory: apps/helpdesk/hd-frontend
         run: yarn install --frozen-lockfile
       - name: Theme lint (generated files fresh, frappe-ui covered, contrast; no hard-coded colours)
-        working-directory: helpdesk-src/desk
+        working-directory: apps/helpdesk/hd-frontend
         run: |
           yarn theme:check
           yarn theme:audit
       - name: Build the SPA
-        working-directory: helpdesk-src/desk
+        working-directory: apps/helpdesk/hd-frontend
         run: yarn build
 
   # ------------------------------------------------------------------------------------------ the shared stack cache
@@ -161,19 +157,14 @@ jobs:
       - name: Free disk space (the stack and its tarballs are several GB)
         if: steps.lookup.outputs.cache-hit != 'true'
         run: sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android /opt/hostedtoolcache/CodeQL
-      - uses: ./.github/actions/helpdesk-fetch
-        if: steps.lookup.outputs.cache-hit != 'true'
-        with:
-          dest: ${{ github.workspace }}/../helpdesk
-          token: ${{ secrets.HELPDESK_READ_TOKEN }}
       - name: Cold bootstrap from empty volumes
         if: steps.lookup.outputs.cache-hit != 'true'
         run: scripts/ci_stack.sh up
       - name: Create the fresh browser-test site and snapshot it (pristine, no setup wizard)
         if: steps.lookup.outputs.cache-hit != 'true'
         run: |
-          ./e2e/site.sh create
-          ./e2e/site.sh snapshot
+          ./apps/nxerp_platform/browser-tests/site.sh create
+          ./apps/nxerp_platform/browser-tests/site.sh snapshot
       - name: Stop the stack cleanly and save its volumes
         if: steps.lookup.outputs.cache-hit != 'true'
         run: |
@@ -306,12 +297,12 @@ jobs:
           with-e2e-site: "true"
       - name: Make sure the fresh browser-test site exists (cache miss path)
         run: |
-          if ! ./e2e/site.sh status >/dev/null 2>&1; then
-            ./e2e/site.sh create
-            ./e2e/site.sh snapshot
+          if ! ./apps/nxerp_platform/browser-tests/site.sh status >/dev/null 2>&1; then
+            ./apps/nxerp_platform/browser-tests/site.sh create
+            ./apps/nxerp_platform/browser-tests/site.sh snapshot
           fi
       - name: Playwright suite ${{ matrix.suite }} (real login form, fresh site, Chromium inside the bench container)
-        run: ./e2e/run.sh "${{ matrix.suite }}"
+        run: ./apps/nxerp_platform/browser-tests/run.sh "${{ matrix.suite }}"
       - name: Upload screenshots and evidence (docs/evidence/phase3)
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -475,10 +466,6 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - uses: ./.github/actions/helpdesk-fetch
-        with:
-          dest: ${{ github.workspace }}/helpdesk-src
-          token: ${{ secrets.HELPDESK_READ_TOKEN }}
       - name: Resolve the whole bench's Python dependency set (Frappe + every pinned app) without installing it
         env:
           GIT_READ_TOKEN: ${{ secrets.HELPDESK_READ_TOKEN }}
@@ -498,7 +485,7 @@ jobs:
           npm install --package-lock-only --ignore-scripts
           npm audit --audit-level=high
       - name: yarn audit (Helpdesk SPA, runtime dependencies, high and critical)
-        working-directory: helpdesk-src/desk
+        working-directory: apps/helpdesk/hd-frontend
         continue-on-error: ${{ vars.AUDIT_ENFORCE != 'true' }}
         run: yarn audit --groups dependencies --level high
       - name: Upload the audit report
@@ -567,15 +554,11 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
           cache-dependency-path: scripts/resolve_python_deps.py
-      - uses: ./.github/actions/helpdesk-fetch
-        with:
-          dest: ${{ github.workspace }}/helpdesk-src
-          token: ${{ secrets.HELPDESK_READ_TOKEN }}
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: yarn
-          cache-dependency-path: helpdesk-src/desk/yarn.lock
+          cache-dependency-path: apps/helpdesk/hd-frontend/yarn.lock
       - name: Resolve the Python dependency set
         env:
           GIT_READ_TOKEN: ${{ secrets.HELPDESK_READ_TOKEN }}
@@ -587,13 +570,13 @@ jobs:
         run: |
           npm install --ignore-scripts
           npx --yes license-checker-rseidelsohn@5.0.1 --json > "$RUNNER_TEMP/e2e-licenses.json"
-          python3 -I ../tools/check_licenses.py npm "$RUNNER_TEMP/e2e-licenses.json"
+          python3 -I ../../../scripts/check_licenses.py npm "$RUNNER_TEMP/e2e-licenses.json"
       - name: npm licences, Helpdesk SPA (runtime dependencies)
-        working-directory: helpdesk-src/desk
+        working-directory: apps/helpdesk/hd-frontend
         run: |
           yarn install --frozen-lockfile --ignore-scripts
           npx --yes license-checker-rseidelsohn@5.0.1 --production --json > "$RUNNER_TEMP/helpdesk-licenses.json"
-          python3 -I ../../tools/check_licenses.py npm "$RUNNER_TEMP/helpdesk-licenses.json"
+          python3 -I ../../../scripts/check_licenses.py npm "$RUNNER_TEMP/helpdesk-licenses.json"
 
   docker-build:
     name: docker-build

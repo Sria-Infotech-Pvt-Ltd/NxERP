@@ -1,6 +1,7 @@
 # Deny by default: the image build context is the repository root, but the image needs only these paths.
 *
 !apps/nxerp_platform
+!apps/helpdesk
 
 
 !deploy/apps.json
@@ -10,5 +11,8 @@
 
 # Never ship tests, caches or git metadata inside the platform app
 **/__pycache__
+**/node_modules
 **/*.pyc
 apps/nxerp_platform/nxerp/tests
+apps/helpdesk/hd-e2e-tests
+apps/helpdesk/hd-docker
