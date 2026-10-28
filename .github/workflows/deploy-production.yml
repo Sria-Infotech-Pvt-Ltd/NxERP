@@ -1,0 +1,141 @@
+name: Deploy production
+
+# STATUS: NEVER run. No production host, registry package, GitHub Environment `production` or secret exists. It is deliberately
+# manual (workflow_dispatch) and gated by the GitHub Environment `production`, which the owner must configure with REQUIRED
+# REVIEWERS (docs/governance/owner-action-list.md). Until then GitHub would run the deploy job WITHOUT approval if the Environment
+# is created empty: configure the reviewers before storing any production secret in it.
+#
+# deploy:   checks (stable tag, published non-pre-release, successful staging deployment of the same commit) -> approval ->
+#           backup, maintenance mode, migrate, health check (rollback to the previous tag on failure) -> smoke.
+# rollback: switch back to a previous tag and restore the pre-migration backup (docs/runbooks/rollback.md).
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: deploy a release, or roll back to an earlier one
+        type: choice
+        options: [deploy, rollback]
+        default: deploy
+      tag:
+        description: "deploy: the release tag (vX.Y.Z). rollback: the tag to go BACK to"
+        required: true
+      backup_dir:
+        description: "rollback only: backup directory on the host (default: the one recorded by the last migrate)"
+        required: false
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      deployments: read
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+      version: ${{ steps.tag.outputs.version }}
+      backup_dir: ${{ steps.tag.outputs.backup_dir }}
+    steps:
+      - name: Validate the tag
+        id: tag
+        env:
+          TAG: ${{ inputs.tag }}
+          BACKUP_DIR: ${{ inputs.backup_dir }}
+        run: |
+          set -euo pipefail
+          [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::production takes stable tags only (vX.Y.Z), got '$TAG'"; exit 1; }
+          # a plain absolute path or empty: it ends up in a remote shell command
+          [[ -z "$BACKUP_DIR" || "$BACKUP_DIR" =~ ^(/[A-Za-z0-9._-]+)+$ ]] || { echo "::error::backup_dir must be a plain absolute path"; exit 1; }
+          {
+            echo "backup_dir=$BACKUP_DIR"
+            echo "tag=$TAG"
+            echo "version=${TAG#v}"
+          } >> "$GITHUB_OUTPUT"
+      - name: The release exists, is published and is not a pre-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          set -euo pipefail
+          info=$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json isPrerelease,isDraft --jq '"\(.isPrerelease) \(.isDraft)"')
+          [ "$info" = "false false" ] || { echo "::error::release $TAG is not a published, final release ($info)"; exit 1; }
+      - name: Staging ran this exact commit successfully (deploy only)
+        if: inputs.action == 'deploy'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          set -euo pipefail
+          sha=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" --jq '.object.sha')
+          # an annotated tag points at a tag object: resolve to the commit
+          type=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" --jq '.object.type')
+          [ "$type" = commit ] || sha=$(gh api "repos/$GITHUB_REPOSITORY/git/tags/$sha" --jq '.object.sha')
+          ok=0
+          for url in $(gh api "repos/$GITHUB_REPOSITORY/deployments?environment=staging&sha=$sha" --jq '.[].statuses_url'); do
+            [ "$(gh api "$url" --jq '.[0].state // "none"')" = success ] && ok=1
+          done
+          [ "$ok" = 1 ] || { echo "::error::no successful staging deployment of commit $sha: promote a release candidate through staging first"; exit 1; }
+
+  deploy:
+    needs: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment:
+      name: production # REQUIRED REVIEWERS must be configured on this Environment
+      url: ${{ vars.PRODUCTION_URL }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: refs/tags/${{ needs.checks.outputs.tag }}
+          persist-credentials: false
+      - name: Backup, migrate, health check; automatic rollback on failure
+        if: inputs.action == 'deploy'
+        uses: ./.github/actions/ssh-deploy
+        with:
+          host: ${{ vars.DEPLOY_HOST }}
+          user: ${{ vars.DEPLOY_USER }}
+          path: ${{ vars.DEPLOY_PATH }}
+          ssh-key: ${{ secrets.DEPLOY_SSH_KEY }}
+          known-hosts: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          registry-user: ${{ github.repository_owner }}
+          registry-token: ${{ secrets.REGISTRY_PULL_TOKEN }}
+          command: >-
+            NXERP_SITE='${{ vars.NXERP_SITE }}'
+            NXERP_BACKUP_DIR='${{ vars.NXERP_BACKUP_DIR || '/var/backups/nxerp' }}'
+            ./scripts/deploy.sh --tag '${{ needs.checks.outputs.version }}'
+      - name: Roll back to the earlier release and restore the pre-migration backup
+        if: inputs.action == 'rollback'
+        uses: ./.github/actions/ssh-deploy
+        with:
+          host: ${{ vars.DEPLOY_HOST }}
+          user: ${{ vars.DEPLOY_USER }}
+          path: ${{ vars.DEPLOY_PATH }}
+          ssh-key: ${{ secrets.DEPLOY_SSH_KEY }}
+          known-hosts: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          registry-user: ${{ github.repository_owner }}
+          registry-token: ${{ secrets.REGISTRY_PULL_TOKEN }}
+          # backup_dir was validated in job `checks`; empty means "the one the last migrate recorded"
+          command: >-
+            NXERP_ENV_FILES=.env NXERP_COMPOSE_FILE=./compose.yaml
+            NXERP_SITE='${{ vars.NXERP_SITE }}'
+            NXERP_BACKUP_DIR='${{ vars.NXERP_BACKUP_DIR || '/var/backups/nxerp' }}'
+            bash -c 'b="${{ needs.checks.outputs.backup_dir }}"; [ -n "$b" ] || b=$(cat "$NXERP_BACKUP_DIR/LAST_BACKUP");
+            case "$b" in /*) ;; *) echo "backup dir must be an absolute path"; exit 1 ;; esac;
+            ./scripts/rollback.sh --yes --previous-tag "${{ needs.checks.outputs.version }}" --backup "$b"'
+      - name: Smoke test from outside (anonymous behaviour)
+        env:
+          NXERP_BASE_URL: ${{ vars.PRODUCTION_URL }}
+        run: deploy/scripts/smoke.sh
+      - name: Summary
+        if: always()
+        env:
+          ACTION: ${{ inputs.action }}
+          TAG: ${{ needs.checks.outputs.tag }}
+        run: echo "### Production $ACTION of $TAG" >> "$GITHUB_STEP_SUMMARY"

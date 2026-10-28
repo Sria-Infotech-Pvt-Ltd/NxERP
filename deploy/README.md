@@ -10,6 +10,10 @@ Everything needed to build a reproducible NXERP bench. No secrets live here.
 | `dev/compose.yaml` | Local stack: MariaDB 11.8, two Redis, one bench container |
 | `dev/bootstrap.sh` | Runs inside the bench container: bench init, get-app, new-site, install-app, build, start |
 | `dev/up.sh` | The one command (generates `dev/.env` with random passwords on first run) |
+| `docker/` | Production-style image: `Dockerfile` (pinned bench base, apps at pinned commits, built assets), `build.sh` (tag `<version>-<git sha>`, SBOM when syft is available), `install_apps.sh`, `entrypoint.sh` |
+| `staging-like/` | Compose rehearsal environment: the image + MariaDB + Redis + nginx; `.env.example`, no secrets |
+| `environments/` | `staging/` and `production/` config templates and which values are secrets (GitHub Environments) |
+| `scripts/` | `backup.sh restore.sh migrate.sh deploy.sh rollback.sh healthcheck.sh smoke.sh` (+ `lib.sh`), parameterised by site and compose file; used by the deploy workflows and the runbooks |
 
 ## Bring up the dev platform
 
@@ -47,4 +51,16 @@ Creates `admin@`, `agent@`, `manager@`, `erpuser@`, `customer@example.test`. Omi
 
 ## Production images
 
-Not built or tested in Phase 1. The intended route is frappe_docker's layered image with `apps.json` as the build secret (see ADR-001/ADR-006); no registry, staging server or secret exists yet.
+`docker/Dockerfile` builds from the digest-pinned `frappe/bench` image, installs Frappe and every app in `apps.json` at its exact commit
+(a pin that resolves to a different commit fails the build) and `nxerp` from the checkout being built, then runs `bench build`.
+`python3 -I deploy/check_pins.py` also fails when the Dockerfile's default build args drift from `versions.env`.
+
+```bash
+deploy/docker/build.sh --dry-run     # print the command
+deploy/docker/build.sh               # build locally (needs ~15 GB free disk and network)
+```
+
+**Status:** `docker buildx build --check` passes; the image has **not** been built, run or pushed, and `staging-like/` has not been
+started. Registry, hosts, domains, secrets and Environments do not exist yet: [docs/governance/owner-action-list.md](../docs/governance/owner-action-list.md).
+Runbooks: [release](../docs/runbooks/release.md), [deploy](../docs/runbooks/deploy.md), [backup-restore](../docs/runbooks/backup-restore.md),
+[rollback](../docs/runbooks/rollback.md), [migration-planning](../docs/runbooks/migration-planning.md).

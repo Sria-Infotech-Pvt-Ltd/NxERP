@@ -9,7 +9,7 @@
 # environment and never printed. Needs `deploy/dev/up.sh -d` running.
 set -uo pipefail
 HERE=$(cd "$(dirname "$0")" && pwd)
-cd "$HERE/../deploy/dev"
+cd "$HERE/../deploy/dev" || exit 1
 set -a
 # shellcheck disable=SC1091
 . ./.env

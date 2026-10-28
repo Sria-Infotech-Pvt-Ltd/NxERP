@@ -25,7 +25,8 @@ fi
 
 # Use the sibling Helpdesk checkout (../helpdesk) when it exists; otherwise bootstrap uses the pinned fork commit
 if [ -d "$here/../../../helpdesk/.git" ]; then
-	export HELPDESK_HOST_PATH="$(cd "$here/../../../helpdesk" && pwd)"
+	HELPDESK_HOST_PATH="$(cd "$here/../../../helpdesk" && pwd)"
+	export HELPDESK_HOST_PATH
 	export HELPDESK_REF="${HELPDESK_REF:-$(git -C "$HELPDESK_HOST_PATH" branch --show-current)}"
 else
 	mkdir -p "$here/.no-helpdesk"

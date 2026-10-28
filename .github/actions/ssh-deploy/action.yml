@@ -1,0 +1,94 @@
+name: ssh-deploy
+description: >
+  Copy deploy/scripts and the compose files to a Docker host over ssh, log the host's Docker in to the registry, and run one
+  command there. All hosts, users, keys and tokens are inputs (GitHub Environment variables and secrets); nothing is hard-coded.
+  NEVER RUN: no host exists yet.
+inputs:
+  host:
+    description: Host name (vars.DEPLOY_HOST)
+    required: true
+  user:
+    description: ssh user (vars.DEPLOY_USER)
+    required: true
+  path:
+    description: Directory on the host that holds compose.yaml, scripts/ and .env (vars.DEPLOY_PATH)
+    required: true
+  ssh-key:
+    description: Private key of the deploy user (secrets.DEPLOY_SSH_KEY)
+    required: true
+  known-hosts:
+    description: known_hosts line(s) for the host (secrets.DEPLOY_KNOWN_HOSTS); the connection is refused if it does not match
+    required: true
+  registry:
+    description: Registry host
+    default: ghcr.io
+  registry-user:
+    description: Registry user for the pull (a read-only account)
+    required: true
+  registry-token:
+    description: Registry token with pull rights only (secrets.REGISTRY_PULL_TOKEN)
+    required: true
+  command:
+    description: >
+      Command to run in the deploy directory on the host. Callers must pass only values they validated
+      (tags are checked against a strict pattern before they get here).
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Prepare ssh
+      shell: bash
+      env:
+        SSH_KEY: ${{ inputs.ssh-key }}
+        KNOWN_HOSTS: ${{ inputs.known-hosts }}
+      run: |
+        set -euo pipefail
+        umask 077
+        mkdir -p "$RUNNER_TEMP/ssh"
+        printf '%s\n' "$SSH_KEY" > "$RUNNER_TEMP/ssh/key"
+        printf '%s\n' "$KNOWN_HOSTS" > "$RUNNER_TEMP/ssh/known_hosts"
+        [ -s "$RUNNER_TEMP/ssh/known_hosts" ] || { echo "::error::DEPLOY_KNOWN_HOSTS is empty: refusing to connect without host key verification"; exit 1; }
+
+    - name: Copy scripts and compose files
+      shell: bash
+      env:
+        HOST: ${{ inputs.host }}
+        DEPLOY_USER: ${{ inputs.user }}
+        DEPLOY_PATH: ${{ inputs.path }}
+      run: |
+        set -euo pipefail
+        opts=(-i "$RUNNER_TEMP/ssh/key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts")
+        ssh "${opts[@]}" "$DEPLOY_USER@$HOST" "mkdir -p '$DEPLOY_PATH/scripts'"
+        scp "${opts[@]}" deploy/scripts/*.sh "$DEPLOY_USER@$HOST:$DEPLOY_PATH/scripts/"
+        scp "${opts[@]}" deploy/staging-like/compose.yaml deploy/staging-like/nginx.conf.template "$DEPLOY_USER@$HOST:$DEPLOY_PATH/"
+        ssh "${opts[@]}" "$DEPLOY_USER@$HOST" "chmod +x '$DEPLOY_PATH'/scripts/*.sh"
+
+    - name: Registry login on the host
+      shell: bash
+      env:
+        HOST: ${{ inputs.host }}
+        DEPLOY_USER: ${{ inputs.user }}
+        REGISTRY: ${{ inputs.registry }}
+        REGISTRY_USER: ${{ inputs.registry-user }}
+        REGISTRY_TOKEN: ${{ inputs.registry-token }}
+      run: |
+        set -euo pipefail
+        opts=(-i "$RUNNER_TEMP/ssh/key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts")
+        printf '%s' "$REGISTRY_TOKEN" | ssh "${opts[@]}" "$DEPLOY_USER@$HOST" "docker login '$REGISTRY' -u '$REGISTRY_USER' --password-stdin"
+
+    - name: Run the command on the host
+      shell: bash
+      env:
+        HOST: ${{ inputs.host }}
+        DEPLOY_USER: ${{ inputs.user }}
+        DEPLOY_PATH: ${{ inputs.path }}
+        REMOTE_COMMAND: ${{ inputs.command }}
+      run: |
+        set -euo pipefail
+        opts=(-i "$RUNNER_TEMP/ssh/key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts")
+        ssh "${opts[@]}" "$DEPLOY_USER@$HOST" "cd '$DEPLOY_PATH' && $REMOTE_COMMAND"
+
+    - name: Remove the key from the runner
+      if: always()
+      shell: bash
+      run: rm -rf "$RUNNER_TEMP/ssh"

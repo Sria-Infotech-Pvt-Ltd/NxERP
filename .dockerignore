@@ -1,0 +1,14 @@
+# Deny by default: the image build context is the repository root, but the image needs only these paths.
+*
+!nxerp
+!pyproject.toml
+!README.md
+!deploy/apps.json
+!deploy/versions.env
+!deploy/docker/install_apps.sh
+!deploy/docker/entrypoint.sh
+
+# Never ship tests, caches or git metadata inside the platform app
+**/__pycache__
+**/*.pyc
+nxerp/tests

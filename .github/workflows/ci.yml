@@ -1,109 +1,689 @@
 name: CI
 
-# STATUS: this workflow has NOT been run on GitHub yet (authored from a local checkout; the account used
-# has no write access to the repository). The test, lint, bandit and pin-check commands were each run
-# locally against the dev stack (see docs/security/phase2-review.md and docs/PROGRESS.md, Phase 3); the
-# GitHub-specific parts (the runner, the readiness loop, the artifact uploads) have not been exercised.
+# STATUS: this workflow has NEVER run on GitHub (the account that wrote it has read-only access to the repository). It was
+# checked locally with actionlint (workflow syntax and expressions), and the commands it calls were run where noted in
+# docs/governance/ci-design.md. Do not treat it as a working pipeline until a first run has been read and fixed.
+#
+# One required status check protects `main`: `ci-gate`, which needs every job below (docs/governance/branch-protection.md).
+#
+# Design (details and the timing ESTIMATE, which is not measured: docs/governance/ci-design.md):
+# - A bench stack cannot be shared between GitHub jobs, so the thing that is shared is a CACHE of the stack's three Docker
+#   volumes (bench with all apps installed and built, the MariaDB data, the vendor clones), keyed on the pins. Job
+#   `stack-cache` builds it once (cold, about the 408 s measured locally plus runner overhead) when the key is missing;
+#   every stack job restores it, applies THIS checkout's migrations, and runs its own tests in parallel with the others.
+#   `fresh-install-migrate` and `upgrade-from-previous-tag` deliberately do NOT use the cache: they prove install from nothing.
+# - The browser suite is sharded by file (6 shards) because it took about 25 minutes serially.
+# - Third-party actions are pinned to commit SHAs; the trailing comment names the release the SHA was resolved from
+#   (resolved with `git ls-remote` on 2026-10-28; peeled tag objects).
 
 on:
   pull_request:
     branches: [main]
   push:
     branches: [main]
+  schedule:
+    # weekly: GitHub evicts caches not used for 7 days, so refresh the stack cache on main
+    - cron: "17 3 * * 1"
   workflow_dispatch:
 
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
 
+env:
+  PYTHON_VERSION: "3.14"
+  NODE_VERSION: "24"
+
 jobs:
+  # ------------------------------------------------------------------------------------------ static checks
   lint:
-    name: Lint (pre-commit)
+    name: lint
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v5
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
-          python-version: "3.14"
-      - run: pip install pre-commit
-      - run: pre-commit run --all-files --show-diff-on-failure
-
-  pins:
-    name: Validate version pins and architecture rules
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v4
-      - run: python3 -I deploy/check_pins.py
-      - run: python3 -I tools/check_architecture.py
-      - run: pip install bandit && bandit -r nxerp -x nxerp/tests -q && bandit -r nxerp/tests -s B101,B105,B106,B311 -q
-
-  install-smoke:
-    name: Install smoke (frappe + erpnext + helpdesk + nxerp)
-    runs-on: ubuntu-latest
-    needs: [lint, pins]
-    timeout-minutes: 150
-    steps:
-      - uses: actions/checkout@v4
-      - name: Bring up the dev platform
-        run: ./deploy/dev/up.sh -d
-      - name: Wait for bootstrap
+          python-version: ${{ env.PYTHON_VERSION }}
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
+      - name: Install linters (versions match .pre-commit-config.yaml)
+        run: python -m pip install pre-commit==4.7.0 ruff==0.14.10 bandit==1.9.4
+      - name: pre-commit (file hygiene, ruff, bandit, shellcheck; gitleaks has its own job)
+        env:
+          SKIP: gitleaks
+        run: pre-commit run --all-files --show-diff-on-failure
+      - name: ruff lint and format
         run: |
-          for i in $(seq 1 240); do
-            if docker compose -p nxerp-dev logs bench 2>&1 | grep -q '\[bootstrap\] ready:'; then
-              echo "bootstrap finished"; exit 0
-            fi
-            if [ "$(docker inspect -f '{{.State.Running}}' nxerp-dev-bench-1)" != "true" ]; then
-              echo "bench container stopped before it was ready"; docker compose -p nxerp-dev logs --tail 200 bench; exit 1
-            fi
-            sleep 15
+          ruff check .
+          ruff format --check .
+      - name: bandit (platform app, then its tests with the test-only rules relaxed)
+        run: |
+          bandit -r nxerp -x nxerp/tests -q
+          bandit -r nxerp/tests -s B101,B105,B106,B311 -q
+      - name: Conventional commits (PR title, then every commit in the PR)
+        env:
+          EVENT: ${{ github.event_name }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if [ "$EVENT" = pull_request ]; then
+            python3 -I tools/check_commits.py --title "$PR_TITLE"
+            # commits: format only (length limit relaxed to 150: nine existing commits are 103-128 characters; the PR title is what
+            # a squash merge keeps, and it is held to 100)
+            python3 -I tools/check_commits.py --range "$BASE_SHA..$HEAD_SHA" --max-length 150
+          else
+            echo "not a pull request: commit messages are checked on PRs only"
+          fi
+
+  pins-and-architecture:
+    name: pins-and-architecture
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Version pins are exact (ADR-002), Dockerfile defaults equal versions.env
+        run: python3 -I deploy/check_pins.py
+      - name: Architecture rules (ADR-005)
+        run: python3 -I tools/check_architecture.py
+      - name: Workflow files (actionlint)
+        run: docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.12 -color
+      - name: Shell syntax of deploy and CI scripts
+        run: |
+          for f in deploy/scripts/*.sh deploy/docker/*.sh deploy/dev/*.sh e2e/*.sh tools/*.sh; do bash -n "$f"; done
+      - name: Staging-like compose file renders (config only; dummy values, nothing is started)
+        run: |
+          printf 'NXERP_IMAGE_TAG=0.0.0-ci\nNXERP_SITE=staging.example.test\nNXERP_DB_ROOT_PASSWORD=dummy\nNXERP_ADMIN_PASSWORD=dummy\n' > "$RUNNER_TEMP/dummy.env"
+          docker compose --env-file "$RUNNER_TEMP/dummy.env" -f deploy/staging-like/compose.yaml config -q
+      - name: Dockerfile passes BuildKit's build checks (no build is run here; see job docker-build)
+        run: docker buildx build --check -f deploy/docker/Dockerfile .
+
+  frontend:
+    name: frontend
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # Helpdesk is a separate repository (company fork); fetch it at the commit pinned in deploy/apps.json
+      - uses: ./.github/actions/helpdesk-fetch
+        with:
+          dest: ${{ github.workspace }}/helpdesk-src
+          token: ${{ secrets.HELPDESK_READ_TOKEN }}
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: yarn
+          cache-dependency-path: helpdesk-src/desk/yarn.lock
+      - name: Install the SPA's dependencies (lockfile enforced)
+        working-directory: helpdesk-src/desk
+        run: yarn install --frozen-lockfile
+      - name: Theme lint (generated files fresh, frappe-ui covered, contrast; no hard-coded colours)
+        working-directory: helpdesk-src/desk
+        run: |
+          yarn theme:check
+          yarn theme:audit
+      - name: Build the SPA
+        working-directory: helpdesk-src/desk
+        run: yarn build
+
+  # ------------------------------------------------------------------------------------------ the shared stack cache
+  stack-cache:
+    name: stack-cache
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Is the cache already there?
+        id: lookup
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/stack-volumes
+          key: stack-${{ runner.os }}-${{ hashFiles('deploy/apps.json', 'deploy/versions.env', 'deploy/dev/bootstrap.sh', 'deploy/dev/compose.yaml', 'e2e/site.sh') }}
+          lookup-only: true
+      - name: Free disk space (the stack and its tarballs are several GB)
+        if: steps.lookup.outputs.cache-hit != 'true'
+        run: sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android /opt/hostedtoolcache/CodeQL
+      - uses: ./.github/actions/helpdesk-fetch
+        if: steps.lookup.outputs.cache-hit != 'true'
+        with:
+          dest: ${{ github.workspace }}/../helpdesk
+          token: ${{ secrets.HELPDESK_READ_TOKEN }}
+      - name: Cold bootstrap from empty volumes
+        if: steps.lookup.outputs.cache-hit != 'true'
+        run: tools/ci_stack.sh up
+      - name: Create the fresh browser-test site and snapshot it (pristine, no setup wizard)
+        if: steps.lookup.outputs.cache-hit != 'true'
+        run: |
+          ./e2e/site.sh create
+          ./e2e/site.sh snapshot
+      - name: Stop the stack cleanly and save its volumes
+        if: steps.lookup.outputs.cache-hit != 'true'
+        run: |
+          tools/ci_stack.sh down
+          tools/ci_stack.sh volumes save "$RUNNER_TEMP/stack-volumes"
+          du -sh "$RUNNER_TEMP"/stack-volumes/* | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Save the cache
+        if: steps.lookup.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/stack-volumes
+          key: ${{ steps.lookup.outputs.cache-primary-key }}
+      - name: Logs on failure
+        if: failure()
+        run: tools/ci_stack.sh logs
+
+  # ------------------------------------------------------------------------------------------ stack jobs (parallel)
+  nxerp-tests:
+    name: nxerp-tests
+    needs: stack-cache
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/stack-up
+        with:
+          token: ${{ secrets.HELPDESK_READ_TOKEN }}
+      - name: nxerp unit and integration tests (every module except the two that have their own job)
+        run: |
+          failed=0
+          for file in nxerp/tests/test_*.py; do
+            module="nxerp.tests.$(basename "$file" .py)"
+            case "$module" in
+              nxerp.tests.test_access_matrix | nxerp.tests.test_erpnext_smoke) continue ;;
+            esac
+            echo "::group::$module"
+            tools/ci_stack.sh bench run-tests --app nxerp --module "$module" || failed=1
+            echo "::endgroup::"
           done
-          echo "timed out waiting for bootstrap"; docker compose -p nxerp-dev logs --tail 200 bench; exit 1
-      - name: Installed apps
-        run: docker compose -p nxerp-dev exec -T bench bash -lc 'cd frappe-bench && bench --site nxerp.localhost list-apps'
-      - name: Site answers
-        run: |
-          curl -fsS http://localhost:8100/api/method/ping
-          curl -fsS -o /dev/null -w 'login: %{http_code}\n' http://localhost:8100/login
-          curl -fsS -o /dev/null -w 'helpdesk: %{http_code}\n' http://localhost:8100/helpdesk
-      - name: Let tests create many throwaway users
-        # Frappe refuses more than `throttle_user_limit` (default 60) new users per hour; the access
-        # tests and Helpdesk's own suite create more. Stored as a number (-p), not a string.
-        run: docker compose -p nxerp-dev exec -T bench bash -lc 'cd frappe-bench && bench --site nxerp.localhost set-config -p throttle_user_limit 100000 && bench --site nxerp.localhost set-config allow_tests true'
-      - name: nxerp tests (access layer, persona x surface matrix, routing, unified login experience over HTTP, ERPNext smoke)
-        # NXERP_ADMIN_PASSWORD is passed through from the generated deploy/dev/.env (never echoed)
-        run: |
-          set -a; . deploy/dev/.env; set +a
-          docker compose -p nxerp-dev exec -T -e NXERP_ADMIN_PASSWORD -e NXERP_MATRIX_OUT=/workspace/docs/security/phase2-matrix.md bench             bash -lc 'cd frappe-bench && bench --site nxerp.localhost run-tests --app nxerp'
-      - name: Upload the persona x surface matrix
+          exit "$failed"
+      - name: Logs on failure
+        if: failure()
+        run: tools/ci_stack.sh logs
+
+  access-matrix:
+    name: access-matrix
+    needs: stack-cache
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/stack-up
+        with:
+          token: ${{ secrets.HELPDESK_READ_TOKEN }}
+      - name: Persona x surface matrix (writes the matrix document)
+        env:
+          NXERP_MATRIX_OUT: /workspace/docs/security/phase2-matrix.md
+        run: tools/ci_stack.sh bench run-tests --app nxerp --module nxerp.tests.test_access_matrix
+      - name: Does the regenerated matrix differ from the committed one? (information, not a gate)
         if: always()
-        uses: actions/upload-artifact@v4
+        run: git diff --stat -- docs/security/phase2-matrix.md | tee -a "$GITHUB_STEP_SUMMARY" || true
+      - name: Upload the matrix
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: access-matrix
           path: docs/security/phase2-matrix.md
           if-no-files-found: warn
-      - name: Helpdesk regression (its own suite, with the access layer active)
-        run: docker compose -p nxerp-dev exec -T bench bash -lc 'cd frappe-bench && bench --site nxerp.localhost run-tests --app helpdesk'
-      - name: Browser suite on a fresh site (login, router, launcher, special flows, accessibility, recovery)
-        # Creates its own fresh site (nxerp-e2e.localhost) so the first-run wizard is real, runs Chromium inside
-        # the bench container, and leaves the dev site alone. See e2e/run.sh.
-        run: |
-          ./e2e/site.sh create
-          ./e2e/site.sh snapshot
-          ./e2e/run.sh
-      - name: Upload screenshots (login, launcher, no-access; desktop and phone; light and dark)
-        if: always()
-        uses: actions/upload-artifact@v4
+      - name: Logs on failure
+        if: failure()
+        run: tools/ci_stack.sh logs
+
+  erpnext-smoke:
+    name: erpnext-smoke
+    needs: stack-cache
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          name: phase3-screenshots
+          persist-credentials: false
+      - uses: ./.github/actions/stack-up
+        with:
+          token: ${{ secrets.HELPDESK_READ_TOKEN }}
+      - name: ERPNext keeps working with the platform layer active
+        run: tools/ci_stack.sh bench run-tests --app nxerp --module nxerp.tests.test_erpnext_smoke
+      - name: Logs on failure
+        if: failure()
+        run: tools/ci_stack.sh logs
+
+  helpdesk-regression:
+    name: helpdesk-regression
+    needs: stack-cache
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/stack-up
+        with:
+          token: ${{ secrets.HELPDESK_READ_TOKEN }}
+      - name: Helpdesk's own suite, with the access layer active (569 tests passed locally on 2026-10-27)
+        run: tools/ci_stack.sh bench run-tests --app helpdesk
+      - name: Logs on failure
+        if: failure()
+        run: tools/ci_stack.sh logs
+
+  e2e:
+    name: e2e
+    needs: stack-cache
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        # one shard per file in e2e/*.test.mjs; `first-run` needs the pristine site and finishes the setup wizard
+        suite: [first-run, journeys, flows, case3, recovery, pages]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/stack-up
+        with:
+          token: ${{ secrets.HELPDESK_READ_TOKEN }}
+          with-e2e-site: "true"
+      - name: Make sure the fresh browser-test site exists (cache miss path)
+        run: |
+          if ! ./e2e/site.sh status >/dev/null 2>&1; then
+            ./e2e/site.sh create
+            ./e2e/site.sh snapshot
+          fi
+      - name: Playwright suite ${{ matrix.suite }} (real login form, fresh site, Chromium inside the bench container)
+        run: ./e2e/run.sh "${{ matrix.suite }}"
+      - name: Upload screenshots and evidence (docs/evidence/phase3)
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: e2e-evidence-${{ matrix.suite }}
           path: docs/evidence/phase3
           if-no-files-found: warn
       - name: Logs on failure
         if: failure()
-        run: docker compose -p nxerp-dev logs --tail 300 bench
+        run: tools/ci_stack.sh logs
+
+  # ------------------------------------------------------------------------------------------ install and upgrade proofs
+  fresh-install-migrate:
+    name: fresh-install-migrate
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Free disk space
+        run: sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android /opt/hostedtoolcache/CodeQL
+      - uses: ./.github/actions/stack-up
+        with:
+          token: ${{ secrets.HELPDESK_READ_TOKEN }}
+          use-cache: "false" # the point of this job: install from empty volumes
+      - name: Every app is installed, nxerp last
+        run: |
+          apps=$(tools/ci_stack.sh bench list-apps | awk 'NF {print $1}' | tr '\n' ' ')
+          echo "installed: $apps"
+          for app in frappe payments erpnext telephony helpdesk nxerp; do
+            case " $apps " in *" $app "*) ;; *) echo "::error::$app is not installed"; exit 1 ;; esac
+          done
+          last=$(tools/ci_stack.sh sh 'tail -n 1 sites/apps.txt')
+          [ "$last" = nxerp ] || { echo "::error::nxerp must be the last entry of apps.txt, got $last"; exit 1; }
+      - name: Migrate a second time on the fresh site (must be a no-op that succeeds)
+        run: tools/ci_stack.sh bench migrate
+      - name: Deploy scripts against this stack
+        env:
+          NXERP_COMPOSE_FILE: deploy/dev/compose.yaml
+          NXERP_COMPOSE_PROJECT: nxerp-dev
+          NXERP_ENV_FILES: deploy/versions.env deploy/dev/.env
+          NXERP_SERVICE: bench
+          NXERP_SITE: nxerp.localhost
+          NXERP_REQUIRE_SCHEDULER: "0" # a dev site has the scheduler disabled
+          NXERP_BACKUP_DIR: ${{ runner.temp }}/backups
+        run: |
+          set -a; . deploy/dev/.env; set +a
+          deploy/scripts/healthcheck.sh
+          backup_dir=$(deploy/scripts/backup.sh | tail -n 1)
+          NXERP_DB_ROOT_PASSWORD="$NXERP_DB_ROOT_PASSWORD" deploy/scripts/restore.sh --yes "$backup_dir"
+      - name: Logs on failure
+        if: failure()
+        run: tools/ci_stack.sh logs
+
+  upgrade-from-previous-tag:
+    name: upgrade-from-previous-tag
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          persist-credentials: false
+      - name: Find the previous release tag
+        id: prev
+        run: |
+          tag=$(tools/ci_upgrade_test.sh previous-tag)
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          if [ -z "$tag" ]; then
+            msg="SKIPPED: no previous release tag (vX.Y.Z) exists yet, so there is nothing to upgrade from. This is expected until the first release is tagged."
+            echo "::notice title=upgrade-from-previous-tag skipped::$msg"
+            echo "### upgrade-from-previous-tag: skipped" >> "$GITHUB_STEP_SUMMARY"
+            echo "$msg" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "previous release: $tag"
+          fi
+      - name: Free disk space
+        if: steps.prev.outputs.tag != ''
+        run: sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android /opt/hostedtoolcache/CodeQL
+      - name: Check out the previous release next to this one
+        if: steps.prev.outputs.tag != ''
+        env:
+          TAG: ${{ steps.prev.outputs.tag }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/prev"
+          git worktree add --detach "$RUNNER_TEMP/prev/nxerp-platform" "refs/tags/$TAG"
+          {
+            echo "### upgrade-from-previous-tag: $TAG -> $GITHUB_SHA"
+            echo "pins since $TAG: $(tools/ci_upgrade_test.sh pin-diff "$TAG")"
+            echo
+            echo "Only nxerp code and schema are upgraded. If the pins changed, Frappe/ERPNext/Helpdesk stay at the old tag's versions in this bench (rehearse those on the staging-like environment)."
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Helpdesk at the PREVIOUS release's pin
+        if: steps.prev.outputs.tag != ''
+        uses: ./.github/actions/helpdesk-fetch
+        with:
+          dest: ${{ runner.temp }}/prev/helpdesk
+          apps-json: ${{ runner.temp }}/prev/nxerp-platform/deploy/apps.json
+          token: ${{ secrets.HELPDESK_READ_TOKEN }}
+      - name: Install the previous release from empty volumes and put some data in it
+        if: steps.prev.outputs.tag != ''
+        env:
+          NXERP_ROOT: ${{ runner.temp }}/prev/nxerp-platform
+        run: |
+          set -euo pipefail
+          tools/ci_stack.sh up
+          # shellcheck disable=SC2016  # the single quotes are deliberate: the command expands inside the container
+          # fake users on example.test; the previous tag may not have the seeder, which is not a failure of the upgrade
+          tools/ci_stack.sh sh 'NXERP_SEED_PASSWORD=$(python3 -c "import secrets; print(secrets.token_urlsafe(16))") bench --site nxerp.localhost execute nxerp.tests.seed_users.seed >/dev/null' \
+            || echo "::warning::seed_users is not available in the previous tag; upgrading an empty site"
+          tools/ci_stack.sh bench list-apps | tee "$RUNNER_TEMP/apps-before.txt"
+          tools/ci_stack.sh down
+      - name: Reuse the previous stack's generated passwords (the old site was installed with them)
+        if: steps.prev.outputs.tag != ''
+        run: install -m 600 "$RUNNER_TEMP/prev/nxerp-platform/deploy/dev/.env" deploy/dev/.env
+      - name: This commit's stack on the SAME volumes (no cache and no re-bootstrap, the old bench is reused)
+        if: steps.prev.outputs.tag != ''
+        uses: ./.github/actions/stack-up
+        with:
+          token: ${{ secrets.HELPDESK_READ_TOKEN }}
+          use-cache: "false"
+      - name: Migrate the old site with this commit's code
+        if: steps.prev.outputs.tag != ''
+        run: |
+          tools/ci_stack.sh bench migrate
+          tools/ci_stack.sh bench list-apps | tee "$RUNNER_TEMP/apps-after.txt"
+          diff "$RUNNER_TEMP/apps-before.txt" "$RUNNER_TEMP/apps-after.txt" || echo "::notice::app versions changed during the upgrade (expected for nxerp)"
+      - name: Site is healthy and the platform tests that need no fixtures pass
+        if: steps.prev.outputs.tag != ''
+        env:
+          NXERP_COMPOSE_FILE: deploy/dev/compose.yaml
+          NXERP_COMPOSE_PROJECT: nxerp-dev
+          NXERP_ENV_FILES: deploy/versions.env deploy/dev/.env
+          NXERP_SERVICE: bench
+          NXERP_REQUIRE_SCHEDULER: "0"
+        run: |
+          deploy/scripts/healthcheck.sh
+          for module in nxerp.tests.test_scaffold nxerp.tests.test_registry nxerp.tests.test_access_resolver; do
+            tools/ci_stack.sh bench run-tests --app nxerp --module "$module"
+          done
+      - name: Logs on failure
+        if: failure() && steps.prev.outputs.tag != ''
+        run: tools/ci_stack.sh logs
+
+  # ------------------------------------------------------------------------------------------ supply chain
+  dependency-audit:
+    name: dependency-audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: tools/resolve_python_deps.py
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - uses: ./.github/actions/helpdesk-fetch
+        with:
+          dest: ${{ github.workspace }}/helpdesk-src
+          token: ${{ secrets.HELPDESK_READ_TOKEN }}
+      - name: Resolve the whole bench's Python dependency set (Frappe + every pinned app) without installing it
+        env:
+          GIT_READ_TOKEN: ${{ secrets.HELPDESK_READ_TOKEN }}
+        run: python3 -I tools/resolve_python_deps.py --out build/deps
+      - name: pip-audit
+        # Frappe does not lock its Python dependencies, so this set is what a fresh image build would install TODAY.
+        # The first local run (Frappe alone, 2026-10-28) found 59 advisories in 5 packages. Until the owner has triaged them
+        # (docs/governance/owner-action-list.md) the step reports but does not fail; set repository variable AUDIT_ENFORCE=true
+        # to make it blocking.
+        continue-on-error: ${{ vars.AUDIT_ENFORCE != 'true' }}
+        run: |
+          python -m pip install pip-audit==2.10.1
+          pip-audit --no-deps --disable-pip -r build/deps/requirements.txt --progress-spinner off | tee build/deps/pip-audit.txt
+      - name: npm audit (browser tests)
+        working-directory: e2e
+        run: |
+          npm install --package-lock-only --ignore-scripts
+          npm audit --audit-level=high
+      - name: yarn audit (Helpdesk SPA, runtime dependencies, high and critical)
+        working-directory: helpdesk-src/desk
+        continue-on-error: ${{ vars.AUDIT_ENFORCE != 'true' }}
+        run: yarn audit --groups dependencies --level high
+      - name: Upload the audit report
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: dependency-audit
+          path: |
+            build/deps/requirements.txt
+            build/deps/pip-audit.txt
+          if-no-files-found: warn
+
+  secret-scan:
+    name: secret-scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      # The gitleaks CLI image instead of gitleaks-action: the action needs a paid licence key for organisation repositories.
+      # v8.28.0 equals the pre-commit hook; the image was pulled and run against this repository on 2026-10-28.
+      - name: gitleaks (full history, redacted output)
+        run: |
+          docker run --rm -v "$PWD:/repo" -e GIT_CONFIG_COUNT=1 -e GIT_CONFIG_KEY_0=safe.directory -e GIT_CONFIG_VALUE_0=/repo \
+            ghcr.io/gitleaks/gitleaks:v8.28.0 detect --source /repo --config /repo/.gitleaks.toml --redact --no-banner -v
+
+  codeql:
+    name: codeql
+    # Code scanning on a PRIVATE repository needs GitHub Advanced Security. If the owner has not bought/enabled it, set the
+    # repository variable CODEQL_ENABLED=false (the job is then skipped on purpose and ci-gate accepts that, only for this job).
+    if: ${{ vars.CODEQL_ENABLED != 'false' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [python, javascript-typescript]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+      - uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          category: /language:${{ matrix.language }}
+
+  license-check:
+    name: license-check
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: tools/resolve_python_deps.py
+      - uses: ./.github/actions/helpdesk-fetch
+        with:
+          dest: ${{ github.workspace }}/helpdesk-src
+          token: ${{ secrets.HELPDESK_READ_TOKEN }}
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: yarn
+          cache-dependency-path: helpdesk-src/desk/yarn.lock
+      - name: Resolve the Python dependency set
+        env:
+          GIT_READ_TOKEN: ${{ secrets.HELPDESK_READ_TOKEN }}
+        run: python3 -I tools/resolve_python_deps.py --out build/deps
+      - name: Python licences (PyPI metadata) against .github/license-policy
+        run: python3 -I tools/check_licenses.py pypi build/deps/requirements.txt
+      - name: npm licences, browser tests
+        working-directory: e2e
+        run: |
+          npm install --ignore-scripts
+          npx --yes license-checker-rseidelsohn@5.0.1 --json > "$RUNNER_TEMP/e2e-licenses.json"
+          python3 -I ../tools/check_licenses.py npm "$RUNNER_TEMP/e2e-licenses.json"
+      - name: npm licences, Helpdesk SPA (runtime dependencies)
+        working-directory: helpdesk-src/desk
+        run: |
+          yarn install --frozen-lockfile --ignore-scripts
+          npx --yes license-checker-rseidelsohn@5.0.1 --production --json > "$RUNNER_TEMP/helpdesk-licenses.json"
+          python3 -I ../../tools/check_licenses.py npm "$RUNNER_TEMP/helpdesk-licenses.json"
+
+  docker-build:
+    name: docker-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Free disk space
+        run: sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android /opt/hostedtoolcache/CodeQL
+      - name: Pins from deploy/versions.env
+        id: pins
+        run: |
+          set -a; . deploy/versions.env; set +a
+          {
+            echo "bench_image=$BENCH_IMAGE"
+            echo "frappe_repo=$FRAPPE_REPO"
+            echo "frappe_ref=$FRAPPE_REF"
+            echo "frappe_commit=$FRAPPE_COMMIT"
+          } >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - name: Build the image (not pushed)
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: deploy/docker/Dockerfile
+          push: false
+          load: true
+          tags: nxerp:ci
+          build-args: |
+            BENCH_IMAGE=${{ steps.pins.outputs.bench_image }}
+            FRAPPE_REPO=${{ steps.pins.outputs.frappe_repo }}
+            FRAPPE_REF=${{ steps.pins.outputs.frappe_ref }}
+            FRAPPE_COMMIT=${{ steps.pins.outputs.frappe_commit }}
+            NXERP_VERSION=0.0.0-ci
+            NXERP_REVISION=${{ github.sha }}
+          secrets: |
+            git_token=${{ secrets.HELPDESK_READ_TOKEN }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: The image contains what the pins say
+        run: |
+          docker run --rm --entrypoint '' nxerp:ci bash -lc '
+            set -e
+            cd /home/frappe/frappe-bench
+            cat sites/apps.txt
+            test "$(tail -n 1 sites/apps.txt)" = nxerp
+            bench version
+            ls sites/assets | head -n 5'
+          docker image ls nxerp:ci --format 'image size: {{.Size}}' | tee -a "$GITHUB_STEP_SUMMARY"
+
+  # ------------------------------------------------------------------------------------------ the single required check
+  ci-gate:
+    name: ci-gate
+    if: ${{ always() }}
+    needs:
+      - lint
+      - pins-and-architecture
+      - frontend
+      - stack-cache
+      - nxerp-tests
+      - access-matrix
+      - e2e
+      - helpdesk-regression
+      - erpnext-smoke
+      - fresh-install-migrate
+      - upgrade-from-previous-tag
+      - dependency-audit
+      - secret-scan
+      - codeql
+      - license-check
+      - docker-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Every required job succeeded
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          python3 -I - <<'PY'
+          import json, os, sys
+          needs = json.loads(os.environ["NEEDS"])
+          # `skipped` is accepted only for codeql (repository variable CODEQL_ENABLED=false); anywhere else it hides a problem
+          bad = {
+              name: job["result"]
+              for name, job in needs.items()
+              if job["result"] != "success" and not (name == "codeql" and job["result"] == "skipped")
+          }
+          for name, job in sorted(needs.items()):
+              print(f"{job['result']:10} {name}")
+          if bad:
+              print(f"\nFAILED: {bad}")
+              sys.exit(1)
+          print("\nall required jobs passed")
+          PY

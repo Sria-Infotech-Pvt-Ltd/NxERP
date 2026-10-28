@@ -1,0 +1,33 @@
+# Licences accepted for THIRD-PARTY dependencies (Python and npm) of NXERP. One SPDX identifier per line.
+# Used by tools/check_licenses.py (CI job `license-check`). Anything not listed fails the job unless it has a reviewed
+# entry in exceptions.txt. Names that tools print differently (e.g. "MIT License", "Apache Software License") are
+# normalised by the script. This is an engineering policy, NOT legal advice: counsel must approve changes to it.
+#
+# WHY each group is allowed:
+# permissive: no obligation beyond keeping the notice; safe to ship inside a proprietary image
+MIT
+MIT-0
+BSD-2-Clause
+BSD-3-Clause
+0BSD
+ISC
+Apache-2.0
+Zlib
+Unlicense
+CC0-1.0
+BlueOak-1.0.0
+PSF-2.0
+Python-2.0
+HPND
+MIT-CMU
+ZPL-2.1
+CC-BY-4.0
+# weak copyleft: obligations attach only to modifications of the library itself. Allowed because we use these as
+# unmodified dependencies; patching or vendoring one needs a new review.
+MPL-2.0
+MPL-1.1
+LGPL-2.0
+LGPL-2.1
+LGPL-3.0
+# NOT allowed without an exception (strong copyleft or non-open): GPL-*, AGPL-*, SSPL-1.0, BUSL-1.1, CC-BY-NC-*, Commons Clause,
+# proprietary, and any package whose licence cannot be determined ("UNKNOWN").

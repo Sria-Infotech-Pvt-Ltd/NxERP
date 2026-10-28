@@ -1,0 +1,59 @@
+# Dependabot version updates. NOT ACTIVE until the repository owner enables Dependabot (Settings > Code security) and this
+# file is on the default branch; it has never run.
+#
+# Scope and its limits (deliberate):
+# - Frappe, ERPNext, Helpdesk, payments, telephony and the bench image are pinned by exact commit/digest in deploy/ and need
+#   an ADR-002 update, so Dependabot does NOT manage them: the scheduled workflow upstream-watch.yml reports new upstream
+#   releases instead. (deploy/docker/Dockerfile takes its base image from an ARG, which Dependabot cannot see.)
+# - Python: nxerp declares no runtime dependencies (Frappe's bench manages them), so the pip entry only watches the build tooling
+#   in pyproject.toml.
+# - Commit prefixes follow docs/governance/contribution-policy.md so commit-lint passes on Dependabot PRs.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directories:
+      - "/"
+      - "/.github/actions/helpdesk-fetch"
+      - "/.github/actions/stack-up"
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "ci(deps)"
+    labels: [dependencies, ci]
+    groups:
+      actions:
+        patterns: ["*"]
+
+  - package-ecosystem: npm
+    directory: "/e2e"
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "chore(deps)"
+    labels: [dependencies, e2e]
+    open-pull-requests-limit: 3
+
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "chore(deps)"
+    labels: [dependencies, python]
+    open-pull-requests-limit: 3
+
+  - package-ecosystem: docker
+    directory: "/deploy/docker"
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "chore(deps)"
+    labels: [dependencies, docker]
+    # base-image pins belong to ADR-002 (deploy/versions.env); never auto-bump a major
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]

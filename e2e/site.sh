@@ -8,7 +8,7 @@
 #   e2e/site.sh reset     # restore the pristine database: the first-run flow is repeatable
 #   e2e/site.sh status
 set -uo pipefail
-cd "$(dirname "$0")/../deploy/dev"
+cd "$(dirname "$0")/../deploy/dev" || exit 1
 set -a
 # shellcheck disable=SC1091
 . ./.env

@@ -1,23 +1,47 @@
-# PLACEHOLDER team names: the owner must create these GitHub teams (or replace them) and then
-# enable "Require review from Code Owners" in branch protection for main.
-# Until then this file has no enforcement effect.
+# FACT: the teams below are PLACEHOLDERS. As far as anyone has checked, none of them exists in the Sria-Infotech-Pvt-Ltd
+# organisation (the account used so far has no admin rights to list or create teams). A CODEOWNERS entry that names a missing team
+# is silently ignored by GitHub, so until the teams exist (or the names are replaced by real users/teams) this file enforces
+# NOTHING. Owner actions: docs/governance/owner-action-list.md.
 #
-# Last matching pattern wins.
+# Also note how GitHub reads it (documented GitHub behaviour, not verified here): with "Require review from Code Owners", ONE
+# approval from ANY of the owners listed on a matching line is enough; you cannot demand "security AND platform" on one line.
+# To need both, keep the sensitive paths owned by a team whose members are the people you want (nxerp-security below), and
+# require 2 approvals in branch protection.
+#
+# Last matching pattern wins. Roles: docs/governance/ownership.md.
 
 *                              @Sria-Infotech-Pvt-Ltd/nxerp-maintainers
 
-# Platform app: access, routing, launcher. Security-sensitive.
-/nxerp/                        @Sria-Infotech-Pvt-Ltd/nxerp-platform @Sria-Infotech-Pvt-Ltd/nxerp-security
+# Platform app: access, routing, launcher.
+/nxerp/                        @Sria-Infotech-Pvt-Ltd/nxerp-platform
 /nxerp/hooks.py                @Sria-Infotech-Pvt-Ltd/nxerp-platform @Sria-Infotech-Pvt-Ltd/nxerp-security
-/nxerp/patches.txt             @Sria-Infotech-Pvt-Ltd/nxerp-platform
+/nxerp/patches.txt             @Sria-Infotech-Pvt-Ltd/nxerp-platform @Sria-Infotech-Pvt-Ltd/nxerp-security
 
-# Deployment, versions and CI
-/deploy/                       @Sria-Infotech-Pvt-Ltd/nxerp-devops
-/.github/                      @Sria-Infotech-Pvt-Ltd/nxerp-devops
-/CODEOWNERS                    @Sria-Infotech-Pvt-Ltd/nxerp-maintainers
+# Security-sensitive platform code: server-side enforcement, access resolution, grant guard, post-login routing, login page, patches.
+/nxerp/enforcement.py          @Sria-Infotech-Pvt-Ltd/nxerp-security @Sria-Infotech-Pvt-Ltd/nxerp-platform
+/nxerp/access.py               @Sria-Infotech-Pvt-Ltd/nxerp-security @Sria-Infotech-Pvt-Ltd/nxerp-platform
+/nxerp/guard.py                @Sria-Infotech-Pvt-Ltd/nxerp-security @Sria-Infotech-Pvt-Ltd/nxerp-platform
+/nxerp/routing.py              @Sria-Infotech-Pvt-Ltd/nxerp-security @Sria-Infotech-Pvt-Ltd/nxerp-platform
+/nxerp/www/login.*             @Sria-Infotech-Pvt-Ltd/nxerp-security @Sria-Infotech-Pvt-Ltd/nxerp-platform
+/nxerp/www/nxerp/go.*          @Sria-Infotech-Pvt-Ltd/nxerp-security @Sria-Infotech-Pvt-Ltd/nxerp-platform
+/nxerp/api/                    @Sria-Infotech-Pvt-Ltd/nxerp-security @Sria-Infotech-Pvt-Ltd/nxerp-platform
+/nxerp/patches/                @Sria-Infotech-Pvt-Ltd/nxerp-security @Sria-Infotech-Pvt-Ltd/nxerp-platform
+
+# Deployment, versions, CI, release and governance. Security reviews these because they hold the supply chain and the secrets flow.
+/deploy/                       @Sria-Infotech-Pvt-Ltd/nxerp-devops @Sria-Infotech-Pvt-Ltd/nxerp-security
+/.github/                      @Sria-Infotech-Pvt-Ltd/nxerp-devops @Sria-Infotech-Pvt-Ltd/nxerp-security
+/.gitleaks.toml                @Sria-Infotech-Pvt-Ltd/nxerp-security
+/tools/                        @Sria-Infotech-Pvt-Ltd/nxerp-devops @Sria-Infotech-Pvt-Ltd/nxerp-platform
+/docs/governance/              @Sria-Infotech-Pvt-Ltd/nxerp-devops @Sria-Infotech-Pvt-Ltd/nxerp-security
+/docs/runbooks/                @Sria-Infotech-Pvt-Ltd/nxerp-devops @Sria-Infotech-Pvt-Ltd/nxerp-security
+/CODEOWNERS                    @Sria-Infotech-Pvt-Ltd/nxerp-maintainers @Sria-Infotech-Pvt-Ltd/nxerp-security
+
+# Browser end-to-end suite: it defines what "access works" means, so platform and security own it
+/e2e/                          @Sria-Infotech-Pvt-Ltd/nxerp-platform @Sria-Infotech-Pvt-Ltd/nxerp-security
 
 # Architecture and process docs
 /docs/adr/                     @Sria-Infotech-Pvt-Ltd/nxerp-architecture
 /docs/architecture/            @Sria-Infotech-Pvt-Ltd/nxerp-architecture
+/docs/security/                @Sria-Infotech-Pvt-Ltd/nxerp-security
 /CLAUDE.md                     @Sria-Infotech-Pvt-Ltd/nxerp-maintainers
 /CONTRIBUTING.md               @Sria-Infotech-Pvt-Ltd/nxerp-maintainers

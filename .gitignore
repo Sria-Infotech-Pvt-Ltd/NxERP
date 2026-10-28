@@ -36,3 +36,7 @@ nxerp/public/node_modules/
 !.vscode/extensions.json
 .DS_Store
 Thumbs.db
+
+# Local build outputs (SBOMs, backups)
+dist/
+backups/

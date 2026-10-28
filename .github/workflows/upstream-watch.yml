@@ -1,0 +1,62 @@
+name: upstream-watch
+
+# STATUS: this workflow has NEVER run on GitHub. The script it calls (tools/upstream_watch.py) WAS run locally on 2026-10-28 and
+# produced a real report (Frappe v16.54.0 newer than the v16.53.0 pin; five frappe/frappe advisories, all fixed at or below the pin).
+#
+# What it does: compares Frappe, ERPNext and Helpdesk's upstream base with deploy/versions.env, deploy/apps.json and ADR-002, reads
+# GitHub's published security advisories for the upstream repositories, and keeps ONE open issue (label `upstream-watch`) up to
+# date when something needs a look. It never changes a pin. Process: docs/runbooks/upstream-security-update.md.
+
+on:
+  schedule:
+    - cron: "23 5 * * *" # daily; ADR-002 asks for at least a weekly review
+  workflow_dispatch:
+    inputs:
+      days:
+        description: Advisory look-back window in days
+        default: "14"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: upstream-watch
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Compare pins with upstream and read advisories
+        id: report
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DAYS: ${{ inputs.days || '14' }}
+        run: |
+          python3 -I tools/upstream_watch.py --days "$DAYS" > report.md 2> status.txt || { cat status.txt; exit 1; }
+          changes=$(sed -n 's/^CHANGES=//p' status.txt)
+          echo "changes=${changes:-0}" >> "$GITHUB_OUTPUT"
+          cat report.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Open or update the upstream-watch issue
+        if: steps.report.outputs.changes != '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          gh label create upstream-watch --color BFD4F2 --description "Upstream release or security advisory to review" 2>/dev/null || true
+          title="Upstream watch: pins differ from upstream or advisories need review"
+          existing=$(gh issue list --label upstream-watch --state open --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh issue edit "$existing" --body-file report.md
+            gh issue comment "$existing" --body "Report refreshed by workflow run ${GITHUB_RUN_ID}."
+          else
+            gh issue create --title "$title" --label upstream-watch --body-file report.md
+          fi

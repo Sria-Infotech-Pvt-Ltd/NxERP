@@ -1,0 +1,192 @@
+name: Release
+
+# STATUS: NEVER run on GitHub. No tag exists, no registry package exists, and no one has write access to test it. Pieces that
+# WERE run locally: tools/changelog.py (against this repository's history), deploy/docker/Dockerfile's `buildx build --check`.
+# The image build itself, the registry push, the SBOM and the GitHub release creation have NOT been executed.
+#
+# Trigger: push a tag vX.Y.Z (release) or vX.Y.Z-rc.N (release candidate -> GitHub pre-release, which deploy-staging.yml follows).
+# Flow: verify (tag matches nxerp.__version__, commit is on main, ci-gate was green) -> build + push image to GHCR with provenance
+# and SBOM -> GitHub release with notes generated from Conventional Commits.
+# Registry is a PLACEHOLDER: ghcr.io/sria-infotech-pvt-ltd/nxerp unless repository variable NXERP_IMAGE says otherwise.
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+-rc.[0-9]+"
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      checks: read
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      prerelease: ${{ steps.v.outputs.prerelease }}
+      sha12: ${{ steps.v.outputs.sha12 }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Tag, version and branch
+        id: v
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          version="${TAG#v}"
+          base="${version%%-*}"
+          code=$(python3 -I -c 'import re; print(re.search(r"__version__ = \"([^\"]+)\"", open("nxerp/__init__.py").read()).group(1))')
+          if [ "$base" != "$code" ]; then
+            echo "::error::tag $TAG does not match nxerp/__init__.py __version__ $code (bump it in a PR first)"; exit 1
+          fi
+          # fetch-depth: 0 above already brought origin/main (credentials are not persisted, so no second fetch)
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::the tagged commit is not on main: release only from main"; exit 1
+          fi
+          prerelease=false; case "$version" in *-rc.*) prerelease=true ;; esac
+          {
+            echo "version=$version"
+            echo "prerelease=$prerelease"
+            echo "sha12=${GITHUB_SHA:0:12}"
+          } >> "$GITHUB_OUTPUT"
+      - name: The commit passed ci-gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          state=$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/check-runs?per_page=100" \
+            --jq '[.check_runs[] | select(.name == "ci-gate")] | sort_by(.completed_at) | last | .conclusion // "none"')
+          echo "ci-gate on $GITHUB_SHA: $state"
+          [ "$state" = success ] || { echo "::error::ci-gate has not succeeded on this commit ($state): do not release it"; exit 1; }
+
+  build:
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+    outputs:
+      image: ${{ steps.meta.outputs.image }}
+      digest: ${{ steps.push.outputs.digest }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Free disk space
+        run: sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android /opt/hostedtoolcache/CodeQL
+      - name: Image name, tags and pins
+        id: meta
+        env:
+          VERSION: ${{ needs.verify.outputs.version }}
+          SHA12: ${{ needs.verify.outputs.sha12 }}
+          IMAGE_VAR: ${{ vars.NXERP_IMAGE }}
+        run: |
+          set -euo pipefail
+          image="${IMAGE_VAR:-ghcr.io/sria-infotech-pvt-ltd/nxerp}"
+          set -a; . deploy/versions.env; set +a
+          {
+            echo "image=$image"
+            echo "tags=$image:$VERSION-$SHA12,$image:$VERSION"
+            echo "bench_image=$BENCH_IMAGE"
+            echo "frappe_repo=$FRAPPE_REPO"
+            echo "frappe_ref=$FRAPPE_REF"
+            echo "frappe_commit=$FRAPPE_COMMIT"
+          } >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push (provenance and SBOM attached by buildx)
+        id: push
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: deploy/docker/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          provenance: mode=max
+          sbom: true
+          build-args: |
+            BENCH_IMAGE=${{ steps.meta.outputs.bench_image }}
+            FRAPPE_REPO=${{ steps.meta.outputs.frappe_repo }}
+            FRAPPE_REF=${{ steps.meta.outputs.frappe_ref }}
+            FRAPPE_COMMIT=${{ steps.meta.outputs.frappe_commit }}
+            NXERP_VERSION=${{ needs.verify.outputs.version }}
+            NXERP_REVISION=${{ needs.verify.outputs.sha12 }}
+          secrets: |
+            git_token=${{ secrets.HELPDESK_READ_TOKEN }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: SBOM file for the release (SPDX)
+        uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
+        with:
+          image: ${{ steps.meta.outputs.image }}@${{ steps.push.outputs.digest }}
+          format: spdx-json
+          output-file: sbom-${{ needs.verify.outputs.version }}.spdx.json
+          upload-artifact: true
+          artifact-name: sbom
+      - name: Image digest in the summary
+        env:
+          IMAGE: ${{ steps.meta.outputs.image }}
+          DIGEST: ${{ steps.push.outputs.digest }}
+          TAGS: ${{ steps.meta.outputs.tags }}
+        run: |
+          {
+            echo "### Image"
+            echo "- digest: \`$IMAGE@$DIGEST\`"
+            echo "- tags: \`$TAGS\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  release:
+    needs: [verify, build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Release notes from Conventional Commits since the previous stable tag
+        env:
+          VERSION: ${{ needs.verify.outputs.version }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          python3 -I tools/changelog.py --version "$VERSION" --to "$TAG" > release-notes.md
+          {
+            echo
+            echo "## Image"
+            echo
+            echo "\`${{ needs.build.outputs.image }}@${{ needs.build.outputs.digest }}\` (tags \`$VERSION\`, \`$VERSION-${{ needs.verify.outputs.sha12 }}\`)"
+          } >> release-notes.md
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: sbom
+          path: sbom
+      - name: Publish the GitHub release (pre-release for -rc tags)
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: NXERP ${{ needs.verify.outputs.version }}
+          body_path: release-notes.md
+          prerelease: ${{ needs.verify.outputs.prerelease == 'true' }}
+          files: sbom/*.spdx.json
+          fail_on_unmatched_files: true
