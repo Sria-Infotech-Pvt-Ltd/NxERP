@@ -24,13 +24,15 @@ repos:
     hooks:
       - id: ruff
         name: "Run ruff import sorter"
-        args: ["--select=I", "--fix"]
+        args: ["--select=I", "--fix", "--config", "apps/nxerp_platform/pyproject.toml", "--config", 'src=["apps/nxerp_platform"]']
 
       - id: ruff
         name: "Run ruff linter"
+        args: ["--config", "apps/nxerp_platform/pyproject.toml", "--config", 'src=["apps/nxerp_platform"]']
 
       - id: ruff-format
         name: "Run ruff formatter"
+        args: ["--config", "apps/nxerp_platform/pyproject.toml", "--config", 'src=["apps/nxerp_platform"]']
 
   - repo: https://github.com/gitleaks/gitleaks
     rev: v8.28.0

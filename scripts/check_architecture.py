@@ -130,7 +130,7 @@ def check_required_apps(root: Path, forbidden: set) -> list:
 	errors = []
 	hooks = platform_root(root) / "nxerp" / "hooks.py"
 	if not hooks.is_file():
-		return ["R2 apps/nxerp_platform/nxerp/hooks.py is missing"]
+		return ["R2 nxerp/hooks.py is missing"]
 	for node in ast.walk(parse(hooks)):
 		if isinstance(node, ast.Assign):
 			targets, value = node.targets, node.value
@@ -147,7 +147,7 @@ def check_required_apps(root: Path, forbidden: set) -> list:
 		except ValueError:
 			literal = None
 		if literal not in ([], ()):
-			errors.append(f"R2 apps/nxerp_platform/nxerp/hooks.py:{node.lineno}: required_apps must be an empty list (ADR-005)")
+			errors.append(f"R2 nxerp/hooks.py:{node.lineno}: required_apps must be an empty list (ADR-005)")
 
 	pyproject = platform_root(root) / "pyproject.toml"
 	if pyproject.is_file():

@@ -63,8 +63,8 @@ jobs:
         run: pre-commit run --all-files --show-diff-on-failure
       - name: ruff lint and format
         run: |
-          ruff check .
-          ruff format --check .
+          ruff check . --config apps/nxerp_platform/pyproject.toml --config src=["apps/nxerp_platform"] --config extend-exclude=["docs"]
+          ruff format --check . --config apps/nxerp_platform/pyproject.toml --config src=["apps/nxerp_platform"] --config extend-exclude=["docs"]
       - name: bandit (platform app, then its tests with the test-only rules relaxed)
         run: |
           bandit -r apps/nxerp_platform/nxerp -x apps/nxerp_platform/nxerp/tests -q
