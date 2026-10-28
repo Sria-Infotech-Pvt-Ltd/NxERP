@@ -20,11 +20,24 @@ class TestScaffold(IntegrationTestCase):
 		for tile in frappe.get_hooks("add_to_apps_screen"):
 			self.assertNotEqual(tile.get("name"), "nxerp")
 
-	def test_no_session_or_request_hooks_registered(self):
-		# Behaviour hooks must be added deliberately in Phase 2, with their own tests.
+	def test_only_the_access_layer_hooks_are_registered(self):
+		"""Phase 2 registers the access layer and nothing else. Login override, post-login redirect and
+		website routes are Phase 3 and must be added deliberately, with their own tests."""
 		hooks = frappe.get_hooks(app_name="nxerp")
-		for hook in ("before_request", "after_request", "on_session_creation", "website_route_rules"):
-			self.assertFalse(hooks.get(hook), f"{hook} is not expected in the Phase 1 scaffold")
+		self.assertEqual(hooks.get("auth_hooks"), ["nxerp.enforcement.auth_hook"])
+		self.assertEqual(hooks.get("after_request"), ["nxerp.enforcement.after_request"])
+		self.assertEqual(hooks.get("has_permission"), {"*": ["nxerp.enforcement.has_permission"]})
+		self.assertEqual(
+			hooks.get("permission_query_conditions"), {"*": ["nxerp.enforcement.permission_query_conditions"]}
+		)
+		for hook in (
+			"before_request",
+			"on_session_creation",
+			"on_login",
+			"website_route_rules",
+			"website_redirects",
+		):
+			self.assertFalse(hooks.get(hook), f"{hook} is not expected before Phase 3")
 
 	def test_desk_palette_is_registered_and_shipped(self):
 		css = "/assets/nxerp/css/nxerp-desk-theme.css"

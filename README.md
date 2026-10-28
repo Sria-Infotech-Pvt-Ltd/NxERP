@@ -12,7 +12,7 @@ NXERP is Sria Infotech's enterprise platform on the [Frappe Framework](https://g
 
 Future apps (HRMS, Project Management, Budget Management, ...) are **not installed** and are not shown anywhere.
 
-> **Status: Phase 1 (foundation).** The `nxerp` app is scaffolding only. It registers no behaviour yet. See [docs/PROGRESS.md](docs/PROGRESS.md).
+> **Status: Phase 2 (access layer).** The `nxerp` app holds the app registry, the access resolver and the server-side enforcement; the login, launcher and routing UI are Phase 3. See [docs/PROGRESS.md](docs/PROGRESS.md), [docs/architecture/access-admin.md](docs/architecture/access-admin.md) and [docs/security/phase2-review.md](docs/security/phase2-review.md).
 
 ## One workspace, two repositories
 

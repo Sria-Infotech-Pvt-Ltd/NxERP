@@ -151,3 +151,17 @@ Realtime room checks, `before_request` vs token ordering, private-file/print che
 - **nxerp-stable port:** base `07f84a2c8` (Helpdesk 1.30.2, frappe-ui beta.24, Vite 4.5, Frappe v15.122.0). Palette commits cherry-picked; conflicts resolved by taking the palette side turned out to import non-palette behaviour from the newer line, found by reading the full diff and removed: the newer `toast()` API, the rc.1 radius scale, `dashboard.py`'s chart-config format (would have broken the dashboard), Black reformatting in `login.py`, an unused call-log table. The result is 82 files, palette-only. Verified in a sandbox mirroring the real layout (Frappe 15.122.0 `ui` as sibling): `theme:check` (406 frappe-ui tokens, 99 contrast checks), `theme:audit`, `check-tracked`, and a full `vite build` (built in ~38 s; the 6.3 MB CSS is inherent: the unmodified branch builds to 6.27 MB). Python: `py_compile` on all 11 changed files. **Not run:** the Frappe 15 backend and its tests, the SPA in a browser on that line, Playwright.
 - **Found along the way:** `nxerp-stable`'s `yarn.lock` is already out of date with `desk/package.json` (`yarn install --frozen-lockfile` fails on the unmodified branch), so the new CI job there installs without `--frozen-lockfile`.
 - **Push:** `07f84a2c8..8bb287a86` to `Sriainfotech/Frappe-Help-Desk` `nxerp-stable` (fast-forward, no force), verified with `git ls-remote`. The branch's `Build NXERP Helpdesk Image` workflow runs on push and publishes `ghcr.io/<repo>:nxerp-stable`. **That workflow ran for the push (run 40440655803, commit 8bb287a86) and succeeded** (`gh run view`: conclusion success, job Build success): the first build of the palette on the real Frappe 15.122 image path. The two builds before the last green one on this branch had failed (earlier, unrelated commits).
+
+## 10. Phase 2 verification (2026-10-27)
+
+- `bench --site nxerp.localhost run-tests --app nxerp` on the rebuilt Frappe 16.53 dev site: **115 tests, OK**
+  (matrix 7, resolver 18, customer leaks 19, enforcement 39, ERPNext smoke 4, guard/admin 14, registry 9, scaffold 5).
+- Helpdesk's own backend suite with the access layer active: **566 tests, 0 failures** (371 + 156 + 39 in three batches). The 7
+  `Throttled` errors from section 4 are explained: Frappe's `throttle_user_limit` (default 60 new users per hour); storing it
+  as the string `"100000"` instead of a number first produced 252 `TypeError`s (`bench set-config -p` stores a number).
+- ERPNext smoke: an authorised user loads `/desk`, creates and reads a Customer and an Item over HTTP; the same business
+  roles without the grant are refused on the same session and allowed the moment the grant is added.
+- Static: bandit 1.9.4 (0 high, 0 medium, 1 low accepted), ruff check and format clean, architecture check, pin check.
+- Test-environment notes: the bench container's `NXERP_ADMIN_PASSWORD` can be stale relative to `deploy/dev/.env`; pass it
+  explicitly with `docker compose exec -e`. Tests create and delete committed fake users and records on the dev database.
+- Not run: the GitHub Actions workflow (no write access to the repository), so no CI result exists.

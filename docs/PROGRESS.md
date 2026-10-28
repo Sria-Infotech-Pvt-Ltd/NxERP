@@ -7,7 +7,28 @@ Resume point for the next session. Update this file in every PR that changes pha
 | Phase | Status |
 | --- | --- |
 | 1: Audit, research, ADRs, foundation | **Complete locally; not yet pushed** (see "Publishing") |
-| 2: Login, launcher, access, routing | Not started |
+| 2: Platform access layer and server-side enforcement | **Complete locally; not pushed, no PR** (see "Phase 2") |
+| 3: Login, launcher, routing UI | Not started |
+
+## Phase 2 (2026-10-27): access layer
+
+Branch `phase-2/access-layer` (off `phase-1/foundation`) in `nxerp-platform`. Nothing upstream was modified.
+
+- `nxerp/registry.py` (ERPNext, Helpdesk), `nxerp/access.py` (`get_user_apps`, `can_access_app`, `can_use_portal`, `resolve_landing`),
+  `nxerp/enforcement.py` (auth hook gate, document and list hooks, response sanitiser), `nxerp/guard.py` (grant and lockout
+  guard), `nxerp/api/access.py` (grant API), `nxerp/audit.py` (denial log), `nxerp/www/nxerp/no-access.*`.
+- Tests: **115 passing** (`bench --site nxerp.localhost run-tests --app nxerp`); Helpdesk's own suite **566 passing, 0 failing**
+  with the layer active; bandit and ruff clean.
+- Docs: `docs/adr/ADR-003-amendment-1.md`, `docs/architecture/adding-an-app.md`, `docs/architecture/access-admin.md`,
+  `docs/security/{shared-set,phase2-coverage,phase2-review,phase2-matrix}.md`.
+- Bugs found by the tests and fixed: disabled accounts kept working on shared endpoints; customers received the assigned
+  agent's email from Helpdesk's own ticket list; the last-administrator guard was blind on delete; DocType metadata leaked to
+  every login.
+- **Needs a decision (open):** with the layer on, existing users need the access roles (Helpdesk staff already have them
+  through `Agent`/`Agent Manager`; ERPNext users need `NXERP Access: ERPNext`). Plan the grant migration before enabling it on a
+  real site. Helpdesk's optional ERPNext integration no longer lets Helpdesk-only agents read ERPNext Customers (intended).
+- **Phase 3 prerequisites:** launcher at `/nxerp/apps` and post-login router at `/nxerp/go` (ADR-004) using `resolve_landing`;
+  login moved from the Helpdesk fork into `nxerp`; branding; setup-wizard-aware Administrator landing.
 
 ## Where the code lives (updated 2026-10-27)
 

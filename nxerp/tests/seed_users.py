@@ -15,14 +15,15 @@ import frappe
 
 SEED_DOMAIN = "example.test"
 
-# role names are Frappe/ERPNext/Helpdesk standard roles; app presence is checked at runtime
+# role names are Frappe/ERPNext/Helpdesk standard roles plus the NXERP access roles (nxerp.registry);
+# app presence is checked at runtime. "Agent" and "Agent Manager" already confer Helpdesk access.
 SEED_USERS = {
 	"admin": {"first_name": "Seed Admin", "roles": ["System Manager"], "user_type": "System User"},
 	"agent": {"first_name": "Seed Agent", "roles": ["Agent"], "user_type": "System User"},
 	"manager": {"first_name": "Seed Manager", "roles": ["Agent Manager"], "user_type": "System User"},
 	"erpuser": {
 		"first_name": "Seed ERP User",
-		"roles": ["Sales User", "Accounts User"],
+		"roles": ["Sales User", "Accounts User", "NXERP Access: ERPNext"],
 		"user_type": "System User",
 	},
 	"customer": {"first_name": "Seed Customer", "roles": ["HD Customer"], "user_type": "Website User"},
