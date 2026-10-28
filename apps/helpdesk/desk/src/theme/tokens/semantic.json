@@ -1,0 +1,162 @@
+{
+  "$comment": "Tier 2/3. frappe-ui's own surface/ink/outline mapping is inherited; only the primitives (gray, accent) are replaced. Values are ramp shades, 'white' means neutral/white, 'ink' means charcoal.",
+  "accent": {
+    "surface": {
+      "light": {
+        "1": "50",
+        "2": "100",
+        "3": "200",
+        "4": "300",
+        "5": "400",
+        "6": "400",
+        "7": "500",
+        "8": "600",
+        "9": "700",
+        "10": "800"
+      },
+      "dark": {
+        "1": "950",
+        "2": "900",
+        "3": "800",
+        "4": "700",
+        "5": "500",
+        "6": "400",
+        "7": "300",
+        "8": "200",
+        "9": "100",
+        "10": "50"
+      }
+    },
+    "ink": {
+      "light": {
+        "1": "white",
+        "2": "100",
+        "3": "300",
+        "4": "700",
+        "5": "800",
+        "6": "900",
+        "7": "950",
+        "8": "950",
+        "9": "950",
+        "10": "950",
+        "link": "800",
+        "on": "ink"
+      },
+      "dark": {
+        "1": "white",
+        "2": "900",
+        "3": "800",
+        "4": "600",
+        "5": "400",
+        "6": "300",
+        "7": "200",
+        "8": "100",
+        "9": "50",
+        "10": "50",
+        "link": "400",
+        "on": "ink"
+      }
+    },
+    "outline": {
+      "light": {
+        "1": "100",
+        "2": "200",
+        "3": "300",
+        "4": "400",
+        "5": "500",
+        "6": "600",
+        "7": "700",
+        "8": "800",
+        "9": "900",
+        "10": "950"
+      },
+      "dark": {
+        "1": "900",
+        "2": "800",
+        "3": "700",
+        "4": "600",
+        "5": "500",
+        "6": "400",
+        "7": "300",
+        "8": "200",
+        "9": "100",
+        "10": "50"
+      }
+    }
+  },
+  "focus": {
+    "light": {
+      "name": "default",
+      "shade": "700",
+      "width": "2px"
+    },
+    "dark": {
+      "name": "default",
+      "shade": "500",
+      "width": "3px"
+    }
+  },
+  "chart": {
+    "series": {
+      "light": [
+        "accent/400",
+        "gray/500",
+        "gray/950",
+        "accent/600",
+        "gray/400",
+        "accent/700",
+        "gray/700",
+        "gray/300",
+        "accent/500",
+        "gray/800"
+      ],
+      "dark": [
+        "accent/400",
+        "gray/400",
+        "gray/50",
+        "accent/600",
+        "gray/300",
+        "accent/300",
+        "gray/200",
+        "gray/500",
+        "accent/500",
+        "gray/100"
+      ]
+    },
+    "ui": {
+      "axisLine": "outline-gray-2",
+      "axisLabel": "ink-gray-5",
+      "valueLabel": "ink-gray-5",
+      "emptyBar": "surface-gray-3",
+      "placeholderBar": "surface-gray-2",
+      "tooltipMuted": "ink-gray-5",
+      "tooltipStrong": "ink-gray-9",
+      "seriesBase": "surface-accent-6"
+    }
+  },
+  "email": {
+    "bodyBg": "surface-base",
+    "bodyText": "ink-gray-9",
+    "muted": "ink-gray-5",
+    "border": "outline-gray-2",
+    "quoteBar": "outline-gray-3",
+    "link": "ink-accent-link",
+    "collapseBg": "surface-gray-2",
+    "collapseHover": "surface-gray-3",
+    "collapseText": "ink-gray-7",
+    "panelBg": { "light": "palette/paper", "dark": "surface-gray-2" },
+    "panelBorder": "outline-gray-2"
+  },
+  "blueAlias": {
+    "$comment": "The blue family is the app's primary accent (links, info, solid buttons), so it follows the accent family. Light solid fills sit on bronze steps because their text is the light ink-base.",
+    "solidLight": {
+      "6": "700",
+      "7": "800",
+      "8": "900"
+    }
+  },
+  "elevation": {
+    "$comment": "Raised surfaces (cards, popovers, the active nav pill) are lighter than the tinted page.",
+    "light": "paper"
+  }
+}

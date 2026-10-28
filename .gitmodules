@@ -1,0 +1,3 @@
+[submodule "apps/helpdesk/frappe-ui"]
+	path = apps/helpdesk/frappe-ui
+	url = https://github.com/frappe/frappe-ui.git

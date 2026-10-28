@@ -1,0 +1,6 @@
+{
+  "version": "1.0.0-rc.1",
+  "ownedFamilies": ["gray", "accent"],
+  "inheritedFamilies": ["blue", "green", "red", "orange", "amber", "yellow", "teal", "cyan", "purple", "pink", "violet", "gray-alpha"],
+  "semanticCategories": ["surface", "surface-alpha", "ink", "outline", "outline-alpha"]
+}

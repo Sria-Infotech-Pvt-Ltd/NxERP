@@ -1,0 +1,4 @@
+# Generated palette outputs are compared byte for byte by `yarn theme:check`; keep them LF on every checkout (Windows autocrlf would make them look stale).
+desk/src/theme/generated/* text eol=lf
+helpdesk/public/nxerp_login/css/nxerp-theme.css text eol=lf
+helpdesk/theme_tokens.py text eol=lf
