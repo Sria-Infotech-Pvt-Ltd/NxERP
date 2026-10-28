@@ -80,7 +80,7 @@ only when the server set `boot.nxerp.launcher`, i.e. to multi-app users).
 
 ## Switch-app links
 
-Helpdesk's Apps menu (`desk/src/composables/useApps.ts`, Helpdesk fork) and Desk's user menu list the user's
+Helpdesk's Apps menu (`hd-frontend/src/composables/useApps.ts`, Helpdesk fork) and Desk's user menu list the user's
 other apps plus "All applications" (`/nxerp/apps`) **only when the user holds more than one app**. A single-app
 user sees no app switcher at all. This is display only; the gate is the control.
 

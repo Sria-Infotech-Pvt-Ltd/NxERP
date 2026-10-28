@@ -32,18 +32,18 @@ Frappe Helpdesk is an open-source ticket management tool built on the [Frappe Fr
   - API endpoints: `helpdesk/api/`
   - Business logic: `helpdesk/utils.py`, `helpdesk/search.py`, etc.
   - Extensibility: `helpdesk/extends/`, `helpdesk/overrides/`
-- **Frontend (Vue.js):** Located in `desk/`.
-  - Main entry: `desk/src/main.js`, `desk/src/App.vue`
-  - Components: `desk/src/components/`
-  - State: `desk/src/stores/`
-  - Routing: `desk/src/router/`
-  - Styles: Tailwind via `desk/index.css`, config in `desk/tailwind.config.js`
+- **Frontend (Vue.js):** Located in `hd-frontend/`.
+  - Main entry: `hd-frontend/src/main.js`, `hd-frontend/src/App.vue`
+  - Components: `hd-frontend/src/components/`
+  - State: `hd-frontend/src/stores/`
+  - Routing: `hd-frontend/src/router/`
+  - Styles: Tailwind via `hd-frontend/index.css`, config in `hd-frontend/tailwind.config.js`
 
 # Frontend: Vue 3 Development Standards
 
 ## Frontend Project Context
 
-- `desk/src/` contains the main Vue 3 frontend source code
+- `hd-frontend/src/` contains the main Vue 3 frontend source code
 - Vue 3.x with Composition API as default approach
 - TypeScript for type safety and better development experience
 - Single File Components (`.vue`) with `<script setup lang="ts">` syntax preferred
@@ -84,7 +84,7 @@ Frappe Helpdesk is an open-source ticket management tool built on the [Frappe Fr
   - Font sizes: `text-xs`, `text-sm`, `text-base`, `text-lg`, `text-xl`, `text-2xl`, `text-3xl`
   - Multiline text: `text-p-xs`, `text-p-sm`, `text-p-base`, `text-p-lg`, `text-p-xl`, `text-p-2xl`
 - Use gray shades for neutral UI. Use the `accent` family for brand emphasis (`bg-surface-accent-6 text-ink-accent-on`, `text-ink-accent-link`). Blue is a category color, not "primary"
-- Never hardcode a color (hex, `rgb()`, or a raw palette class such as `bg-gray-900`). Colors come from `desk/src/theme` (see its README); `yarn theme:audit` enforces it
+- Never hardcode a color (hex, `rgb()`, or a raw palette class such as `bg-gray-900`). Colors come from `hd-frontend/src/theme` (see its README); `yarn theme:audit` enforces it
 - Implement mobile-first, responsive design with CSS Grid and Flexbox
 - Ensure styles are accessible (contrast, focus states)
 
@@ -163,7 +163,7 @@ apiCall.submit({ ticket_id: "<id>", agent_id: "<agent>" });
   icons (`<LucideInfo />`, `<LucidePlus />`, …) — no exceptions, including small
   helper icons like tooltip/info glyphs.
 - Use Lucide icons for all new components. They are globally auto-registered
-  (see `desk/components.d.ts`), so no import is needed when used as a template tag:
+  (see `hd-frontend/components.d.ts`), so no import is needed when used as a template tag:
   ```vue
   <template>
     <LucidePlus class="size-4" />
@@ -211,7 +211,7 @@ apiCall.submit({ ticket_id: "<id>", agent_id: "<agent>" });
 
 - Backend runs via `bench start` from frappe-bench directory
 - Python web server: Assume server is already started on port 8000
-- Frontend dev server: `cd desk && yarn dev` (typically runs on port 8080)
+- Frontend dev server: `cd hd-frontend && yarn dev` (typically runs on port 8080)
 - Site-specific commands: `bench --site helpdesk.test <command>`
 
 **Data Query Patterns**:
@@ -280,7 +280,7 @@ Take inspiration from "helpdesk.doctype.hd_team.hd_team.HDTeam" for examples of 
 ## Conventions & Patterns
 
 - **API Design:** Python modules in `helpdesk/api/` follow RESTful patterns. Extend via `helpdesk/extends/`.
-- **Frontend:** Vue 3 + Vite with TypeScript. Use Pinia for state management. Components auto-imported via `desk/components.d.ts`.
+- **Frontend:** Vue 3 + Vite with TypeScript. Use Pinia for state management. Components auto-imported via `hd-frontend/components.d.ts`.
 - **Testing:** Follow Frappe's conventions for backend tests.
 - **Localization:** Add translations in `helpdesk/locale/`.
 - **Custom Logic:** Use `helpdesk/overrides/` for customizations.
@@ -318,11 +318,11 @@ Take inspiration from "helpdesk.doctype.hd_team.hd_team.HDTeam" for examples of 
 
 ### Adding a Frontend Component
 
-1. Create Vue component in `desk/src/components/` or `desk/src/pages/`
+1. Create Vue component in `hd-frontend/src/components/` or `hd-frontend/src/pages/`
 2. Use `<script setup lang="ts">` syntax
 3. Follow Tailwind semantic class conventions
 4. Use frappe-ui composables for data fetching
-5. Add route in `desk/src/router/` if it's a page component
+5. Add route in `hd-frontend/src/router/` if it's a page component
 
 ### Styling Example
 
@@ -358,13 +358,13 @@ const ticket = createDocumentResource({
 
 ### Frontend
 
-- `desk/src/` — Main Vue 3 frontend source code
-- `desk/src/components/` — Reusable Vue components
-- `desk/src/pages/` — Page-level components and routes
-- `desk/src/stores/` — Pinia stores for state management
-- `desk/tailwind.config.js` — Tailwind CSS configuration with semantic tokens
-- `desk/src/theme/` — Color system: token source, generator, validators, runtime. Run `yarn theme:build` after changing a token
-- `desk/components.d.ts` — Auto-generated component type definitions
+- `hd-frontend/src/` — Main Vue 3 frontend source code
+- `hd-frontend/src/components/` — Reusable Vue components
+- `hd-frontend/src/pages/` — Page-level components and routes
+- `hd-frontend/src/stores/` — Pinia stores for state management
+- `hd-frontend/tailwind.config.js` — Tailwind CSS configuration with semantic tokens
+- `hd-frontend/src/theme/` — Color system: token source, generator, validators, runtime. Run `yarn theme:build` after changing a token
+- `hd-frontend/components.d.ts` — Auto-generated component type definitions
 
 ### Development
 

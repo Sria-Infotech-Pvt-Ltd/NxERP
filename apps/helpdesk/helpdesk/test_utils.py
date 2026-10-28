@@ -763,9 +763,9 @@ def make_team(team_name, members=[], disabled=False):
 
 
 def upload_test_file(file_name: str) -> str:
-    """Upload an image from desk/src/assets/images/ as a standalone private File, returning its name."""
+    """Upload an image from hd-frontend/src/assets/images/ as a standalone private File, returning its name."""
     file_path = frappe.get_app_path(
-        "helpdesk", "..", "desk", "src", "assets", "images", file_name
+        "helpdesk", "..", "hd-frontend", "src", "assets", "images", file_name
     )
     with open(file_path, "rb") as f:
         content = f.read()

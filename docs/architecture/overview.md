@@ -69,7 +69,7 @@ flowchart TB
 | No-access page | `www/nxerp/no-access.html` + `no_access.py` | A plain page that names no app |
 | Install and migrate | `apps/nxerp_platform/nxerp/install.py`, `patches/create_access_roles.py` | Creates one access role per installed registry app (idempotent, `desk_access = 0`) and points `Portal Settings.default_portal_home` at the router |
 | Migration helper | `apps/nxerp_platform/nxerp/migration.py` | Dry-run suggestion of access roles for users that existed before the layer (never applies unless asked) |
-| Palette | `apps/nxerp_platform/nxerp/public/css/*` | Generated from the token source in the Helpdesk repo (`desk/src/theme`); never edited by hand |
+| Palette | `apps/nxerp_platform/nxerp/public/css/*` | Generated from the token source in the Helpdesk repo (`hd-frontend/src/theme`); never edited by hand |
 
 ## Request flow (what happens to one request)
 

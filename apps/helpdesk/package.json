@@ -1,9 +1,9 @@
 {
 	"private": true,
 	"scripts": {
-		"postinstall": "cd desk && yarn install",
-		"dev": "cd desk && yarn dev",
-		"build": "cd desk && yarn build",
+		"postinstall": "cd hd-frontend && yarn install",
+		"dev": "cd hd-frontend && yarn dev",
+		"build": "cd hd-frontend && yarn build",
 		"test:e2e": "playwright test",
 		"test:e2e:ui": "playwright test --ui"
 	},

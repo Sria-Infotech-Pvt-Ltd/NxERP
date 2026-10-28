@@ -34,11 +34,11 @@ jobs:
         with:
           node-version: 24
       - name: Install desk dependencies
-        run: cd desk && yarn install --frozen-lockfile --ignore-scripts
+        run: cd hd-frontend && yarn install --frozen-lockfile --ignore-scripts
       - name: Generated files fresh, frappe-ui covered, contrast passing
-        run: cd desk && yarn theme:check
+        run: cd hd-frontend && yarn theme:check
       - name: No hardcoded colors
-        run: cd desk && yarn theme:audit
+        run: cd hd-frontend && yarn theme:audit
 
   linter:
     name: 'Frappe Linter'

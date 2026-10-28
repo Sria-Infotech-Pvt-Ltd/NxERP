@@ -28,7 +28,7 @@ class TestManagerMentions(CoreCommentsTestCase):
         self.assertEqual(rows[0].document_name, ticket.name)
 
     def test_managers_are_in_the_editor_mention_list(self):
-        """The editor offers active HD Agents (desk/src/stores/agent.ts); a manager invited as an agent is one."""
+        """The editor offers active HD Agents (hd-frontend/src/stores/agent.ts); a manager invited as an agent is one."""
         manager = make_agent_manager("listed-manager")
         self.assertTrue(frappe.db.get_value("HD Agent", manager, "is_active"))
 

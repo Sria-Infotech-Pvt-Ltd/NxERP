@@ -18,22 +18,22 @@ const git = (...args) => {
 // Everything the palette needs: the whole theme folder (including build/ and lib/), the login
 // theme assets, the Tailwind wiring and the backend persistence of the theme choice.
 const ROOTS = [
-  "desk/src/theme",
-  "desk/tailwind.config.js",
-  "desk/src/index.css",
+  "hd-frontend/src/theme",
+  "hd-frontend/tailwind.config.js",
+  "hd-frontend/src/index.css",
   "helpdesk/api/theme.py",
   "helpdesk/theme_tokens.py",
 ];
 // Required even if the folder listing above somehow missed them.
 const REQUIRED = [
-  "desk/src/theme/build/generate.mjs",
-  "desk/src/theme/build/sync.mjs",
-  "desk/src/theme/build/lib/model.mjs",
-  "desk/src/theme/tokens/palette.json",
-  "desk/src/theme/tokens/semantic.json",
-  "desk/src/theme/generated/tailwind-theme.mjs",
-  "desk/src/theme/generated/nxerp-theme.css",
-  "desk/src/theme/generated/frappe-desk.css",
+  "hd-frontend/src/theme/build/generate.mjs",
+  "hd-frontend/src/theme/build/sync.mjs",
+  "hd-frontend/src/theme/build/lib/model.mjs",
+  "hd-frontend/src/theme/tokens/palette.json",
+  "hd-frontend/src/theme/tokens/semantic.json",
+  "hd-frontend/src/theme/generated/tailwind-theme.mjs",
+  "hd-frontend/src/theme/generated/nxerp-theme.css",
+  "hd-frontend/src/theme/generated/frappe-desk.css",
   "helpdesk/theme_tokens.py",
 ];
 

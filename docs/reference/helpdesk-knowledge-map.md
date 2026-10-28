@@ -106,7 +106,7 @@ To follow the exact journey of a piece of data from the raw network layer to dat
 flowchart TD
     %% CLIENT LAYER
     subgraph S1 ["1. CLIENT INGRESS (Browser - Sarah)"]
-        A1["User Action: Clicks 'Submit Ticket'"] --> A2["desk/src/pages/ticket/TicketNew.vue"]
+        A1["User Action: Clicks 'Submit Ticket'"] --> A2["hd-frontend/src/pages/ticket/TicketNew.vue"]
         A2 --> A3["frappe-ui createResource().submit()"]
         A3 --> A4["Browser HTTP Client serializes JSON & attaches Cookie 'sid=...'"]
     end
@@ -189,11 +189,11 @@ flowchart TD
 
     %% AGENT FRONTEND
     subgraph S11 ["11. AGENT CLIENT (Browser - Alex)"]
-        J4 --> K1["desk/src/socket.ts: socket.on('helpdesk:new-ticket')"]
-        K1 --> K2["desk/src/stores/notification.ts: Increments unread badge"]
-        K1 --> K3["desk/src/stores/docTickets.ts: ticketsListResource.reload()"]
-        K3 --> K4["desk/src/stores/sla.ts: Computes countdown 'Response due in 59m'"]
-        K4 --> K5["desk/src/pages/home/Home.vue & Tickets.vue Virtual DOM Diff"]
+        J4 --> K1["hd-frontend/src/socket.ts: socket.on('helpdesk:new-ticket')"]
+        K1 --> K2["hd-frontend/src/stores/notification.ts: Increments unread badge"]
+        K1 --> K3["hd-frontend/src/stores/docTickets.ts: ticketsListResource.reload()"]
+        K3 --> K4["hd-frontend/src/stores/sla.ts: Computes countdown 'Response due in 59m'"]
+        K4 --> K5["hd-frontend/src/pages/home/Home.vue & Tickets.vue Virtual DOM Diff"]
         K5 --> K6["Browser DOM Repaint: New Ticket #0042 appears instantly on Alex's screen!"]
     end
 ```
@@ -203,7 +203,7 @@ flowchart TD
 ### 3.3 Detailed Hop-by-Hop Breakdown with Code Files
 
 #### Hop 1: Client Ingress (Sarah's Browser)
-* **File**: [desk/src/pages/ticket/TicketNew.vue](../../apps/helpdesk/desk/src/pages/ticket/TicketNew.vue)
+* **File**: [hd-frontend/src/pages/ticket/TicketNew.vue](../../apps/helpdesk/hd-frontend/src/pages/ticket/TicketNew.vue)
 * **What happens**:
   Sarah fills out the ticket form. The component binds inputs via `v-model`. Upon clicking "Submit", it calls `createResource` from `frappe-ui`.
 * **Payload**:
@@ -311,11 +311,11 @@ flowchart TD
 
 #### Hop 11: Agent Frontend Reactivity & Repaint (Alex's Browser)
 * **Files**:
-  - [desk/src/socket.ts](../../apps/helpdesk/desk/src/socket.ts): [initSocket()](../../apps/helpdesk/desk/src/socket.ts#L11-L24)
-  - [desk/src/stores/notification.ts](../../apps/helpdesk/desk/src/stores/notification.ts): `useNotificationStore`
-  - [desk/src/stores/docTickets.ts](../../apps/helpdesk/desk/src/stores/docTickets.ts): `getTicketListResource`
-  - [desk/src/stores/sla.ts](../../apps/helpdesk/desk/src/stores/sla.ts): `useSlaStore`
-  - [desk/src/pages/home/Home.vue](../../apps/helpdesk/desk/src/pages/home/Home.vue)
+  - [hd-frontend/src/socket.ts](../../apps/helpdesk/hd-frontend/src/socket.ts): [initSocket()](../../apps/helpdesk/hd-frontend/src/socket.ts#L11-L24)
+  - [hd-frontend/src/stores/notification.ts](../../apps/helpdesk/hd-frontend/src/stores/notification.ts): `useNotificationStore`
+  - [hd-frontend/src/stores/docTickets.ts](../../apps/helpdesk/hd-frontend/src/stores/docTickets.ts): `getTicketListResource`
+  - [hd-frontend/src/stores/sla.ts](../../apps/helpdesk/hd-frontend/src/stores/sla.ts): `useSlaStore`
+  - [hd-frontend/src/pages/home/Home.vue](../../apps/helpdesk/hd-frontend/src/pages/home/Home.vue)
 * **What happens**:
   1. `socket.ts` receives the event `"helpdesk:new-ticket"`.
   2. `notification.ts` plays an audio chime and increments Alex's notification badge.
@@ -591,13 +591,13 @@ All Helpdesk endpoints reside in `helpdesk/api/`:
 
 The frontend is a single-page application (SPA) located in `helpdesk/desk/`.
 
-### 1. Dual-Portal Routing Guards (`desk/src/router/index.ts`)
+### 1. Dual-Portal Routing Guards (`hd-frontend/src/router/index.ts`)
 * `/tickets`: Agent Ticket Queue (Agents and Admins only).
 * `/my-tickets`: Customer Portal Queue (Customers only).
 * If a Customer attempts to open `/tickets/0001`, the router guard detects `!authStore.isAgent` and automatically rewrites the destination to `/my-tickets/0001`.
 * If unauthenticated, redirected to the login screen.
 
-### 2. State Stores (Pinia in `desk/src/stores/`)
+### 2. State Stores (Pinia in `hd-frontend/src/stores/`)
 * **`useAuthStore`**: Holds current user profile, roles, presence status, and team memberships.
 * **`useSlaStore`**: Drives the live countdown timer seen on ticket cards. Recalculates remaining time every minute.
 * **`useDocTicketsStore`**: Cache layer for tickets currently open in tabs or list views.
@@ -652,7 +652,7 @@ Helpdesk delivers live updates using **Socket.IO** connected to Redis Pub/Sub:
      [Node.js Socket.IO Server]
                  │
                  ▼
-[Frontend: desk/src/socket.ts listens]
+[Frontend: hd-frontend/src/socket.ts listens]
                  │
                  ▼
 Trigger `ticket.reload()` or push notification to user
@@ -691,7 +691,7 @@ Defined in `helpdesk/hooks.py`:
   ```
 * **Run Frontend Dev Server** (with hot reload):
   ```bash
-  cd helpdesk/desk
+  cd apps/helpdesk/hd-frontend
   yarn install
   yarn dev
   ```

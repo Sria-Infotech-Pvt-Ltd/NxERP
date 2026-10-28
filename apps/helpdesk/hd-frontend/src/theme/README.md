@@ -8,7 +8,7 @@ octet.design `course-landing-color-palette-1732775208`: paper, sand, taupe, ambe
 1. Edit `tokens/palette.json` (anchors, ramp rules) or `tokens/semantic.json` (accent shades, focus, chart, email).
 2. `yarn theme:build` regenerates `generated/` and syncs the NXERP copies.
 3. `yarn theme:check` must pass: generated files fresh, every frappe-ui token covered, contrast above the minimums in `tokens/contrast.json`.
-4. `yarn theme:audit` must pass: no hex, `rgb()` or raw Tailwind palette class in `desk/src`.
+4. `yarn theme:audit` must pass: no hex, `rgb()` or raw Tailwind palette class in `hd-frontend/src`.
 
 Never edit `generated/`. Frappe-ui `rc.1` is the version the tokens are locked to (`tokens/frappe-ui.lock.json`).
 A new frappe-ui release fails `theme:check` until the diff is reviewed and the lock updated.
@@ -39,14 +39,14 @@ frappe-ui's own `@apply` rules (`rounded-4` stops resolving).
 ## Modes
 
 `useAppTheme()` wraps frappe-ui's `useColorScheme()`. It keeps light, dark and system, and also saves the choice on the user
-(`helpdesk.api.theme.set_desk_theme`) so Frappe Desk and other devices agree. `desk/index.html` sets `data-theme`
+(`helpdesk.api.theme.set_desk_theme`) so Frappe Desk and other devices agree. `hd-frontend/index.html` sets `data-theme`
 before first paint; the server value wins when logged in.
 
 ## Other surfaces
 
-- Frappe Desk (ERPNext, Framework): `generated/frappe-desk.css`, synced to the platform app (`nxerp-platform/nxerp/public/css/nxerp-desk-theme.css`) and loaded by its `app_include_css` hook, so the palette follows the platform, not one app.
+- Frappe Desk (ERPNext, Framework): `generated/frappe-desk.css`, synced to the platform app (`nxerp_platform/nxerp/public/css/nxerp-desk-theme.css`) and loaded by its `app_include_css` hook, so the palette follows the platform, not one app.
 - Login: owned by the NXERP platform app (`nxerp/www/login.*`), which loads `nxerp-theme.css` (synced into its `public/css`) then its own `nxerp-login.css`.
-- `yarn theme:build` also copies the generated CSS into `../../nxerp-platform/nxerp/public/css` (`src/theme/build/sync.mjs`). Set `NXERP_PUBLIC` to change the target.
+- `yarn theme:build` also copies the generated CSS into `../../nxerp_platform/nxerp/public/css` (`src/theme/build/sync.mjs`). Set `NXERP_PUBLIC` to change the target.
 
 ## Known gaps
 

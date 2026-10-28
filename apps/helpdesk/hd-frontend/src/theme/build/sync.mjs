@@ -1,6 +1,6 @@
 // Copies the standalone CSS outputs into the apps that serve Frappe Desk and the login pages.
 // Usage: node sync.mjs [--check]. NXERP_PUBLIC overrides the platform app target folder
-// (default: the sibling nxerp-platform checkout, nxerp/public/css).
+// (default: the sibling nxerp_platform app, nxerp/public/css).
 import fs from "node:fs";
 import path from "node:path";
 import { THEME_DIR } from "./lib/model.mjs";
@@ -11,7 +11,7 @@ const TARGETS = [
   {
     dir:
       process.env.NXERP_PUBLIC ||
-      path.resolve(REPO, "../nxerp-platform/nxerp/public/css"),
+      path.resolve(REPO, "../nxerp_platform/nxerp/public/css"),
     files: {
       "nxerp-theme.css": "nxerp-theme.css",
       "frappe-desk.css": "nxerp-desk-theme.css",

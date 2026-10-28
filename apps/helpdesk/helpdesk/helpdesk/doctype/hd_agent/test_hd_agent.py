@@ -92,7 +92,7 @@ class TestHDAgent(FrappeTestCase):
         self.assertEqual(stored.availability, "Away")
         self.assertIsNotNone(stored.availability_changed_on)
 
-    # the exact payload desk/src/stores/agentStatus.ts now submits
+    # the exact payload hd-frontend/src/stores/agentStatus.ts now submits
     def test_client_set_value_updates_availability(self):
         self._set_availability_as(self.test_user, self.test_user, "Away")
 

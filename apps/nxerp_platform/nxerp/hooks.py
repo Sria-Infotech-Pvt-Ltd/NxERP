@@ -31,7 +31,7 @@ website_context = {
 # ------------------
 
 # Palette for Frappe Desk (ERPNext, Framework). Generated from the token source in the Helpdesk
-# repo (desk/src/theme, `yarn theme:build`); never edit the CSS by hand.
+# repo (apps/helpdesk/hd-frontend/src/theme, `yarn theme:build`); never edit the CSS by hand.
 app_include_css = "/assets/nxerp/css/nxerp-desk-theme.css"
 # app_include_js = "/assets/nxerp/js/nxerp.js"
 

@@ -114,10 +114,10 @@ nothing" is only inferable by differencing the first two counts.
 
 ## Checks
 
-No test runner in `desk/`; each pure module leaves a runnable assertion file.
+No test runner in `hd-frontend/`; each pure module leaves a runnable assertion file.
 
 ```bash
-cd desk && ../node_modules/.bin/tsx src/components/command-palette/fuzzyScore.check.ts
-cd desk && ../node_modules/.bin/tsx src/components/command-palette/savedReplyRanking.check.ts
-cd desk && ../node_modules/.bin/tsx src/components/listViewFilters.check.ts
+cd hd-frontend && ../node_modules/.bin/tsx src/components/command-palette/fuzzyScore.check.ts
+cd hd-frontend && ../node_modules/.bin/tsx src/components/command-palette/savedReplyRanking.check.ts
+cd hd-frontend && ../node_modules/.bin/tsx src/components/listViewFilters.check.ts
 ```

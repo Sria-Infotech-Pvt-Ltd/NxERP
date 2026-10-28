@@ -5,7 +5,7 @@ One sentence: **the palette is a single module-scope state machine
 list of `Command` objects, and `run()` decides what Enter does — perform,
 drill in, or toggle.**
 
-All paths are under `desk/src/components/command-palette/`.
+All paths are under `hd-frontend/src/components/command-palette/`.
 
 ## The cast
 

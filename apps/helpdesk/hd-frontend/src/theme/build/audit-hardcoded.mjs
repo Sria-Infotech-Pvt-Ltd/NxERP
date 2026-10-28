@@ -1,4 +1,4 @@
-// Fails on hardcoded colors in desk/src outside the allowlist. Usage: node audit-hardcoded.mjs [--list]
+// Fails on hardcoded colors in hd-frontend/src outside the allowlist. Usage: node audit-hardcoded.mjs [--list]
 import fs from "node:fs";
 import path from "node:path";
 import { THEME_DIR } from "./lib/model.mjs";
@@ -101,11 +101,11 @@ function* walkServer(dir) {
   }
 }
 const serverAllow = allow.serverFiles || [];
-// desk/index.html (app shell) and vite.config.js (PWA manifest) sit outside desk/src and are audited like server output.
-for (const file of [...walkServer(SERVER_ROOT), path.join(REPO, "desk/index.html"), path.join(REPO, "desk/vite.config.js")]) {
+// hd-frontend/index.html (app shell) and vite.config.js (PWA manifest) sit outside hd-frontend/src and are audited like server output.
+for (const file of [...walkServer(SERVER_ROOT), path.join(REPO, "hd-frontend/index.html"), path.join(REPO, "hd-frontend/vite.config.js")]) {
   const r = path.relative(REPO, file).split(path.sep).join("/");
   if (r === "helpdesk/theme_tokens.py" || r.endsWith("nxerp-theme.css")) continue; // generated
-  if (r === "helpdesk/www/helpdesk/index.html") continue; // SPA build output (git-ignored); audited at desk/index.html
+  if (r === "helpdesk/www/helpdesk/index.html") continue; // SPA build output (git-ignored); audited at hd-frontend/index.html
   if (/^helpdesk\/public\/(desk|frontend)\//.test(r)) continue; // built bundle
   if (serverAllow.some((a) => matches(r, a.path))) continue;
   fs.readFileSync(file, "utf8")

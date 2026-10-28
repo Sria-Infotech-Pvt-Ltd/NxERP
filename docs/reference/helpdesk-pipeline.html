@@ -419,47 +419,47 @@ const STEPS = [
     data: "— (initial page load, no JSON yet)",
     files: [
       {
-        name: "desk/src/main.js",
+        name: "hd-frontend/src/main.js",
         desc: "<strong>The app entry point.</strong> Creates the Vue app instance, installs Pinia (state management), Vue Router, frappe-ui library, the i18n translation plugin, and the Socket.IO client. Registers global components (Button, Badge, Dialog…). Mounts everything onto the <code>#app</code> HTML element. The very first JavaScript that runs."
       },
       {
-        name: "desk/src/App.vue",
+        name: "hd-frontend/src/App.vue",
         desc: "<strong>Root Vue component.</strong> A single <code>&lt;RouterView /&gt;</code> — tells Vue 'render whatever page the current URL maps to'. Nothing else lives here."
       },
       {
-        name: "desk/src/index.css",
+        name: "hd-frontend/src/index.css",
         desc: "<strong>Global CSS & Tailwind tokens.</strong> Defines semantic color classes like <code>bg-surface-white</code>, <code>text-ink-gray-9</code>, base typography, and spacing. All visual styling originates here."
       },
       {
-        name: "desk/src/router/index.ts",
+        name: "hd-frontend/src/router/index.ts",
         desc: "<strong>URL-to-page mapping + navigation guards.</strong> Defines every route: <code>/tickets</code>, <code>/my-tickets</code>, <code>/kb</code>, <code>/dashboard</code>, etc. Runs a guard before every navigation that checks: Is the user logged in? Are they an agent or customer? If not logged in → redirects to Frappe's login page. If a customer tries to reach <code>/tickets/0001</code> → silently rewrites destination to <code>/my-tickets/0001</code>."
       },
       {
-        name: "desk/src/roots/PortalRoot.vue",
+        name: "hd-frontend/src/roots/PortalRoot.vue",
         desc: "<strong>Portal switcher.</strong> Reads <code>authStore.isAgent</code>. If true → loads <code>AgentRoot.vue</code> (the agent shell with full sidebar). If false → loads <code>CustomerPortalRoot.vue</code> (the minimal customer shell). This is why one codebase serves two completely different-looking UIs."
       },
       {
-        name: "desk/src/roots/AgentRoot.vue",
+        name: "hd-frontend/src/roots/AgentRoot.vue",
         desc: "<strong>Agent shell layout.</strong> The persistent agent UI chrome: sidebar navigation, header bar, notification bell, availability toggle, command palette. Wraps every agent page."
       },
       {
-        name: "desk/src/roots/CustomerPortalRoot.vue",
+        name: "hd-frontend/src/roots/CustomerPortalRoot.vue",
         desc: "<strong>Customer shell layout.</strong> Simpler wrapper with just the customer portal navigation bar. Wraps every customer page."
       },
       {
-        name: "desk/src/persona.ts",
+        name: "hd-frontend/src/persona.ts",
         desc: "<strong>First-run onboarding guard.</strong> Detects if the admin has not yet selected their persona (Agent Manager, etc.) during first-time setup. Redirects to <code>/onboarding</code> if so. Prevents using the app before setup is complete."
       },
       {
-        name: "desk/src/socket.ts",
+        name: "hd-frontend/src/socket.ts",
         desc: "<strong>WebSocket client.</strong> Reads <code>socketio_port</code> from <code>sites/common_site_config.json</code>. Connects to <code>http://helpdesk.localhost:9000/helpdesk.localhost</code> via Socket.IO. Exported as a singleton <code>socket</code> object — all stores import and reuse it."
       },
       {
-        name: "desk/src/stores/auth.ts",
+        name: "hd-frontend/src/stores/auth.ts",
         desc: "<strong>Session state store (Pinia).</strong> Makes one API call to <code>helpdesk.api.auth.get_user</code> on app load. Stores: <code>isAgent</code>, <code>isAdmin</code>, <code>isManager</code>, <code>hasDeskAccess</code>, <code>userId</code>, <code>userTeams</code>, <code>availability</code>. All other parts of the app read from here to know who the current user is and what they can do."
       },
       {
-        name: "desk/src/pages/ticket/TicketNew.vue",
+        name: "hd-frontend/src/pages/ticket/TicketNew.vue",
         desc: "<strong>The 'New Ticket' form.</strong> Rendered when Sarah navigates to <code>/my-tickets/new</code>. Loads ticket template fields from the backend. Binds form inputs via <code>v-model</code>. On submit → calls <code>frappe-ui createResource().submit()</code> which builds and fires the HTTP request."
       }
     ]
@@ -882,39 +882,39 @@ const STEPS = [
     data: "DATA FORMAT: WebSocket frame → JavaScript event → Pinia state change → Vue DOM patch",
     files: [
       {
-        name: "desk/src/socket.ts → socket (singleton)",
+        name: "hd-frontend/src/socket.ts → socket (singleton)",
         desc: "<strong>The Socket.IO client connection.</strong> Already connected and listening since Alex opened the app. Receives the <code>'helpdesk:new-ticket'</code> event frame from the Node.js server. Dispatches it to all registered listeners."
       },
       {
-        name: "desk/src/stores/globalStore.ts",
+        name: "hd-frontend/src/stores/globalStore.ts",
         desc: "<strong>Shared socket reference.</strong> Holds the <code>$socket</code> instance that all Pinia stores import from. Prevents every store from creating its own connection."
       },
       {
-        name: "desk/src/stores/notification.ts → useNotificationStore",
+        name: "hd-frontend/src/stores/notification.ts → useNotificationStore",
         desc: "<strong>Notification bell state.</strong> Listens to socket events. On <code>'helpdesk:new-ticket'</code>: increments <code>unread</code> count (the number badge on the bell). <code>routeFor(notification)</code>: when Alex clicks a notification, constructs the correct Vue Router link — for comment notifications, includes the <code>?highlight=comment-XXX</code> query to scroll and highlight that specific comment."
       },
       {
-        name: "desk/src/stores/docTickets.ts → getTicketListResource()",
+        name: "hd-frontend/src/stores/docTickets.ts → getTicketListResource()",
         desc: "<strong>Ticket list data layer.</strong> Uses <code>createListResource</code> from frappe-ui to maintain the ticket list. On socket event: calls <code>ticketsListResource.reload()</code> which fires a new HTTP GET to <code>helpdesk.api.doc.get_list_data</code> and updates the reactive data. Also maintains <code>ticketsCountResource</code> for the accurate total count (accounting for permissions and filters)."
       },
       {
-        name: "desk/src/stores/sla.ts → useSlaStore",
+        name: "hd-frontend/src/stores/sla.ts → useSlaStore",
         desc: "<strong>SLA countdown engine.</strong> After the ticket list updates and includes the new ticket's <code>response_by</code> timestamp: computes <code>'Response due in 59m'</code>. Drives the colored countdown pill. Sets up a <code>setInterval</code> that refreshes every 60 seconds automatically so countdowns tick in real time."
       },
       {
-        name: "desk/src/stores/agentStatus.ts → useAgentStatusStore",
+        name: "hd-frontend/src/stores/agentStatus.ts → useAgentStatusStore",
         desc: "<strong>Agent presence management.</strong> Manages Alex's Online/Busy/Offline availability toggle in the UI. When changed: calls the HD Agent API to persist the new status. This status is read by the auto-assignment engine (<code>overrides/assignment_rule.py</code>) when routing new tickets."
       },
       {
-        name: "desk/src/pages/home/Home.vue",
+        name: "hd-frontend/src/pages/home/Home.vue",
         desc: "<strong>The dashboard page you see in the screenshot.</strong> Composed of: SLA Alerts table (open tickets near or past deadline), My Tickets count card, Avg. First Response metric, Avg. Resolution metric, My Recent Activity feed, Avg. Time Metrics chart (line chart from <code>api/dashboard.py</code>), Reviews/CSAT bar chart. All data is fetched via <code>createResource</code> calls and re-renders when Pinia store state changes."
       },
       {
-        name: "desk/src/pages/ticket/Tickets.vue",
+        name: "hd-frontend/src/pages/ticket/Tickets.vue",
         desc: "<strong>The main ticket list page.</strong> Uses <code>ListViewBuilder.vue</code> for the table. Supports: column sorting, drag-to-resize columns, row click navigation, bulk actions (assign, close, delete multiple), filter panel, sort controls, group-by field. Fetches data from <code>helpdesk.api.doc.get_list_data</code>."
       },
       {
-        name: "desk/src/components/ListViewBuilder.vue",
+        name: "hd-frontend/src/components/ListViewBuilder.vue",
         desc: "<strong>Reusable data table component.</strong> Powers ticket list, customer list, contact list, KB article list. Renders columns generically using field type definitions from the backend. Handles virtual scrolling for large lists."
       }
     ]
@@ -930,35 +930,35 @@ const STEPS = [
     data: "DATA FORMAT: Rich HTML → JSON → Python → SMTP email → Sarah's inbox",
     files: [
       {
-        name: "desk/src/pages/ticket/TicketAgent.vue",
+        name: "hd-frontend/src/pages/ticket/TicketAgent.vue",
         desc: "<strong>Agent ticket detail page.</strong> Split-pane layout: left side = conversation thread, right side = metadata sidebar. Loads ticket via <code>createDocumentResource({ doctype: 'HD Ticket', name: '0042', auto: true })</code>. When the ticket data loads, joins the WebSocket room <code>'open_doc:HD Ticket/0042'</code> so live updates (other agents viewing, new comments) arrive without polling."
       },
       {
-        name: "desk/src/pages/ticket/TicketConversation.vue",
+        name: "hd-frontend/src/pages/ticket/TicketConversation.vue",
         desc: "<strong>The chronological conversation thread.</strong> Renders: customer emails (received), agent replies (sent), internal agent notes (yellow background, hidden from customers), system activity logs (assigned to X, status changed to Y). Uses Frappe's ActivityTimeline component supplemented by <code>helpdesk.api.timeline.get_comment_extras()</code> for reactions and attachments."
       },
       {
-        name: "desk/src/pages/ticket/TicketCustomer.vue",
+        name: "hd-frontend/src/pages/ticket/TicketCustomer.vue",
         desc: "<strong>Customer-facing ticket detail.</strong> Simpler view: only shows the customer's own messages and agent public replies. Hides internal notes. Uses <code>TicketCustomerTemplateFields.vue</code> to show only the fields that <code>ticket_fields.py</code> permits the customer to see."
       },
       {
-        name: "desk/src/components/EmailEditor.vue",
+        name: "hd-frontend/src/components/EmailEditor.vue",
         desc: "<strong>The reply composer.</strong> Rich WYSIWYG editor using TipTap (configured in <code>tiptap-extensions.ts</code>). Features: CC/BCC fields (<code>EmailMultiSelect.vue</code>), file attachments (<code>AttachmentList.vue</code>), saved replies picker (<code>SavedRepliesSelectorModal.vue</code>), 'From' email account selector, send button. On send: calls <code>ticket.reply_via_agent()</code> via <code>createResource</code>."
       },
       {
-        name: "desk/src/components/SavedRepliesSelectorModal.vue",
+        name: "hd-frontend/src/components/SavedRepliesSelectorModal.vue",
         desc: "<strong>Canned response modal.</strong> Search UI for finding saved replies. Calls <code>helpdesk.api.saved_replies</code> to fetch templates. When a reply is selected, inserts its Jinja-rendered text into the email editor."
       },
       {
-        name: "desk/src/components/ticket-agent/ (directory)",
+        name: "hd-frontend/src/components/ticket-agent/ (directory)",
         desc: "<strong>Agent sidebar sub-components.</strong> The right metadata panel is composed of: ticket priority/type/status selectors, SLA countdown display, agent assignment picker, team assignment picker, customer profile card with contact details, tag manager, linked article suggestions."
       },
       {
-        name: "desk/src/tiptap-extensions.ts",
+        name: "hd-frontend/src/tiptap-extensions.ts",
         desc: "<strong>Rich text editor configuration.</strong> Configures TipTap editor extensions: @mention support (for tagging agents in internal notes), image paste handling, email-safe HTML output, code blocks, bullet lists, emoji picker, character count."
       },
       {
-        name: "desk/src/components/CommunicationArea.vue",
+        name: "hd-frontend/src/components/CommunicationArea.vue",
         desc: "<strong>Email display component.</strong> Renders a single <code>Communication</code> record in the thread. Shows sender avatar, timestamp, formatted email body, inline images, attachment chips. Has reply/forward button."
       }
     ]
@@ -1030,15 +1030,15 @@ const STEPS = [
     data: "DATA FORMAT: Search string → SQLite FTS query → ranked results JSON",
     files: [
       {
-        name: "desk/src/pages/knowledge-base/KnowledgeBaseCustomer.vue",
+        name: "hd-frontend/src/pages/knowledge-base/KnowledgeBaseCustomer.vue",
         desc: "<strong>Customer KB homepage.</strong> Shows the article categories grid. Search bar at the top. As Sarah types, fires debounced requests to the search API. Results appear as article suggestions — if Sarah clicks one and finds her answer, she doesn't need to submit a ticket."
       },
       {
-        name: "desk/src/pages/knowledge-base/KnowledgeBaseAgent.vue",
+        name: "hd-frontend/src/pages/knowledge-base/KnowledgeBaseAgent.vue",
         desc: "<strong>Agent KB management page.</strong> Lists all articles with publish/draft status. Allows creating new articles, organizing categories, and bulk-publishing. Agents use this to build the self-service library."
       },
       {
-        name: "desk/src/pages/knowledge-base/Article.vue",
+        name: "hd-frontend/src/pages/knowledge-base/Article.vue",
         desc: "<strong>Article reader page.</strong> Renders the article HTML body. Shows breadcrumb navigation. Thumbs up/down buttons submit to <code>HD Article Feedback</code>. View count increments on every load."
       },
       {

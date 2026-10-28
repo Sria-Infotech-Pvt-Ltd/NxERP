@@ -1,4 +1,4 @@
-import { tokens } from "../../desk/src/theme/generated/tokens";
+import { tokens } from "../../hd-frontend/src/theme/generated/tokens";
 import { expect, test, usePersona } from "../helpers/fixtures";
 import { emailOf } from "../helpers/personas";
 

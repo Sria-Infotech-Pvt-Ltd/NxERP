@@ -31,14 +31,14 @@ repos:
   - repo: local
     hooks:
       - id: theme-audit
-        name: No hardcoded colors in desk/src
-        entry: node desk/src/theme/build/audit-hardcoded.mjs
+        name: No hardcoded colors in hd-frontend/src
+        entry: node hd-frontend/src/theme/build/audit-hardcoded.mjs
         language: system
-        files: ^desk/src/
+        files: ^hd-frontend/src/
         pass_filenames: false
       - id: theme-tracked
         name: Palette files tracked and never ignored
-        entry: node desk/src/theme/build/check-tracked.mjs
+        entry: node hd-frontend/src/theme/build/check-tracked.mjs
         language: system
         always_run: true
         pass_filenames: false

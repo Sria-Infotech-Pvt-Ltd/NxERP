@@ -20,7 +20,7 @@ frappe = ">=16.0.0-dev,<18.0.0"
 telephony = ">=0.0.1,<1.0.0"
 
 [tool.bench.assets]
-build_dir = "./desk"
+build_dir = "./hd-frontend"
 out_dir = "./helpdesk/public/desk"
 index_html_path = "./helpdesk/www/helpdesk/index.html"
 

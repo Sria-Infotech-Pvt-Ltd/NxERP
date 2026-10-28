@@ -5,7 +5,7 @@ on:
     branches:
       - develop
     paths:
-      - "desk/**"
+      - "hd-frontend/**"
       - "hd-e2e-tests/**"
       - "playwright.config.ts"
       - "package.json"
