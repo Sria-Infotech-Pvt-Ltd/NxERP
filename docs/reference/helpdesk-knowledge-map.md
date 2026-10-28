@@ -203,7 +203,7 @@ flowchart TD
 ### 3.3 Detailed Hop-by-Hop Breakdown with Code Files
 
 #### Hop 1: Client Ingress (Sarah's Browser)
-* **File**: [desk/src/pages/ticket/TicketNew.vue](file:///c:/Users/darla/OneDrive/Desktop/frapper%20sria/helpdesk/desk/src/pages/ticket/TicketNew.vue)
+* **File**: [desk/src/pages/ticket/TicketNew.vue](../../apps/helpdesk/desk/src/pages/ticket/TicketNew.vue)
 * **What happens**:
   Sarah fills out the ticket form. The component binds inputs via `v-model`. Upon clicking "Submit", it calls `createResource` from `frappe-ui`.
 * **Payload**:
@@ -223,7 +223,7 @@ flowchart TD
   ```
 
 #### Hop 2: Network & Docker Ingress
-* **File**: `frappe-helpdesk-docker/docker-compose.yml`
+* **File**: `deploy/docker/helpdesk-local-dev/docker-compose.yml`
 * **What happens**:
   The TCP packet arrives at the host's network interface on port `8000`. Docker port forwarding routes the packet into the `backend` container's Nginx/Gunicorn service. Nginx reads the `Host` header (`helpdesk.localhost`), sets WSGI proxy headers (`X-Forwarded-For`, `X-Real-IP`), and passes the request via UNIX socket/TCP to Python.
 
@@ -249,14 +249,14 @@ flowchart TD
 #### Hop 5: API Routing & Schema Sanitization
 * **Files**:
   - `apps/frappe/frappe/handler.py`: `handle()`
-  - [helpdesk/helpdesk/api/doc.py](file:///c:/Users/darla/OneDrive/Desktop/frapper%20sria/helpdesk/helpdesk/api/doc.py): `create_doc()`
-  - [helpdesk/helpdesk/ticket_fields.py](file:///c:/Users/darla/OneDrive/Desktop/frapper%20sria/helpdesk/helpdesk/ticket_fields.py): [TicketFields](file:///c:/Users/darla/OneDrive/Desktop/frapper%20sria/helpdesk/helpdesk/ticket_fields.py#L19-L119)
+  - [helpdesk/helpdesk/api/doc.py](../../apps/helpdesk/helpdesk/api/doc.py): `create_doc()`
+  - [helpdesk/helpdesk/ticket_fields.py](../../apps/helpdesk/helpdesk/ticket_fields.py): [TicketFields](../../apps/helpdesk/helpdesk/ticket_fields.py#L19-L119)
 * **What happens**:
   Frappe's RPC router dispatches to `create_doc()`. Before creating the database object, Helpdesk passes the payload through `TicketFields.strip_hidden_fields()`.
   Because `frappe.session.user` is a customer (not an agent), the sanitizer automatically strips any restricted or agent-only fields (such as `_assign`, `sla`, `feedback_rating`, `resolution_by`) preventing client-side injection.
 
 #### Hop 6: Controller Lifecycle & SLA Evaluation
-* **File**: [helpdesk/helpdesk/doctype/hd_ticket/hd_ticket.py](file:///c:/Users/darla/OneDrive/Desktop/frapper%20sria/helpdesk/helpdesk/doctype/hd_ticket/hd_ticket.py)
+* **File**: [helpdesk/helpdesk/doctype/hd_ticket/hd_ticket.py](../../apps/helpdesk/helpdesk/doctype/hd_ticket/hd_ticket.py)
 * **Methods executed in order**:
   1. `before_insert()`: Calls `generate_key()` to generate a unique UUID4 token (used for tokenized external CSAT feedback).
   2. `before_validate()`:
@@ -264,9 +264,9 @@ flowchart TD
      - `set_default_status()`: Sets status to `"Open"` (status category: `Open`).
      - `validate_portal_contact()`: Verifies Sarah is not raising a ticket under someone else's contact record.
      - `set_customer()`: Identifies that Sarah belongs to customer `"Acme Corp"`.
-     - `set_sla()`: Calls [get_sla(self)](file:///c:/Users/darla/OneDrive/Desktop/frapper%20sria/helpdesk/helpdesk/doctype/hd_service_level_agreement/utils.py#L12-L53) in `hd_service_level_agreement/utils.py`. The rule evaluator matches the "Enterprise Support SLA" because `priority == "Urgent"` and `customer == "Acme Corp"`.
+     - `set_sla()`: Calls [get_sla(self)](../../apps/helpdesk/helpdesk/doctype/hd_service_level_agreement/utils.py#L12-L53) in `hd_service_level_agreement/utils.py`. The rule evaluator matches the "Enterprise Support SLA" because `priority == "Urgent"` and `customer == "Acme Corp"`.
   3. `before_save()`:
-     - Calls `apply_sla()`: Reads working hours from [HD Service Day](file:///c:/Users/darla/OneDrive/Desktop/frapper%20sria/helpdesk/helpdesk/doctype/hd_service_day) and holidays from [HD Service Holiday List](file:///c:/Users/darla/OneDrive/Desktop/frapper%20sria/helpdesk/helpdesk/doctype/hd_service_holiday_list). Computes exact targets:
+     - Calls `apply_sla()`: Reads working hours from [HD Service Day](../../apps/helpdesk/helpdesk/doctype/hd_service_day) and holidays from [HD Service Holiday List](../../apps/helpdesk/helpdesk/doctype/hd_service_holiday_list). Computes exact targets:
        - `response_by = 2026-10-12 17:26:00` (1 hour)
        - `resolution_by = 2026-10-12 20:26:00` (4 hours)
 
@@ -289,9 +289,9 @@ flowchart TD
 
 #### Hop 8: Post-Commit Hooks & Auto-Assignment
 * **Files**:
-  - [helpdesk/helpdesk/doctype/hd_ticket/hd_ticket.py](file:///c:/Users/darla/OneDrive/Desktop/frapper%20sria/helpdesk/helpdesk/doctype/hd_ticket/hd_ticket.py): `after_insert()`
-  - [helpdesk/overrides/assignment_rule.py](file:///c:/Users/darla/OneDrive/Desktop/frapper%20sria/helpdesk/overrides/assignment_rule.py): `HelpdeskAssignmentRule`
-  - [helpdesk/helpdesk/utils.py](file:///c:/Users/darla/OneDrive/Desktop/frapper%20sria/helpdesk/helpdesk/utils.py): [publish_event()](file:///c:/Users/darla/OneDrive/Desktop/frapper%20sria/helpdesk/helpdesk/utils.py#L78-L96)
+  - [helpdesk/helpdesk/doctype/hd_ticket/hd_ticket.py](../../apps/helpdesk/helpdesk/doctype/hd_ticket/hd_ticket.py): `after_insert()`
+  - [helpdesk/overrides/assignment_rule.py](../../apps/helpdesk/overrides/assignment_rule.py): `HelpdeskAssignmentRule`
+  - [helpdesk/helpdesk/utils.py](../../apps/helpdesk/helpdesk/utils.py): [publish_event()](../../apps/helpdesk/helpdesk/utils.py#L78-L96)
 * **What happens**:
   1. **Auto-Assignment**: The assignment rule engine detects that `ticket_type == 'Technical Issue'`. It queries `HD Team` ("Tier 2 Engineering") and checks agent availability. Agent **Alex** is marked `Online` with the lowest workload. The rule assigns the ticket to Alex (`_assign = ["alex@company.com"]`).
   2. **Email Enqueue**: Calls `frappe.enqueue("frappe.sendmail")` with Sarah's acknowledgement email template.
@@ -304,18 +304,18 @@ flowchart TD
 
 #### Hop 10: Realtime Pub/Sub & WebSocket Emission
 * **Files**:
-  - [helpdesk/helpdesk/utils.py](file:///c:/Users/darla/OneDrive/Desktop/frapper%20sria/helpdesk/helpdesk/utils.py): `frappe.publish_realtime()`
+  - [helpdesk/helpdesk/utils.py](../../apps/helpdesk/helpdesk/utils.py): `frappe.publish_realtime()`
   - Node.js Realtime Server: `apps/frappe/realtime/index.js`
 * **What happens**:
   Frappe pushes a message into Redis Pub/Sub channel `redis-socketio`. The Node.js Socket.IO daemon intercepts the event and broadcasts a WebSocket binary/text frame to all connected agents in the `helpdesk` room.
 
 #### Hop 11: Agent Frontend Reactivity & Repaint (Alex's Browser)
 * **Files**:
-  - [desk/src/socket.ts](file:///c:/Users/darla/OneDrive/Desktop/frapper%20sria/helpdesk/desk/src/socket.ts): [initSocket()](file:///c:/Users/darla/OneDrive/Desktop/frapper%20sria/helpdesk/desk/src/socket.ts#L11-L24)
-  - [desk/src/stores/notification.ts](file:///c:/Users/darla/OneDrive/Desktop/frapper%20sria/helpdesk/desk/src/stores/notification.ts): `useNotificationStore`
-  - [desk/src/stores/docTickets.ts](file:///c:/Users/darla/OneDrive/Desktop/frapper%20sria/helpdesk/desk/src/stores/docTickets.ts): `getTicketListResource`
-  - [desk/src/stores/sla.ts](file:///c:/Users/darla/OneDrive/Desktop/frapper%20sria/helpdesk/desk/src/stores/sla.ts): `useSlaStore`
-  - [desk/src/pages/home/Home.vue](file:///c:/Users/darla/OneDrive/Desktop/frapper%20sria/helpdesk/desk/src/pages/home/Home.vue)
+  - [desk/src/socket.ts](../../apps/helpdesk/desk/src/socket.ts): [initSocket()](../../apps/helpdesk/desk/src/socket.ts#L11-L24)
+  - [desk/src/stores/notification.ts](../../apps/helpdesk/desk/src/stores/notification.ts): `useNotificationStore`
+  - [desk/src/stores/docTickets.ts](../../apps/helpdesk/desk/src/stores/docTickets.ts): `getTicketListResource`
+  - [desk/src/stores/sla.ts](../../apps/helpdesk/desk/src/stores/sla.ts): `useSlaStore`
+  - [desk/src/pages/home/Home.vue](../../apps/helpdesk/desk/src/pages/home/Home.vue)
 * **What happens**:
   1. `socket.ts` receives the event `"helpdesk:new-ticket"`.
   2. `notification.ts` plays an audio chime and increments Alex's notification badge.
