@@ -35,8 +35,8 @@ from helpdesk.utils import (
     get_agents_team,
     get_customers,
     get_doc_room,
-    is_admin,
     is_agent,
+    is_ticket_admin,
     publish_event,
 )
 
@@ -1328,7 +1328,7 @@ class HDTicket(Document, CustomerEditController):
 # is being called from hooks. `doc` is the ticket to check against
 def has_permission(doc, user=None):
     user = user or frappe.session.user
-    if is_admin(user):
+    if is_ticket_admin(user):
         return True
     if user in (doc.contact, doc.raised_by, doc.owner):
         return True
@@ -1377,7 +1377,7 @@ def _agent_has_permission(doc, user: str) -> bool:
 # https://frappeframework.com/docs/user/en/python-api/hooks#modify-list-query
 def permission_query(user: str | None = None):
     user = user or frappe.session.user
-    if is_admin(user):
+    if is_ticket_admin(user):
         return
     if not is_agent(user):
         return _customer_query(user)

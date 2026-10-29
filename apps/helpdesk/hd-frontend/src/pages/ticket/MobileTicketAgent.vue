@@ -300,6 +300,7 @@ import {
 import { useScreenSize } from "@/composables/screen";
 import { useActiveTabManager } from "@/composables/useActiveTabManager";
 import {
+  dropAssigneesOutsideTeam,
   reloadTicket,
   revalidateTicket,
   useTicket,
@@ -362,7 +363,16 @@ const customizations: Resource<Customizations> = createResource({
 const { getField, getFields } = getMeta("HD Ticket");
 
 function updateField(name: string, value: string) {
-  ticket.value.setValue.submit({ [name]: value });
+  ticket.value.setValue.submit(
+    { [name]: value },
+    {
+      onSuccess: () => {
+        if (name === "agent_group") {
+          dropAssigneesOutsideTeam(String(props.ticketId), value);
+        }
+      },
+    }
+  );
 }
 
 const customizationCtx = computed(() => ({

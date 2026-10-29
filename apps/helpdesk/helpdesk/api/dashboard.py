@@ -9,7 +9,7 @@ from frappe.query_builder.functions import Avg, Count, Function
 from pypika import Case
 
 from helpdesk.theme_tokens import CHART_SERIES
-from helpdesk.utils import agent_only, is_frappe_version
+from helpdesk.utils import agent_only, is_frappe_version, is_ticket_admin
 
 HD_TICKET = "HD Ticket"
 
@@ -31,7 +31,7 @@ def get_dashboard_data(
     Get dashboard data based on the type and date range.
     """
     user = frappe.session.user
-    is_manager = "Agent Manager" in frappe.get_roles(user)
+    is_manager = is_ticket_admin(user)
 
     if not is_manager and (filters.get("agent") != user or filters.get("team")):
         frappe.throw(

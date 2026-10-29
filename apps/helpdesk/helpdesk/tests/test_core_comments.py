@@ -13,6 +13,9 @@ from helpdesk.api.comment import get_reactions, toggle_reaction
 from helpdesk.api.tags import update_tags
 from helpdesk.api.timeline import get_comment_extras
 from helpdesk.helpdesk.doctype.hd_ticket.api import get_one
+from helpdesk.helpdesk.doctype.hd_ticket.hd_ticket import (
+    has_permission as ticket_has_permission,
+)
 from helpdesk.overrides import realtime
 from helpdesk.patches import (
     mark_old_assignment_notifications_read,
@@ -380,13 +383,13 @@ class TestCommentTrustBoundary(CoreCommentsTestCase):
         frappe.set_user(AGENT_ONE)
         self.assertTrue(realtime.has_permission("HD Ticket", ticket.name))
 
-    def test_system_manager_is_denied_like_core(self):
-        """Non-agent System Managers have no doc-level HD Ticket access
-        (permission hook), so the room gate matches core and denies too."""
+    def test_system_manager_passes_the_ticket_hook(self):
+        """System Managers are ticket admins, so Helpdesk's own permission hook
+        grants them every ticket. Asked of the hook itself: a platform app may
+        still gate Helpdesk access in front of it."""
         ticket = make_ticket(raised_by=CUSTOMER)
-        frappe.set_user(self.SYSTEM_MANAGER)
-        self.assertFalse(frappe.has_permission("HD Ticket", doc=ticket.name))
-        self.assertFalse(realtime.has_permission("HD Ticket", ticket.name))
+        self.assertTrue(ticket_has_permission(ticket, user=self.SYSTEM_MANAGER))
+        self.assertTrue(is_agent(self.SYSTEM_MANAGER))
 
     def test_team_restricted_agent_is_still_denied(self):
         """Agents delegate to core, so team restrictions keep applying."""

@@ -168,7 +168,6 @@
 import ShortcutKey from "@/components/ShortcutKey.vue";
 import { useShortcut } from "@/composables/shortcuts";
 import { useAgentStatusStore } from "@/stores/agentStatus.ts";
-import { useConfigStore } from "@/stores/config";
 import { useUserStore } from "@/stores/user";
 import { capture } from "@/telemetry";
 import { __ } from "@/translation";
@@ -197,11 +196,14 @@ import UserAvatar from "../UserAvatar.vue";
 interface Props {
   hideLabel?: boolean;
   ghost?: boolean;
+  // Team to restrict by when there is no ticket in context (create form)
+  team?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   hideLabel: false,
   ghost: false,
+  team: "",
 });
 
 const { hideLabel, ghost } = props;
@@ -288,13 +290,18 @@ watch(popoverIsOpen, (isOpen) => {
   }
 });
 
-const configStore = useConfigStore();
-const ticketTeam = computed(() => ticket?.value?.doc?.agent_group);
-const restrictToTeam = computed(
-  () =>
-    configStore.teamRestrictionApplied &&
-    configStore.assignWithinTeam &&
-    Boolean(ticketTeam.value)
+// Assignee follows Team: with a Team set, only its members are offered
+const ticketTeam = computed(
+  () => ticket?.value?.doc?.agent_group || props.team
+);
+const restrictToTeam = computed(() => Boolean(ticketTeam.value));
+
+// Standalone (create form): a new Team empties a pick made for the old one
+watch(
+  () => props.team,
+  () => {
+    if (!ticket) localAssignees.value = [];
+  }
 );
 const teamMembers = createResource({
   url: "helpdesk.helpdesk.doctype.hd_team.hd_team.get_team_members",

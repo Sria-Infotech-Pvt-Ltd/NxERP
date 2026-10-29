@@ -52,6 +52,17 @@
             </template>
           </template>
         </UniInput>
+        <!-- Last cell, so below Team; its list follows the Team picked above -->
+        <div v-if="!isCustomerPortal" class="flex flex-col gap-2">
+          <span class="block text-sm text-ink-gray-6">
+            {{ __("Assignee") }}
+          </span>
+          <AssignTo
+            v-model="assignees"
+            :team="templateFields.agent_group || ''"
+            hide-label
+          />
+        </div>
       </div>
       <!-- existing fields -->
       <div
@@ -153,6 +164,7 @@
 
 <script setup lang="ts">
 import { LayoutHeader, UniInput } from "@/components";
+import AssignTo from "@/components/ticket-agent/AssignTo.vue";
 import {
   handleLinkFieldUpdate,
   handleSelectFieldUpdate,
@@ -174,6 +186,7 @@ import {
   createListResource,
   createResource,
   TextInput,
+  toast,
   usePageMeta,
 } from "frappe-ui";
 import sanitizeHtml from "sanitize-html";
@@ -214,6 +227,7 @@ const subject = ref(String(route.query.subject ?? ""));
 const description = ref("");
 const attachments = ref([]);
 const templateFields = reactive({});
+const assignees = ref<string[]>([]);
 
 const template = createResource({
   url: "helpdesk.helpdesk.doctype.hd_ticket_template.api.get_one",
@@ -299,7 +313,18 @@ const ticket = createResource({
       }
     }
   },
-  onSuccess: (data) => {
+  onSuccess: async (data) => {
+    if (assignees.value.length) {
+      try {
+        await call("frappe.desk.form.assign_to.add", {
+          doctype: "HD Ticket",
+          name: data.name,
+          assign_to: assignees.value,
+        });
+      } catch {
+        toast.error(__("Ticket created, but it could not be assigned."));
+      }
+    }
     router.push({
       name: isCustomerPortal.value ? "TicketCustomer" : "TicketAgent",
       params: {

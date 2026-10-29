@@ -10,6 +10,7 @@ from frappe.client import save as client_save
 from frappe.client import set_value as client_set_value
 from frappe.desk.form.utils import add_comment as desk_add_comment
 from frappe.tests import IntegrationTestCase
+from frappe.tests.utils import change_settings
 from frappe.utils import add_to_date, get_datetime, getdate, now_datetime
 
 from helpdesk.api.ticket import bulk_reply
@@ -41,11 +42,13 @@ from helpdesk.test_utils import (
     get_latest_ticket_communication,
     get_priority_response_resolution_time,
     make_agent,
+    make_agent_manager,
     make_form_script,
     make_notification_log,
     make_priority,
     make_sla,
     make_status,
+    make_system_manager,
     make_team,
     make_template,
     make_ticket,
@@ -2476,6 +2479,35 @@ class TestHDTicket(IntegrationTestCase):
         self.assertTrue(has_permission(ticket, user=agent2))
         self.assertFalse(has_permission(ticket, user=agent))
         self.assertNotIn("Team B", permission_query(agent))
+
+    def test_manager_sees_every_team_under_team_restriction(self):
+        manager = make_agent_manager("restricted-manager")
+        make_team("Team A", members=[agent])
+        make_team("Team B", members=[agent2])
+        ticket = make_ticket(agent_group="Team B", raised_by=non_agent)
+
+        with change_settings("HD Settings", {"restrict_tickets_by_agent_group": 1}):
+            self.assertTrue(has_permission(ticket, user=manager))
+            self.assertIsNone(permission_query(manager))
+            # control: an ordinary agent on another team stays restricted
+            self.assertFalse(has_permission(ticket, user=agent))
+
+    def test_system_manager_without_agent_record_sees_every_ticket(self):
+        system_manager = make_system_manager()
+        make_team("Team B", members=[agent2])
+        ticket = make_ticket(agent_group="Team B", raised_by=non_agent)
+
+        with change_settings("HD Settings", {"restrict_tickets_by_agent_group": 1}):
+            self.assertTrue(has_permission(ticket, user=system_manager))
+            self.assertIsNone(permission_query(system_manager))
+
+    def test_deactivated_manager_loses_ticket_visibility(self):
+        manager = make_agent_manager("deactivated-manager")
+        ticket = make_ticket(raised_by=non_agent)
+        frappe.db.set_value("HD Agent", manager, "is_active", 0)
+
+        self.assertFalse(has_permission(ticket, user=manager))
+        self.assertIn(manager, permission_query(manager))
 
     def test_only_managers_can_delete_a_ticket(self):
         manager = make_agent("ticket_manager@test.com", first_name="Ticket Manager")

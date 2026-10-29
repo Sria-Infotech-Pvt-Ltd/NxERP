@@ -7,7 +7,7 @@ tickets, so without these they would reach the comments on them too.
 import frappe
 from frappe import _
 
-from helpdesk.utils import is_admin, is_agent
+from helpdesk.utils import is_agent, is_ticket_admin
 
 MAX_PINNED_COMMENTS = 5
 
@@ -72,7 +72,7 @@ def has_permission(doc, ptype: str = "read", user: str | None = None) -> bool:
 def can_see_ticket_comments(ticket: str, user: str | None = None) -> bool:
     """Agents only, and only on a ticket they are allowed to read themselves."""
     user = user or frappe.session.user
-    if is_admin(user):
+    if is_ticket_admin(user):
         return True
     if not is_agent(user):
         return False

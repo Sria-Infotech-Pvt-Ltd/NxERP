@@ -820,6 +820,13 @@ def make_agent_manager(prefix: str = "agent-manager") -> str:
     return manager
 
 
+def make_system_manager(prefix: str = "system-manager") -> str:
+    """Create a plain user, with no HD Agent record, holding only the System Manager role."""
+    user = create_user(unique_email(prefix))
+    user.add_roles("System Manager")
+    return user.name
+
+
 def make_article(
     title: str | None = None,
     status: str = "Published",

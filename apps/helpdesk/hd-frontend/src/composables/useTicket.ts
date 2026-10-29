@@ -10,7 +10,7 @@ import type {
   TicketContact,
 } from "@/types";
 import type { HDTicket } from "@/types/doctypes";
-import { createDocumentResource, createResource, toast } from "frappe-ui";
+import { call, createDocumentResource, createResource, toast } from "frappe-ui";
 import { reactive } from "vue";
 
 interface MapValue {
@@ -106,6 +106,33 @@ export function reloadTicket(ticketId: string) {
   if (!ticketData) return;
   ticketData.ticket.reload();
   ticketData.assignees.reload();
+}
+
+// After a Team change, unassign anyone who is not on the new Team, then refresh.
+// A cleared Team keeps the assignees, as there is nothing left to restrict by.
+export async function dropAssigneesOutsideTeam(
+  ticketId: string,
+  team?: string | null
+) {
+  const ticketData = ticketMap[ticketId];
+  if (!ticketData) return;
+  try {
+    const assigned = (ticketData.assignees.data || []).map((a) => a.name);
+    if (!team || !assigned.length) return;
+    const members: string[] = await call(
+      "helpdesk.helpdesk.doctype.hd_team.hd_team.get_team_members",
+      { team }
+    );
+    const outside = assigned.filter((name) => !members.includes(name));
+    if (!outside.length) return;
+    await call("helpdesk.api.doc.remove_assignments", {
+      doctype: "HD Ticket",
+      name: ticketId,
+      assignees: outside,
+    });
+  } finally {
+    ticketData.assignees.reload();
+  }
 }
 
 // The timeline owns its feed through useActivityTimeline, so anything outside it

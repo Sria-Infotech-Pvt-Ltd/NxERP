@@ -8,7 +8,7 @@ from frappe.utils import add_days, nowdate
 
 from helpdesk.api.agent_home.utils import calculate_percentage_change
 from helpdesk.api.analytics_utils import _apply_scope, get_avg_time_metric
-from helpdesk.utils import agent_only
+from helpdesk.utils import agent_only, is_ticket_admin
 
 Scope = str  # Literal["agent", "customer", "contact"]
 
@@ -28,9 +28,9 @@ def _resolve_scope(dt: str) -> str:
 
 
 def validate_agent_access(scope: Scope, value: str) -> None:
-    """Only the agent themselves or an Agent Manager may read an agent's stats."""
+    """Only the agent themselves or a ticket admin may read an agent's stats."""
     viewing_other_agent = scope == "agent" and value and value != frappe.session.user
-    if viewing_other_agent and "Agent Manager" not in frappe.get_roles():
+    if viewing_other_agent and not is_ticket_admin():
         frappe.throw(
             _("You are not allowed to view another agent's stats."),
             frappe.PermissionError,

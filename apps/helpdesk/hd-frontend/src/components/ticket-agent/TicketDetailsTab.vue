@@ -31,6 +31,17 @@
           v-model:opened="openedSections.keyInfo"
         >
           <div class="space-y-2.5 pb-3 pt-0.5">
+            <!-- Team sits above Assignee: the Assignee list follows it -->
+            <TicketField
+              v-if="teamField?.visible"
+              :ref="(el) => setFieldRef(teamField.fieldname, el)"
+              :field="teamField"
+              :value="teamField.value"
+              @change="
+                ({ fieldname, value }) =>
+                  handleFieldUpdate(fieldname, value, true)
+              "
+            />
             <!-- Assignee -->
             <div class="flex items-center gap-2 leading-5">
               <FieldLabel label="Assignee" />
@@ -41,7 +52,7 @@
               </div>
             </div>
             <!-- Core fields -->
-            <template v-for="field in coreFields">
+            <template v-for="field in otherCoreFields">
               <TicketField
                 v-if="field?.visible"
                 :key="field.fieldname"
@@ -153,11 +164,11 @@
 import { parseField } from "@/composables/formCustomisation";
 import { useNotifyTicketUpdate } from "@/composables/realtime";
 import { useShortcut } from "@/composables/shortcuts";
+import { dropAssigneesOutsideTeam } from "@/composables/useTicket";
 import { getMeta } from "@/stores/meta";
 import { useTicketStatusStore } from "@/stores/ticketStatus";
 import { __ } from "@/translation.ts";
 import {
-  AssigneeSymbol,
   CustomizationSymbol,
   FieldValue,
   RecentSimilarTicketsSymbol,
@@ -176,7 +187,6 @@ import TicketFeedback from "./TicketFeedback.vue";
 import TicketSLA from "./TicketSLA.vue";
 
 const ticket = inject(TicketSymbol)!;
-const assignees = inject(AssigneeSymbol)!;
 const customizations = inject(CustomizationSymbol)!;
 const recentSimilarTickets = inject(RecentSimilarTicketsSymbol)!;
 const { getFields, getField } = getMeta("HD Ticket");
@@ -208,6 +218,13 @@ const coreFields = computed(() => {
     })
     .filter(Boolean);
 });
+
+const teamField = computed(() =>
+  coreFields.value.find((f) => f.fieldname === "agent_group")
+);
+const otherCoreFields = computed(() =>
+  coreFields.value.filter((f) => f.fieldname !== "agent_group")
+);
 
 const customFields = computed(() => {
   const fieldsMeta = getFields();
@@ -358,7 +375,7 @@ function handleFieldUpdate(
     {
       onSuccess: () => {
         if (fieldname === "agent_group") {
-          assignees.value.reload();
+          dropAssigneesOutsideTeam(ticket.value.name, value as string);
         }
       },
     }

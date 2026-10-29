@@ -2,6 +2,7 @@ import frappe
 
 from helpdesk.utils import agent_only, get_agent_name, get_agents_team
 from helpdesk.utils import is_agent as _is_agent
+from helpdesk.utils import is_ticket_admin
 
 
 @frappe.whitelist()
@@ -46,7 +47,7 @@ def get_user():
     user_name = user.full_name
     user_id = user.name
     username = user.username
-    is_manager = ("Agent Manager") in frappe.get_roles(current_user)
+    is_manager = is_ticket_admin(current_user)
     user_team = get_agents_team()
     user_team_names = [team["team_name"] for team in user_team]
     language = user.language or frappe.db.get_single_value(
