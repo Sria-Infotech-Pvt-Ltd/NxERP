@@ -17,7 +17,7 @@
 		})();
 	</script>
 	<link rel="stylesheet" href="/assets/nxerp/css/nxerp-theme.css" />
-	<link rel="stylesheet" href="/assets/nxerp/css/nxerp-platform.css?v=6" />
+	<link rel="stylesheet" href="/assets/nxerp/css/nxerp-platform.css?v=8" />
 </head>
 <body class="nxp-body">
 	<a class="nxp-skip" href="#apps">{{ _("Skip to applications") }}</a>
@@ -61,6 +61,13 @@
 			var dark = document.documentElement.getAttribute("data-theme") === "dark";
 			var logo = document.querySelector(".nxp-logo");
 			if (dark && logo && logo.dataset.light) logo.src = logo.dataset.light;
+				document.querySelectorAll(".nxp-tile").forEach(function (t) {
+					t.addEventListener("pointermove", function (e) {
+						var r = t.getBoundingClientRect();
+						t.style.setProperty("--mx", e.clientX - r.left + "px");
+						t.style.setProperty("--my", e.clientY - r.top + "px");
+					});
+				});
 		})();
 	</script>
 </body>

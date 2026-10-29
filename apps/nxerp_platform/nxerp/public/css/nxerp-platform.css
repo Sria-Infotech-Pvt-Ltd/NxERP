@@ -14,19 +14,49 @@
 	font-family: "NX Inter", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif; font-feature-settings: "kern", "calt", "cv11";
 	-webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
 	color: var(--ink-gray-9);
+	/* Static mesh: warm light from the top corners, a cooler umber pool at the foot. */
 	background:
-		radial-gradient(60rem 28rem at 12% -6%, var(--nxp-glow), transparent 70%),
-		radial-gradient(44rem 24rem at 100% 0%, color-mix(in srgb, var(--accent-300) 12%, transparent), transparent 72%),
-		var(--surface-base);
+		radial-gradient(72rem 38rem at 6% -10%, color-mix(in srgb, var(--brand-amber) 24%, transparent), transparent 66%),
+		radial-gradient(58rem 34rem at 98% 0%, color-mix(in srgb, var(--accent-300) 30%, transparent), transparent 68%),
+		radial-gradient(64rem 36rem at 50% 120%, color-mix(in srgb, var(--brand-umber) 20%, transparent), transparent 70%),
+		linear-gradient(180deg, var(--surface-base), color-mix(in srgb, var(--surface-base) 90%, var(--surface-gray-2)));
 	background-attachment: fixed;
 }
+/* Aurora: oversized so it can drift without exposing an edge; transform-only animation stays on the GPU.
+   Wide, overlapping blobs so no dark gap shows between them. */
+.nxp-body::after {
+	content: ""; position: fixed; inset: -30%; z-index: -2; pointer-events: none;
+	background:
+		radial-gradient(46rem 36rem at 22% 30%, color-mix(in srgb, var(--brand-amber) 34%, transparent), transparent 72%),
+		radial-gradient(42rem 34rem at 78% 22%, color-mix(in srgb, var(--accent-300) 40%, transparent), transparent 72%),
+		radial-gradient(48rem 38rem at 64% 78%, color-mix(in srgb, var(--accent-500) 26%, transparent), transparent 72%),
+		radial-gradient(40rem 32rem at 14% 82%, color-mix(in srgb, var(--brand-taupe) 30%, transparent), transparent 72%),
+		radial-gradient(60rem 44rem at 50% 50%, color-mix(in srgb, var(--accent-200) 22%, transparent), transparent 75%);
+	opacity: .8; will-change: transform;
+	animation: nxp-aurora 36s ease-in-out infinite alternate;
+}
+:root[data-theme="dark"] .nxp-body::after { opacity: .5; }
+/* Soft spotlight behind the headline gives the eye somewhere to land. */
+.nxp-main:not(.nxp-center)::before {
+	content: ""; position: absolute; left: 50%; top: 18%; width: min(64rem, 100%); height: 26rem; transform: translateX(-50%); z-index: -1; pointer-events: none;
+	background: radial-gradient(closest-side, color-mix(in srgb, var(--brand-amber) 15%, transparent), transparent);
+}
+/* Hairline grid that fades out from the centre, like a blueprint under the content. */
 .nxp-body::before {
 	content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
-	background-image: radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--ink-gray-9) 13%, transparent) 1px, transparent 0);
-	background-size: 24px 24px;
-	-webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 38%, var(--brand-charcoal) 0%, transparent 78%);
-	mask-image: radial-gradient(ellipse 70% 60% at 50% 38%, var(--brand-charcoal) 0%, transparent 78%);
+	background-image:
+		linear-gradient(to right, color-mix(in srgb, var(--ink-gray-9) 7%, transparent) 1px, transparent 1px),
+		linear-gradient(to bottom, color-mix(in srgb, var(--ink-gray-9) 7%, transparent) 1px, transparent 1px);
+	background-size: 64px 64px; background-position: center top;
+	-webkit-mask-image: radial-gradient(ellipse 75% 65% at 50% 36%, var(--brand-charcoal) 0%, transparent 80%);
+	mask-image: radial-gradient(ellipse 75% 65% at 50% 36%, var(--brand-charcoal) 0%, transparent 80%);
 }
+/* Film grain breaks up gradient banding. Pure noise, no colour, so it needs no token. */
+html::after {
+	content: ""; position: fixed; inset: 0; z-index: 50; pointer-events: none; opacity: .045; mix-blend-mode: multiply;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+:root[data-theme="dark"] html::after, html[data-theme="dark"]::after { mix-blend-mode: screen; opacity: .06; }
 .nxp-skip { position: absolute; left: -999px; top: 0; background: var(--surface-accent-6); color: var(--ink-accent-on); padding: .5rem 1rem; z-index: 10; }
 .nxp-skip:focus { left: 1rem; top: 1rem; }
 
@@ -67,7 +97,7 @@
 .nxp-link { color: var(--ink-accent-link); text-decoration: underline; text-underline-offset: 2px; }
 
 .nxp-main { flex: 1; width: 100%; max-width: 68rem; margin: 0 auto; padding: clamp(2rem, 8vw, 5.5rem) clamp(1rem, 4vw, 3rem) clamp(2rem, 6vw, 4rem); }
-.nxp-main:not(.nxp-center) { display: flex; flex-direction: column; justify-content: center; padding-top: clamp(1.5rem, 4vw, 3rem); padding-bottom: clamp(3rem, 9vw, 6.5rem); }
+.nxp-main:not(.nxp-center) { position: relative; display: flex; flex-direction: column; justify-content: center; padding-top: clamp(1.5rem, 4vw, 3rem); padding-bottom: clamp(3rem, 9vw, 6.5rem); }
 .nxp-center { max-width: 34rem; text-align: center; align-self: center; display: flex; flex-direction: column; justify-content: center; }
 .nxp-intro { text-align: center; margin-bottom: clamp(2rem, 5vw, 3.25rem); }
 .nxp-eyebrow {
@@ -77,7 +107,11 @@
 	color: var(--ink-accent-link); font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
 }
 .nxp-eyebrow::before { content: ""; width: .4rem; height: .4rem; border-radius: 50%; background: var(--surface-accent-6); }
-.nxp-title { font-family: "NX Inter", "Inter", system-ui, sans-serif; font-size: clamp(2rem, 5vw, 3.1rem); line-height: 1.08; margin: 0 0 .85rem; letter-spacing: -.02em; font-weight: 650; }
+.nxp-title {
+	font-family: "NX Inter", "Inter", system-ui, sans-serif; font-size: clamp(2rem, 5vw, 3.1rem); line-height: 1.08; margin: 0 0 .85rem; letter-spacing: -.02em; font-weight: 650;
+	background: linear-gradient(100deg, var(--ink-gray-9) 35%, var(--surface-accent-8) 100%);
+	-webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: var(--ink-gray-9);
+}
 .nxp-sub { margin: 0 auto; max-width: 32rem; color: var(--ink-gray-6); font-size: 1.05rem; line-height: 1.55; }
 .nxp-center .nxp-sub { margin-bottom: 2rem; }
 
@@ -86,8 +120,9 @@
 .nxp-tile {
 	position: relative; overflow: hidden; flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 1.6rem; min-height: 13rem;
 	padding: 1.5rem; border-radius: 1.25rem; isolation: isolate;
-	background: linear-gradient(180deg, var(--surface-elevation-1), color-mix(in srgb, var(--surface-elevation-1) 88%, var(--surface-gray-1)));
-	border: 1px solid var(--outline-gray-2);
+	background: linear-gradient(180deg, color-mix(in srgb, var(--surface-elevation-1) 82%, transparent), color-mix(in srgb, var(--surface-elevation-1) 64%, transparent));
+	-webkit-backdrop-filter: saturate(1.5) blur(16px); backdrop-filter: saturate(1.5) blur(16px);
+	border: 1px solid color-mix(in srgb, var(--outline-gray-2) 85%, transparent);
 	box-shadow: 0 1px 2px var(--nxp-shadow-soft), 0 10px 28px -16px var(--nxp-shadow), inset 0 1px 0 color-mix(in srgb, var(--brand-paper) 70%, transparent);
 	color: var(--ink-gray-9); text-decoration: none;
 	transition: border-color .18s, transform .18s, box-shadow .18s;
@@ -96,9 +131,10 @@
 	content: ""; position: absolute; inset: 0 0 auto 0; height: 3px; z-index: -1;
 	background: var(--surface-accent-6); transform: scaleX(0); transform-origin: left; transition: transform .25s;
 }
+/* Spotlight follows the pointer (--mx/--my set by the script in apps.html); rests top-right without JS. */
 .nxp-tile::after {
-	content: ""; position: absolute; right: -3rem; top: -3rem; width: 11rem; height: 11rem; z-index: -1; border-radius: 50%;
-	background: radial-gradient(circle, color-mix(in srgb, var(--brand-amber) 20%, transparent), transparent 70%);
+	content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+	background: radial-gradient(16rem circle at var(--mx, 85%) var(--my, 0%), color-mix(in srgb, var(--brand-amber) 26%, transparent), transparent 65%);
 	opacity: 0; transition: opacity .25s;
 }
 .nxp-tile:hover { border-color: color-mix(in srgb, var(--brand-amber) 60%, var(--outline-gray-2)); transform: translateY(-4px); box-shadow: 0 2px 4px var(--nxp-shadow-soft), 0 22px 40px -18px var(--nxp-shadow); }
@@ -126,6 +162,10 @@
 .nxp-button:hover { background: var(--surface-gray-8); }
 .nxp-footer { padding: 1.5rem clamp(1rem, 4vw, 3rem) 2rem; text-align: center; font-size: .8rem; color: var(--ink-gray-5); }
 
+@keyframes nxp-aurora {
+	from { transform: translate3d(-3%, -2%, 0) rotate(0deg) scale(1); }
+	to { transform: translate3d(3%, 3%, 0) rotate(6deg) scale(1.08); }
+}
 @keyframes nxp-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @media (max-width: 520px) {
 	.nxp-name, .nxp-signout span { display: none; }
@@ -133,7 +173,7 @@
 	.nxp-signout { padding: .55rem; }
 }
 @media (prefers-reduced-motion: reduce) {
-	.nxp-grid > li { animation: none; }
+	.nxp-grid > li, .nxp-body::after { animation: none; }
 	.nxp-tile, .nxp-arrow, .nxp-tile::before, .nxp-tile::after, .nxp-signout { transition: none; }
 	.nxp-tile:hover { transform: none; }
 	.nxp-tile:hover .nxp-arrow { transform: none; }
