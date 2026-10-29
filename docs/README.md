@@ -104,3 +104,4 @@ Further runbooks appear in [runbooks/](runbooks/) as the deployment owners add t
 
 A new document is added here in the same pull request that creates it. A document that is out of date is fixed or marked so at its top, not left to mislead. Links in this index
 to pages owned by other work streams (governance, runbooks, acceptance) are links to files that are written there; if one is missing in your checkout, it has not landed yet.
+docs/restructure/ : the pre-work audit/plan (RESTRUCTURE_PLAN.md) and the baseline logs.
