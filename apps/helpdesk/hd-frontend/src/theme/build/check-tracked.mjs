@@ -37,7 +37,8 @@ const REQUIRED = [
   "helpdesk/theme_tokens.py",
 ];
 
-if (!fs.existsSync(path.join(REPO, ".git"))) {
+// the repository root may be a parent folder (this app lives in apps/helpdesk of the NXERP repository)
+if (git("rev-parse", "--is-inside-work-tree").trim() !== "true") {
   console.log("tracked: not a git checkout, skipped.");
   process.exit(0);
 }

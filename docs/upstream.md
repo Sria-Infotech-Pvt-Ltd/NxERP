@@ -19,4 +19,6 @@
 | Parity features | unseen-assigned badge (`helpdesk/api/unseen.py`, `hd-frontend/src/stores/unseen.ts`), manager @mention tests |
 | Not included | uncommitted "Assignee follows Team" work (kept as a patch outside the repository) |
 
+| Monorepo adaptation | `hd-frontend/src/theme/build/check-tracked.mjs` finds the git root above `apps/helpdesk` (it used to skip silently when no `.git` sat beside it) |
+
 Keep this list current when you touch Helpdesk (rule 3, `docs/architecture/rules.md`).
