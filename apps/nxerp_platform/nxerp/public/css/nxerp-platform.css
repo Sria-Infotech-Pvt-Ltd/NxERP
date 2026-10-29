@@ -1,34 +1,145 @@
 /* Platform pages (launcher, no-access). Colors come only from the generated palette tokens in
    nxerp-theme.css (`yarn theme:build` in the Helpdesk repo): no literal colors here. */
+@font-face {
+	font-family: "Manrope";
+	src: url("/assets/nxerp/nxerp_login/fonts/manrope-latin.woff2") format("woff2");
+	font-weight: 400 800; font-style: normal; font-display: swap;
+}
+@font-face {
+	font-family: "Space Grotesk";
+	src: url("/assets/nxerp/nxerp_login/fonts/space-grotesk-latin.woff2") format("woff2");
+	font-weight: 400 700; font-style: normal; font-display: swap;
+}
 * { box-sizing: border-box; }
 .nxp-body {
+	--nxp-glow: color-mix(in srgb, var(--brand-amber) 16%, transparent);
+	--nxp-shadow: color-mix(in srgb, var(--ink-gray-9) 14%, transparent);
+	--nxp-shadow-soft: color-mix(in srgb, var(--ink-gray-9) 8%, transparent);
 	margin: 0; min-height: 100vh; display: flex; flex-direction: column;
 	font-family: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
-	background: var(--surface-base); color: var(--ink-gray-9);
+	-webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+	color: var(--ink-gray-9);
+	background:
+		radial-gradient(60rem 28rem at 12% -6%, var(--nxp-glow), transparent 70%),
+		radial-gradient(44rem 24rem at 100% 0%, color-mix(in srgb, var(--accent-300) 12%, transparent), transparent 72%),
+		var(--surface-base);
+	background-attachment: fixed;
+}
+.nxp-body::before {
+	content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+	background-image: radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--ink-gray-9) 13%, transparent) 1px, transparent 0);
+	background-size: 24px 24px;
+	-webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 38%, var(--brand-charcoal) 0%, transparent 78%);
+	mask-image: radial-gradient(ellipse 70% 60% at 50% 38%, var(--brand-charcoal) 0%, transparent 78%);
 }
 .nxp-skip { position: absolute; left: -999px; top: 0; background: var(--surface-accent-6); color: var(--ink-accent-on); padding: .5rem 1rem; z-index: 10; }
 .nxp-skip:focus { left: 1rem; top: 1rem; }
-.nxp-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem clamp(1rem, 4vw, 3rem); border-bottom: 1px solid var(--outline-gray-2); }
-.nxp-logo { height: 32px; width: auto; }
-.nxp-user { display: flex; align-items: center; gap: 1rem; font-size: .9rem; color: var(--ink-gray-6); }
-.nxp-link { color: var(--ink-accent-link); text-decoration: underline; text-underline-offset: 2px; }
-.nxp-main { flex: 1; width: 100%; max-width: 62rem; margin: 0 auto; padding: clamp(1.5rem, 6vw, 4rem) clamp(1rem, 4vw, 3rem); }
-.nxp-center { max-width: 34rem; text-align: center; align-self: center; display: flex; flex-direction: column; justify-content: center; }
-.nxp-title { font-size: clamp(1.5rem, 4vw, 2rem); margin: 0 0 .5rem; letter-spacing: -.01em; }
-.nxp-sub { margin: 0 0 2rem; color: var(--ink-gray-6); line-height: 1.5; }
-.nxp-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr)); }
-.nxp-tile {
-	display: flex; flex-direction: column; align-items: center; gap: .9rem; padding: 1.75rem 1rem;
-	background: var(--surface-gray-1); border: 1px solid var(--outline-gray-2); border-radius: .9rem;
-	color: var(--ink-gray-9); text-decoration: none; transition: border-color .15s, transform .15s;
+
+.nxp-header {
+	position: sticky; top: .75rem; z-index: 5; margin: .75rem clamp(.75rem, 3vw, 2rem) 0;
+	display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+	padding: .6rem .6rem .6rem 1.15rem; border-radius: 1rem;
+	background: color-mix(in srgb, var(--surface-elevation-1) 72%, transparent);
+	-webkit-backdrop-filter: saturate(1.6) blur(18px); backdrop-filter: saturate(1.6) blur(18px);
+	border: 1px solid color-mix(in srgb, var(--outline-gray-2) 80%, transparent);
+	box-shadow: 0 1px 2px var(--nxp-shadow-soft), 0 12px 32px -18px var(--nxp-shadow), inset 0 1px 0 color-mix(in srgb, var(--brand-paper) 55%, transparent);
 }
-.nxp-tile:hover { border-color: var(--surface-accent-6); transform: translateY(-2px); }
-.nxp-tile:focus-visible, .nxp-button:focus-visible, .nxp-link:focus-visible { outline: 3px solid var(--surface-accent-6); outline-offset: 3px; }
-.nxp-mark { width: 4rem; height: 4rem; display: grid; place-items: center; background: var(--surface-base); border-radius: 1rem; border: 1px solid var(--outline-gray-2); }
-.nxp-mark img { width: 2.5rem; height: 2.5rem; object-fit: contain; }
-.nxp-tile-title { font-weight: 600; font-size: 1.05rem; }
+.nxp-header::after {
+	content: ""; position: absolute; left: 14%; right: 14%; bottom: -1px; height: 1px; pointer-events: none;
+	background: linear-gradient(90deg, transparent, var(--surface-accent-6) 50%, transparent); opacity: .7;
+}
+.nxp-logo { height: 30px; width: auto; display: block; }
+.nxp-user { display: flex; align-items: center; gap: .5rem; font-size: .9rem; color: var(--ink-gray-6); }
+.nxp-me {
+	display: inline-flex; align-items: center; gap: .6rem; padding: .22rem .85rem .22rem .22rem; border-radius: 999px;
+	background: color-mix(in srgb, var(--surface-gray-1) 70%, transparent); border: 1px solid var(--outline-gray-2);
+}
+.nxp-avatar {
+	width: 2rem; height: 2rem; border-radius: 50%; display: grid; place-items: center; flex: none;
+	background: linear-gradient(145deg, var(--surface-accent-5), var(--surface-accent-7)); color: var(--ink-accent-on);
+	font-size: .72rem; font-weight: 800; letter-spacing: .02em;
+	box-shadow: inset 0 1px 0 color-mix(in srgb, var(--brand-paper) 45%, transparent), 0 2px 6px color-mix(in srgb, var(--brand-amber) 35%, transparent);
+}
+.nxp-name { font-weight: 600; color: var(--ink-gray-8); }
+.nxp-signout {
+	display: inline-flex; align-items: center; gap: .45rem; padding: .55rem .85rem; border-radius: .75rem;
+	border: 1px solid transparent; background: transparent;
+	color: var(--ink-gray-6); font-weight: 600; font-size: .85rem; text-decoration: none;
+	transition: color .15s, border-color .15s, background-color .15s;
+}
+.nxp-signout svg { width: 1rem; height: 1rem; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.nxp-signout:hover { color: var(--ink-gray-9); background: var(--surface-gray-1); border-color: var(--outline-gray-2); }
+.nxp-link { color: var(--ink-accent-link); text-decoration: underline; text-underline-offset: 2px; }
+
+.nxp-main { flex: 1; width: 100%; max-width: 68rem; margin: 0 auto; padding: clamp(2rem, 8vw, 5.5rem) clamp(1rem, 4vw, 3rem) clamp(2rem, 6vw, 4rem); }
+.nxp-main:not(.nxp-center) { display: flex; flex-direction: column; justify-content: center; padding-top: clamp(1.5rem, 4vw, 3rem); padding-bottom: clamp(3rem, 9vw, 6.5rem); }
+.nxp-center { max-width: 34rem; text-align: center; align-self: center; display: flex; flex-direction: column; justify-content: center; }
+.nxp-intro { text-align: center; margin-bottom: clamp(2rem, 5vw, 3.25rem); }
+.nxp-eyebrow {
+	display: inline-flex; align-items: center; gap: .5rem; margin: 0 0 1.1rem; padding: .3rem .75rem; border-radius: 999px;
+	background: color-mix(in srgb, var(--brand-amber) 14%, transparent);
+	border: 1px solid color-mix(in srgb, var(--brand-amber) 38%, transparent);
+	color: var(--ink-accent-link); font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+}
+.nxp-eyebrow::before { content: ""; width: .4rem; height: .4rem; border-radius: 50%; background: var(--surface-accent-6); }
+.nxp-title { font-family: "Space Grotesk", "Manrope", system-ui, sans-serif; font-size: clamp(2rem, 5vw, 3.1rem); line-height: 1.08; margin: 0 0 .85rem; letter-spacing: -.03em; font-weight: 700; }
+.nxp-sub { margin: 0 auto; max-width: 32rem; color: var(--ink-gray-6); font-size: 1.05rem; line-height: 1.55; }
+.nxp-center .nxp-sub { margin-bottom: 2rem; }
+
+.nxp-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.5rem; justify-content: center; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 19rem)); }
+.nxp-grid > li { display: flex; animation: nxp-rise .5s cubic-bezier(.2, .7, .2, 1) both; animation-delay: calc(var(--i, 0) * 70ms); }
+.nxp-tile {
+	position: relative; overflow: hidden; flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 1.6rem; min-height: 13rem;
+	padding: 1.5rem; border-radius: 1.25rem; isolation: isolate;
+	background: linear-gradient(180deg, var(--surface-elevation-1), color-mix(in srgb, var(--surface-elevation-1) 88%, var(--surface-gray-1)));
+	border: 1px solid var(--outline-gray-2);
+	box-shadow: 0 1px 2px var(--nxp-shadow-soft), 0 10px 28px -16px var(--nxp-shadow), inset 0 1px 0 color-mix(in srgb, var(--brand-paper) 70%, transparent);
+	color: var(--ink-gray-9); text-decoration: none;
+	transition: border-color .18s, transform .18s, box-shadow .18s;
+}
+.nxp-tile::before {
+	content: ""; position: absolute; inset: 0 0 auto 0; height: 3px; z-index: -1;
+	background: var(--surface-accent-6); transform: scaleX(0); transform-origin: left; transition: transform .25s;
+}
+.nxp-tile::after {
+	content: ""; position: absolute; right: -3rem; top: -3rem; width: 11rem; height: 11rem; z-index: -1; border-radius: 50%;
+	background: radial-gradient(circle, color-mix(in srgb, var(--brand-amber) 20%, transparent), transparent 70%);
+	opacity: 0; transition: opacity .25s;
+}
+.nxp-tile:hover { border-color: color-mix(in srgb, var(--brand-amber) 60%, var(--outline-gray-2)); transform: translateY(-4px); box-shadow: 0 2px 4px var(--nxp-shadow-soft), 0 22px 40px -18px var(--nxp-shadow); }
+.nxp-tile:hover::before, .nxp-tile:focus-visible::before { transform: scaleX(1); }
+.nxp-tile:hover::after, .nxp-tile:focus-visible::after { opacity: 1; }
+.nxp-tile:focus-visible, .nxp-button:focus-visible, .nxp-link:focus-visible, .nxp-signout:focus-visible { outline: 3px solid var(--surface-accent-6); outline-offset: 3px; }
+.nxp-mark {
+	flex: none; width: 4.5rem; height: 4.5rem; display: grid; place-items: center; border-radius: 1.2rem;
+	background: var(--surface-base); border: 1px solid var(--outline-gray-2);
+	box-shadow: inset 0 1px 0 color-mix(in srgb, var(--brand-paper) 60%, transparent), 0 3px 8px var(--nxp-shadow-soft);
+}
+.nxp-mark img { width: 2.9rem; height: 2.9rem; object-fit: contain; border-radius: .6rem; }
+.nxp-tile-body { margin-top: auto; width: 100%; display: flex; flex-direction: column; gap: .25rem; padding-right: 3rem; }
+.nxp-tile-title { font-family: "Space Grotesk", "Manrope", system-ui, sans-serif; font-weight: 700; font-size: 1.35rem; letter-spacing: -.015em; }
+.nxp-tile-cta { font-size: .88rem; color: var(--ink-gray-5); }
+.nxp-arrow {
+	position: absolute; right: 1.25rem; bottom: 1.25rem; width: 2.4rem; height: 2.4rem; padding: .6rem; border-radius: 50%;
+	fill: none; stroke: var(--ink-gray-6); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+	background: var(--surface-gray-1); transition: background-color .18s, stroke .18s, transform .18s;
+}
+.nxp-tile:hover .nxp-arrow, .nxp-tile:focus-visible .nxp-arrow { background: var(--surface-accent-6); stroke: var(--ink-accent-on); transform: translateX(3px); }
+
 .nxp-actions { display: flex; gap: 1.25rem; justify-content: center; align-items: center; flex-wrap: wrap; margin: 0; }
 .nxp-button { display: inline-block; background: var(--surface-gray-9); color: var(--ink-gray-1); padding: .7rem 1.4rem; border-radius: .6rem; text-decoration: none; font-weight: 600; }
 .nxp-button:hover { background: var(--surface-gray-8); }
-@media (max-width: 520px) { .nxp-user .nxp-name { display: none; } .nxp-grid { grid-template-columns: 1fr 1fr; } }
-@media (prefers-reduced-motion: reduce) { .nxp-tile { transition: none; } .nxp-tile:hover { transform: none; } }
+.nxp-footer { padding: 1.5rem clamp(1rem, 4vw, 3rem) 2rem; text-align: center; font-size: .8rem; color: var(--ink-gray-5); }
+
+@keyframes nxp-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@media (max-width: 520px) {
+	.nxp-name, .nxp-signout span { display: none; }
+	.nxp-me { padding: .22rem; }
+	.nxp-signout { padding: .55rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+	.nxp-grid > li { animation: none; }
+	.nxp-tile, .nxp-arrow, .nxp-tile::before, .nxp-tile::after, .nxp-signout { transition: none; }
+	.nxp-tile:hover { transform: none; }
+	.nxp-tile:hover .nxp-arrow { transform: none; }
+}

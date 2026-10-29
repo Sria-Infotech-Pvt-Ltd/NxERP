@@ -17,31 +17,45 @@
 		})();
 	</script>
 	<link rel="stylesheet" href="/assets/nxerp/css/nxerp-theme.css" />
-	<link rel="stylesheet" href="/assets/nxerp/css/nxerp-platform.css" />
+	<link rel="stylesheet" href="/assets/nxerp/css/nxerp-platform.css?v=4" />
 </head>
 <body class="nxp-body">
 	<a class="nxp-skip" href="#apps">{{ _("Skip to applications") }}</a>
 	<header class="nxp-header">
 		<img class="nxp-logo" src="/assets/nxerp/nxerp_login/images/nxerp-wordmark.png" data-light="/assets/nxerp/nxerp_login/images/nxerp-wordmark-light.png" alt="NXERP" />
 		<nav class="nxp-user" aria-label="{{ _('Account') }}">
-			<span class="nxp-name">{{ full_name | e }}</span>
-			<a class="nxp-link" href="/logout">{{ _("Sign out") }}</a>
+			<span class="nxp-me">
+				<span class="nxp-avatar" aria-hidden="true">{{ (full_name.split() | map("first") | list)[:2] | join("") | upper | e }}</span>
+				<span class="nxp-name">{{ full_name | e }}</span>
+			</span>
+			<a class="nxp-signout" href="/logout">
+				<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4.5H6.5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2H9M15.5 8 20 12l-4.5 4M20 12H9.5" /></svg>
+				<span>{{ _("Sign out") }}</span>
+			</a>
 		</nav>
 	</header>
 	<main class="nxp-main" id="main">
-		<h1 class="nxp-title">{{ _("Choose an application") }}</h1>
-		<p class="nxp-sub">{{ _("You have access to these applications.") }}</p>
+		<div class="nxp-intro">
+			<p class="nxp-eyebrow">{{ _("Workspace") }}</p>
+			<h1 class="nxp-title">{{ _("Choose an application") }}</h1>
+			<p class="nxp-sub">{{ _("You have access to these applications.") }}</p>
+		</div>
 		<ul class="nxp-grid" id="apps" aria-label="{{ _('Applications') }}">
 			{% for app in apps %}
-			<li>
+			<li style="--i: {{ loop.index0 }}">
 				<a class="nxp-tile" href="{{ app.route | e }}" data-app="{{ app.key | e }}">
 					<span class="nxp-mark">{% if app.logo %}<img src="{{ app.logo | e }}" alt="" />{% endif %}</span>
-					<span class="nxp-tile-title">{{ app.title | e }}</span>
+					<span class="nxp-tile-body">
+						<span class="nxp-tile-title">{{ app.title | e }}</span>
+						<span class="nxp-tile-cta">{{ _("Open application") }}</span>
+					</span>
+					<svg class="nxp-arrow" viewBox="0 0 24 24" width="38" height="38" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
 				</a>
 			</li>
 			{% endfor %}
 		</ul>
 	</main>
+	<footer class="nxp-footer">{{ _("One sign-in for all your applications.") }}</footer>
 	<script>
 		(function () {
 			var dark = document.documentElement.getAttribute("data-theme") === "dark";
