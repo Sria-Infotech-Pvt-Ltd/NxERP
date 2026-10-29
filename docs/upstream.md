@@ -18,7 +18,6 @@
 | Theme | token-driven palette (`hd-frontend/src/theme`, generated `helpdesk/theme_tokens.py`), theme persistence on the user (`helpdesk/api/theme.py`) |
 | Parity features | unseen-assigned badge (`helpdesk/api/unseen.py`, `hd-frontend/src/stores/unseen.ts`), manager @mention tests |
 | Not included | uncommitted "Assignee follows Team" work (kept as a patch outside the repository) |
-
 | Monorepo adaptation | `hd-frontend/src/theme/build/check-tracked.mjs` finds the git root above `apps/helpdesk` (it used to skip silently when no `.git` sat beside it) |
 
 Keep this list current when you touch Helpdesk (rule 3, `docs/architecture/rules.md`).
