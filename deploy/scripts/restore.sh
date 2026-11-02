@@ -52,6 +52,8 @@ fi
 remote="/tmp/nxerp-restore-$$"
 inbench "mkdir -p $remote" >/dev/null
 dc cp "$(hostpath "$src")/." "$NXERP_SERVICE:$remote/" >/dev/null
+# docker cp leaves the files root-owned (and private, if they were on the host); bench runs as frappe and must read them
+dc exec -T -u root "$NXERP_SERVICE" chown -R frappe:frappe "$remote" >/dev/null
 cleanup() { inbench "rm -rf $remote" >/dev/null 2>&1 || true; }
 trap cleanup EXIT
 
