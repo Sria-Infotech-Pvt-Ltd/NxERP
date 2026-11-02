@@ -1,4 +1,5 @@
 import json
+import os
 from datetime import datetime
 from typing import Any
 from unittest.mock import MagicMock, patch
@@ -764,8 +765,9 @@ def make_team(team_name, members=[], disabled=False):
 
 def upload_test_file(file_name: str) -> str:
     """Upload an image from hd-frontend/src/assets/images/ as a standalone private File, returning its name."""
-    file_path = frappe.get_app_path(
-        "helpdesk", "..", "hd-frontend", "src", "assets", "images", file_name
+    # not get_app_path("helpdesk", "..", "hd-frontend", ...): it scrubs every part, turning the hyphen into an underscore
+    file_path = os.path.join(
+        frappe.get_app_path("helpdesk", ".."), "hd-frontend", "src", "assets", "images", file_name
     )
     with open(file_path, "rb") as f:
         content = f.read()
