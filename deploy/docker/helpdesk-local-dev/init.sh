@@ -1,8 +1,8 @@
-#!bin/bash
+#!/bin/bash
 
 if [ -d "/home/frappe/frappe-bench/apps/frappe" ]; then
     echo "Bench already exists, skipping init"
-    cd frappe-bench
+    cd frappe-bench || exit
     bench start
 else
     echo "Creating new bench..."
@@ -14,7 +14,7 @@ skip-ssl
 
 bench init --skip-redis-config-generation frappe-bench --version version-15
 
-cd frappe-bench
+cd frappe-bench || exit
 
 # Use containers instead of localhost
 bench set-mariadb-host mariadb
