@@ -21,7 +21,8 @@ contains a stack trace, a list of the apps a user lacks, or the name of a grant 
 | `GET /nxerp/no-access` | `nxerp` (`www/nxerp/no_access.*`) | none (it is the safe place to send people) | everyone | n/a | n/a. Shows a "Manage user access" link only to platform administrators; nothing else varies by user |
 | `GET /nxerp/test-app` | `nxerp`, **test-only** | session | holders of a test-only registered app, and only when the site has `allow_tests` on | Guest: 301 to `/login`; no grant: 301 to the friendly page | **404 on any site without `allow_tests`** (production). Never shipped as an app |
 | `/helpdesk`, `/helpdesk/*` | Helpdesk (SPA) behind the `nxerp` gate | session | staff holding the Helpdesk grant (or implied `Agent` / `Agent Manager`); customers (`HD Customer*`) on the portal routes | Guest: 302 to `/login?redirect-to=<path>`. Signed in without the grant: 302 to the friendly page | unknown SPA paths are the SPA's own 404 view |
-| `/desk`, `/desk/*` (ERPNext) | Frappe/ERPNext behind the `nxerp` gate | session | staff holding the ERPNext grant; platform administrators keep the Desk shell (never ERPNext data) | Guest: 302 to `/login?redirect-to=<path>`. No grant: 302 to the friendly page. Customers: 403 | Frappe's own 404 |
+| `/desk/*` (ERPNext, e.g. `/desk/home`) | Frappe/ERPNext behind the `nxerp` gate | session | staff holding the ERPNext grant; platform administrators keep the Desk shell (never ERPNext data) | Guest: 302 to `/login?redirect-to=<path>`. No grant: 302 to the friendly page. Customers: 403 | Frappe's own 404 |
+| bare `/desk` (and `/desk/`) | `nxerp` (`routing.desk_root_redirect`, called from the auth hook) | session | not a gateway: `/nxerp/apps` is the only one. After the gate allows it, a user with the ERPNext grant is redirected (302) to where the router would send them (`/desk/home` for ERPNext only, `/nxerp/apps` for several apps) | unchanged: the gate decides first (no grant: friendly page; guest: login) | **Not redirected:** a platform administrator without the ERPNext grant (keeps the Desk shell to grant access), an unfinished setup wizard (Administrator keeps the bare root until it is done), non-GET requests, and any site with `nxerp_keep_desk_root = 1` (kill-switch, takes effect within the 60 s config cache) |
 | `/app`, `/app/*`, `/apps` | Frappe | as `/desk` | as `/desk` | as `/desk` | 301 to `/desk` (Frappe 16 behaviour, unchanged) |
 | `GET /logout` | Frappe (not overridden) | session | everyone | n/a | ends the session, then `/login` |
 | `/update-password?key=…` | Frappe (not overridden) | one-time key | holder of the emailed key | invalid or used key: Frappe's own message | n/a |
@@ -34,14 +35,14 @@ contains a stack trace, a list of the apps a user lacks, or the name of a grant 
 1. Guest or disabled user: `/login`.
 2. `redirect-to` honoured **only if** it passes `routing.safe_target` **and** the user may use the app that owns
    the path (`routing.authorised_target`). Otherwise ignored.
-3. Administrator while the setup wizard is unfinished: `/desk`, because only Desk's own router continues into the
+3. Administrator while the setup wizard is unfinished: bare `/desk` (the one place it is still a destination), because only Desk's own router continues into the
    wizard (ADR-004 rule 5).
 4. Otherwise `nxerp.access.resolve_landing`:
 
 | User holds | Lands on |
 | --- | --- |
 | no app | `/nxerp/no-access` |
-| exactly one app | that app's route (`/helpdesk/home`, `/desk`) |
+| exactly one app | that app's route (`/helpdesk/home`, `/desk/home`) |
 | two or more apps | `/nxerp/apps` |
 | only a customer or supplier portal role | the portal (`/helpdesk/my-tickets`) |
 

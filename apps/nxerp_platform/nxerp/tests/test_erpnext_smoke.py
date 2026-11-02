@@ -68,7 +68,7 @@ class TestErpnextSmoke(IntegrationTestCase):
 		super().tearDownClass()
 
 	def test_authorised_user_loads_desk(self):
-		resp = self.client.get("/desk")
+		resp = self.client.get("/desk/home")
 		self.assertEqual(resp.status_code, 200)
 		self.assertFalse(denied_by_gate(resp))
 
@@ -116,7 +116,7 @@ class TestErpnextSmoke(IntegrationTestCase):
 			access_api.set_app_access(email, "erpnext", 1)
 			frappe.db.commit()
 			# the same session, no re-login
-			self.assertEqual(client.get("/desk").status_code, 200)
+			self.assertEqual(client.get("/desk/home").status_code, 200)
 			self.assertEqual(client.get("/api/resource/Customer?limit_page_length=1").status_code, 200)
 
 			access_api.set_app_access(email, "erpnext", 0)

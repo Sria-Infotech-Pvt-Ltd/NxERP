@@ -190,7 +190,7 @@ class TestUnifiedExperience(IntegrationTestCase):
 	def test_router_destinations_per_persona(self):
 		expected = {
 			self.agent: "/helpdesk/home",  # Case 2: one app, straight in
-			self.erp: "/desk",
+			self.erp: "/desk/home",
 			self.both: "/nxerp/apps",  # more than one app: the launcher
 			self.noapps: "/nxerp/no-access",
 			self.customer: "/helpdesk/my-tickets",
@@ -244,6 +244,24 @@ class TestUnifiedExperience(IntegrationTestCase):
 		self.assertIn(r.status_code, (301, 302))
 		self.assertEqual(location(r), "/nxerp/apps" if self.setup_complete else "/desk")
 
+	# --- the bare Desk root is not a second gateway ------------------------------------------
+
+	def test_the_desk_root_redirects_to_the_one_gateway_and_deep_links_still_open(self):
+		if not self.setup_complete:
+			self.skipTest("the redirect waits until the setup wizard has finished")
+		for email, target in ((self.erp, "/desk/home"), (self.both, "/nxerp/apps")):
+			for path in ("/desk", "/desk/"):
+				r = Client(email, self.password).get(path)
+				self.assertEqual(r.status_code, 302, (email, path))
+				self.assertEqual(location(r), target, (email, path))
+		for email in (self.erp, self.both):
+			self.assertEqual(Client(email, self.password).get("/desk/home").status_code, 200, email)
+		# the gate still decides first: no ERPNext grant is a refusal, not a redirect into ERPNext
+		for email in (self.agent, self.noapps):
+			self.assertEqual(
+				location(Client(email, self.password).get("/desk")), "/nxerp/no-access?app=erpnext", email
+			)
+
 	# --- the launcher ------------------------------------------------------------------------
 
 	def test_launcher_lists_only_authorised_apps_with_their_own_identities(self):
@@ -259,7 +277,7 @@ class TestUnifiedExperience(IntegrationTestCase):
 	def test_launcher_redirects_users_who_do_not_need_it(self):
 		for email, path in (
 			(self.agent, "/helpdesk/home"),
-			(self.erp, "/desk"),
+			(self.erp, "/desk/home"),
 			(self.noapps, "/nxerp/no-access"),
 		):
 			r = Client(email, self.password).get("/nxerp/apps")
@@ -296,7 +314,7 @@ class TestUnifiedExperience(IntegrationTestCase):
 				self.assertEqual(row["title"], {"erpnext": "ERPNext", "helpdesk": "Helpdesk"}[row["name"]])
 
 	def test_desk_boot_hides_framework_and_unheld_apps_and_adds_the_launcher_for_multi_app_users(self):
-		boot = boot_of(Client(self.both, self.password).get("/desk").text)
+		boot = boot_of(Client(self.both, self.password).get("/desk/home").text)
 		visible = [row["app_name"] for row in boot["app_data"] if row.get("on_apps_screen")]
 		self.assertEqual(sorted(visible), ["erpnext", "helpdesk"])
 		self.assertEqual(boot["nxerp"]["launcher"], "/nxerp/apps")
@@ -309,7 +327,7 @@ class TestUnifiedExperience(IntegrationTestCase):
 		self.assertIn("boot.nxerp.launcher", row["condition"])  # shown only when the server set a launcher
 
 	def test_desk_boot_has_no_launcher_row_for_a_single_app_user(self):
-		boot = boot_of(Client(self.erp, self.password).get("/desk").text)
+		boot = boot_of(Client(self.erp, self.password).get("/desk/home").text)
 		self.assertIsNone(boot["nxerp"]["launcher"])
 		# the row exists for everyone but its condition is false: boot.nxerp.launcher is null for this user
 		self.assertEqual(

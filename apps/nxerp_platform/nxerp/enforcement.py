@@ -25,7 +25,7 @@ from werkzeug.exceptions import HTTPException
 from werkzeug.utils import redirect as werkzeug_redirect
 from werkzeug.wrappers import Response
 
-from nxerp import access, registry
+from nxerp import access, registry, routing
 from nxerp.audit import log_denial
 
 # Never gated: authentication, the no-access page itself, static and public files.
@@ -260,11 +260,17 @@ def _deny_response(decision: Decision):
 def auth_hook():
 	"""Registered under `auth_hooks`. Raises an HTTP response (redirect or JSON 403), never a traceback."""
 	user = frappe.session.user
-	if user == "Administrator" or not getattr(frappe.local, "request", None):
+	if not getattr(frappe.local, "request", None):
 		return
 
 	request = frappe.local.request
 	path = request.path or ""
+
+	if user == "Administrator":  # never gated, but the bare Desk root is not a gateway for anyone
+		target = routing.desk_root_redirect(user, path, request.method)
+		if target:
+			raise HTTPException(response=werkzeug_redirect(target, code=302))
+		return
 
 	try:
 		decision = evaluate_request(user, path, request.method, frappe.local.form_dict or {})
@@ -280,6 +286,10 @@ def auth_hook():
 		)
 
 	if decision.allow:
+		# allowed by the gate; the bare Desk root is not a second gateway (routing.desk_root_redirect)
+		target = routing.desk_root_redirect(user, path, request.method)
+		if target:
+			raise HTTPException(response=werkzeug_redirect(target, code=302))
 		return
 
 	if decision.reason != "guest":

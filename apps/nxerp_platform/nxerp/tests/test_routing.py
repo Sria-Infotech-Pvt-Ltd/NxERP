@@ -177,7 +177,7 @@ class TestRouting(IntegrationTestCase):
 		self.assertEqual(self.route(self.agent), "/helpdesk/home")
 
 	def test_erpnext_only_user_goes_to_erpnext(self):
-		self.assertEqual(self.route(self.erp), "/desk")
+		self.assertEqual(self.route(self.erp), "/desk/home")
 
 	def test_a_user_with_two_apps_gets_the_launcher(self):
 		self.assertEqual(self.route(self.both), "/nxerp/apps")
@@ -194,6 +194,43 @@ class TestRouting(IntegrationTestCase):
 	def test_disabled_and_guest_go_to_login(self):
 		self.assertEqual(self.route(self.disabled), "/login")
 		self.assertEqual(self.route("Guest"), "/login")
+
+	# --- the bare Desk root is not a second gateway -----------------------------------------
+
+	def desk_root(self, user, path="/desk", method="GET", setup_complete=True, **site_config):
+		with (
+			patch.object(frappe, "is_setup_complete", return_value=setup_complete),
+			patch.dict(frappe.conf, site_config),
+		):
+			return routing.desk_root_redirect(user, path, method)
+
+	def test_the_desk_root_sends_an_erpnext_user_to_erpnext_and_a_multi_app_user_to_the_launcher(self):
+		for path in ("/desk", "/desk/"):
+			self.assertEqual(self.desk_root(self.erp, path), "/desk/home", path)
+			self.assertEqual(self.desk_root(self.both, path), "/nxerp/apps", path)
+
+	def test_the_desk_root_is_left_alone_for_everyone_else(self):
+		for user in ("Guest", self.sysmgr):  # the admin shell stays: it is how access is granted
+			self.assertIsNone(self.desk_root(user), user)
+		self.assertEqual(self.desk_root("Administrator"), "/nxerp/apps")  # Administrator sees one gateway too
+		self.assertIsNone(self.desk_root("Administrator", setup_complete=False))  # but the wizard still runs
+		for user in (self.agent, self.noapps, self.customer):  # not ours to decide: the gate refuses them
+			self.assertIsNone(self.desk_root(user), user)
+
+	def test_only_the_exact_desk_root_is_moved(self):
+		for path in ("/desk/home", "/desk/user", "/desk/customer", "/desk/customer/x", "/app", "/helpdesk/home"):
+			self.assertIsNone(self.desk_root(self.erp, path), path)
+			self.assertIsNone(self.desk_root(self.both, path), path)
+		self.assertIsNone(self.desk_root(self.erp, method="POST"))
+
+	def test_the_desk_root_keeps_the_setup_wizard_and_honours_the_kill_switch(self):
+		self.assertIsNone(self.desk_root(self.erp, setup_complete=False))
+		self.assertIsNone(self.desk_root(self.erp, nxerp_keep_desk_root=1))
+		self.assertEqual(self.desk_root(self.erp, nxerp_keep_desk_root=0), "/desk/home")
+
+	def test_the_desk_root_redirect_never_points_back_at_the_desk_root(self):
+		for user in ("Administrator", self.agent, self.erp, self.both, self.sysmgr, self.noapps, self.customer):
+			self.assertNotIn(self.desk_root(user), routing.DESK_ROOT_PATHS, user)
 
 	def test_a_good_redirect_wins_only_when_authorised(self):
 		self.assertEqual(self.route(self.agent, "/helpdesk/tickets/5"), "/helpdesk/tickets/5")

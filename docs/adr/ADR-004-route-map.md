@@ -46,3 +46,13 @@ The `/nxerp/*` prefix is reserved for the platform app (ADR-005).
 ## Consequences
 
 Open question for the owner: confirm `/login` as canonical (the brief also wrote "v1/login").
+
+## Amendment 1 (2026-11-02): the bare Desk root is not a gateway
+
+`/nxerp/apps` is the only gateway. Frappe's Desk root (`/desk`) is no longer a landing page or a tile target:
+
+- The registry route of ERPNext is `/desk/home` (ERPNext's own `app_home`), so the launcher, the router and Desk's app switcher send users to a concrete ERPNext page.
+- `routing.desk_root_redirect`, called from `enforcement.auth_hook` **after** the gate has allowed the request, redirects an exact `GET /desk` (or `/desk/`) to the router's destination for that user. Everything under `/desk/*` and `/app/*` is untouched: ERPNext, its setup wizard and `/desk/user` (access administration) live there and `/desk` is not moved or renamed (the "ERPNext" row above still holds).
+- Not redirected, so nothing that worked before is disturbed: an unfinished setup wizard (rule 5 stands, the wizard redirect is client-side in Desk, so Administrator keeps the bare root until setup is done), a platform administrator without the ERPNext grant, non-GET requests. Administrator is otherwise redirected like everyone else.
+- Kill-switch: site config `nxerp_keep_desk_root = 1` restores the old behaviour with no deploy.
+- Security is unchanged: the gate (`evaluate_request`) is not modified and still decides first; the redirect is routing, not access control.

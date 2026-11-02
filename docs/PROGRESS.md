@@ -11,6 +11,12 @@ Resume point for the next session. Update this file in every PR that changes pha
 | 3: Unified login, launcher, routing | **Complete locally and browser-verified (55/55); not pushed, no PR** |
 | 4: Helpdesk parity, CI/CD, release readiness, acceptance | **Built locally; nothing ran on GitHub; see `docs/acceptance/acceptance-report.md`** (9 BLOCKED-NEEDS-OWNER, most others PARTIAL) |
 
+## Retire the bare `/desk` gateway (2026-11-02)
+
+Branch `feature/retire-bare-desk-gateway`. `/nxerp/apps` is the only gateway; ERPNext's tile now targets `/desk/home` and an exact
+`GET /desk` is redirected to the user's router destination (ADR-004 amendment 1). `/desk/*` is untouched. Kill-switch:
+`nxerp_keep_desk_root`. Not committed, no PR. Verified so far: Python suites against a fresh server (see the session report); the browser journeys did not run (e2e site fixture failed).
+
 ## Phase 4 (2026-10-28)
 
 See `docs/acceptance/acceptance-report.md` (traceability matrix), `docs/parity/helpdesk-parity.md`, `docs/governance/owner-action-list.md`.

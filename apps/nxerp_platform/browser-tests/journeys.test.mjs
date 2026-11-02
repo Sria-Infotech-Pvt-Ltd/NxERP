@@ -89,7 +89,10 @@ test("Case 2: Helpdesk shows no switch-app menu to a single-app user", async () 
 test("an ERPNext-only user goes straight into ERPNext", async () => {
 	const { context, page } = await session(browser);
 	await signIn(page, email("erp"), PASSWORD);
-	assert.match(here(page), /^\/desk/);
+	assert.match(here(page), /^\/desk\/home/);
+	// the bare Desk root is not a second gateway: it leads to ERPNext's own home, never to a page of its own
+	await open(page, "/desk");
+	assert.match(here(page), /^\/desk\/home/, `the Desk root landed on ${here(page)}`);
 	await open(page, "/helpdesk/home");
 	assert.equal(url(page).pathname, "/nxerp/no-access");
 	await context.close();

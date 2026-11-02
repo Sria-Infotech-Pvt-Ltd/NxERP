@@ -21,7 +21,7 @@ A, D = "A", "D"
 #   kind "gate": a denial must come from NXERP's gate for logged-in users
 #   kind "doc":  a denial may come from the document-level hook or Frappe (generic refusal)
 SURFACES = [
-	("desk URL /desk", "gate", ("GET", "/desk"), [A, A, D, A, A, D, D, D, D, D]),
+	("desk URL /desk/home", "gate", ("GET", "/desk/home"), [A, A, D, A, A, D, D, D, D, D]),
 	("SPA URL /helpdesk/home", "gate", ("GET", "/helpdesk/home"), [A, D, A, D, A, A, D, D, D, D]),
 	(
 		"API method (ERPNext)",

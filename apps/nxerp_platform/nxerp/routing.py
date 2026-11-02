@@ -20,6 +20,7 @@ import frappe
 from nxerp import access, registry
 
 ROUTER_ROUTE = "/nxerp/go"
+DESK_ROOT_PATHS = ("/desk", "/desk/")
 MAX_TARGET_LENGTH = 512
 DECODE_ROUNDS = 3  # `%252f` style double encoding is decoded this many times before judging
 
@@ -111,6 +112,25 @@ def route(user: str, redirect_to=None) -> str:
 	if honoured:
 		return honoured
 	return landing_for(user)["destination"]
+
+
+def desk_root_redirect(user: str, path: str, method: str = "GET") -> str | None:
+	"""Where a signed-in user who opened the bare Desk root (`/desk`) is sent instead, or None to leave it alone.
+
+	`/nxerp/apps` is the one gateway, so Desk's own root screen is not a second one. Only the exact root path is
+	moved; `/desk/*` stays ERPNext's home and is untouched. Left alone: an unfinished setup (the wizard redirect
+	lives in Desk's client router, so Administrator keeps the bare root until it is done), a platform administrator without the ERPNext grant
+	(keeps the Desk shell to grant access), anyone the gate refuses, and a site that set `nxerp_keep_desk_root`.
+	"""
+	if method != "GET" or path not in DESK_ROOT_PATHS or user == "Guest":
+		return None
+	if frappe.conf.get("nxerp_keep_desk_root") or not frappe.is_setup_complete():
+		return None
+	entry, _ = registry.entry_for_path(path)
+	if entry is None or not access.can_access_app(user, entry.key):
+		return None
+	destination = route(user)
+	return None if destination in DESK_ROOT_PATHS else destination  # never a redirect loop
 
 
 def login_redirect_param(redirect_to) -> str | None:

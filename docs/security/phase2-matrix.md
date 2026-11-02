@@ -1,6 +1,6 @@
 | surface | admin | sysmgr | hd_agent | erp_user | both | customer | noapps | revoked | disabled | guest |
 |---|---|---|---|---|---|---|---|---|---|---|
-| desk URL /desk | A | A | D | A | A | D | D | D | D | D |
+| desk URL /desk/home | A | A | D | A | A | D | D | D | D | D |
 | SPA URL /helpdesk/home | A | D | A | D | A | A | D | D | D | D |
 | API method (ERPNext) | A | D | D | A | A | D | D | D | D | D |
 | API method (Helpdesk) | A | D | A | D | A | A | D | D | D | D |

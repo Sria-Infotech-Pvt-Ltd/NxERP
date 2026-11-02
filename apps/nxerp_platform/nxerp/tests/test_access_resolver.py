@@ -85,7 +85,7 @@ class TestAccessResolver(IntegrationTestCase):
 		user = self.user("erp", ["Sales User", ERP_ACCESS])
 		self.assertEqual(self.keys(user), ["erpnext"])
 		landing = access.resolve_landing(user)
-		self.assertEqual((landing["mode"], landing["destination"]), ("direct", "/desk"))
+		self.assertEqual((landing["mode"], landing["destination"]), ("direct", "/desk/home"))
 		self.assertFalse(access.can_access_app(user, "helpdesk"))
 
 	def test_erpnext_business_roles_alone_do_not_grant_the_app(self):
