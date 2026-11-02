@@ -42,7 +42,11 @@ if [ -z "${1:-}" ] || [ "$1" = first-run ]; then
 	pkill_server; start_server
 	run /workspace/apps/nxerp_platform/browser-tests/first-run.test.mjs
 fi
-# 2. fixtures, then every other suite
+# 2. fixtures, then every other suite. A suite run on its own (a CI shard) starts from the pristine snapshot, where the wizard
+#    is not done and every route lands on it; finish it first (a no-op when first-run or an earlier run already did).
+if [ "${1:-}" != first-run ]; then
+	inside "set -o pipefail; cd /home/frappe/frappe-bench && cd sites && E2E_SITE=$SITE ../env/bin/python -W ignore -m nxerp.tests.e2e_fixtures complete_setup 2>&1 | tail -3" || exit 1
+fi
 inside "cd /home/frappe/frappe-bench && cd sites && E2E_SITE=$SITE ../env/bin/python -W ignore -m nxerp.tests.e2e_fixtures setup 2>&1 | tail -2" || exit 1
 if [ -z "${1:-}" ]; then
 	for name in $(inside 'ls /workspace/apps/nxerp_platform/browser-tests/*.test.mjs' | tr -d ''); do

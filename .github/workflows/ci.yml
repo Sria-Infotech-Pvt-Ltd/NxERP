@@ -237,6 +237,8 @@ jobs:
       - uses: ./.github/actions/stack-up
         with:
           token: ${{ secrets.HELPDESK_READ_TOKEN }}
+      - name: Let the bench user write the matrix document (the checkout belongs to the runner user)
+        run: chmod -R a+w docs/security
       - name: Persona x surface matrix (writes the matrix document)
         env:
           NXERP_MATRIX_OUT: /workspace/docs/security/phase2-matrix.md

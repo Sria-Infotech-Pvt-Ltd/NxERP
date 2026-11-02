@@ -177,6 +177,36 @@ def setup_state():
 	print(f"SETUP={1 if frappe.is_setup_complete() else 0}")
 
 
+def complete_setup():
+	"""Finish the setup wizard on a pristine fresh site, with the arguments first-run.test.mjs submits through the UI.
+
+	A CI shard runs one suite on its own from the pristine snapshot; every suite except first-run assumes the wizard is done.
+	Does nothing when it already is. Frappe runs the stages synchronously here (no worker needed).
+	"""
+	_guard()
+	if frappe.is_setup_complete():
+		print("SETUP=1")
+		return
+	from frappe.desk.page.setup_wizard.setup_wizard import setup_complete
+
+	setup_complete(
+		{
+			"language": "en",
+			"country": "India",
+			"timezone": "Asia/Kolkata",
+			"currency": "INR",
+			"company_name": "E2E Test Company",
+			"company_abbr": "ETC",
+			"chart_of_accounts": "Standard",
+			"fy_start_date": "2026-04-01",
+			"fy_end_date": "2027-03-31",
+			"full_name": "E2E Owner",
+		}
+	)
+	frappe.db.commit()
+	print(f"SETUP={1 if frappe.is_setup_complete() else 0}")
+
+
 def email_link_login(enabled: bool = True):
 	"""Frappe's "Login With Email Link" system setting (off by default)."""
 	_guard()
