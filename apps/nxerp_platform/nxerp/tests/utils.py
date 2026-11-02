@@ -66,9 +66,16 @@ def make_user(email, roles=(), user_type="System User", enabled=1, password=None
 
 
 def delete_users(emails):
-	for email in emails:
-		if frappe.db.exists("User", email):
-			frappe.delete_doc("User", email, force=True, ignore_permissions=True)
+	# nxerp.guard refuses to delete the last named System Manager. On a fresh site a test that made the only one must still
+	# be able to clean up after itself (a dev site always has others), so cleanup uses the same bypass as the e2e fixtures.
+	previous = frappe.flags.in_patch
+	frappe.flags.in_patch = True
+	try:
+		for email in emails:
+			if frappe.db.exists("User", email):
+				frappe.delete_doc("User", email, force=True, ignore_permissions=True)
+	finally:
+		frappe.flags.in_patch = previous
 
 
 def as_user(user):

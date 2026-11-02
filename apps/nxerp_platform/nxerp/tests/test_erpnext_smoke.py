@@ -37,8 +37,25 @@ class TestErpnextSmoke(IntegrationTestCase):
 			unique_email("erpsmoke"), (*ERP_BUSINESS_ROLES, ERP_ACCESS), password=cls.pw
 		).name
 		cls.created_docs = []
+		# a fresh site has not been through the ERPNext setup wizard, so it has no unit of measure and no item group
+		cls.ensure("UOM", "Nos", {"uom_name": "Nos"})
+		if not frappe.db.get_value("Item Group", {"is_group": 0}, "name"):
+			parent = "All Item Groups" if frappe.db.exists("Item Group", "All Item Groups") else None
+			cls.ensure(
+				"Item Group",
+				"NXT Smoke Items",
+				{"item_group_name": "NXT Smoke Items", "parent_item_group": parent, "is_group": 0},
+			)
 		frappe.db.commit()
 		cls.client = Client(cls.user, cls.pw)
+
+	@classmethod
+	def ensure(cls, doctype, name, values):
+		"""Create the record unless it exists; one this test created is removed again in tearDownClass."""
+		if not frappe.db.exists(doctype, name):
+			doc = frappe.get_doc({"doctype": doctype, **values})
+			doc.insert(ignore_permissions=True)
+			cls.created_docs.append((doctype, doc.name))
 
 	@classmethod
 	def tearDownClass(cls):
