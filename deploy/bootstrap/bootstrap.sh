@@ -116,6 +116,9 @@ if [ ! -d "$BENCH_DIR/apps/frappe" ]; then
 	bench build
 	# test-only packages (e.g. freezegun, which Helpdesk's tests import)
 	bench setup requirements --dev
+	# bench orders sites/apps.txt by its own rules (the dev bench had nxerp in the middle); ADR-005 wants nxerp last, as in the
+	# image built by deploy/docker/install_apps.sh. The site's installed order (what Frappe uses for hooks) is set by install-app below.
+	{ grep -vx nxerp sites/apps.txt; echo nxerp; } > sites/apps.txt.new && mv sites/apps.txt.new sites/apps.txt
 fi
 
 cd "$BENCH_DIR"
