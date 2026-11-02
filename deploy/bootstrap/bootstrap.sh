@@ -48,6 +48,23 @@ copy_local() {
 	log "$name copied from $src"
 }
 
+# link_local NAME SRC -> $VENDOR/NAME, for `bench get-app --soft-link`: bench only accepts a path that is a git repository
+# of its own (otherwise it treats the app as --no-git and fails with "'App' object has no attribute 'org'"), but SRC is
+# a folder of this repository. So bench gets a one-commit repository made of symlinks into SRC: edits stay live.
+link_local() {
+	local name=$1 src=$2 dir=$VENDOR/$1 item
+	rm -rf "$dir" && mkdir -p "$dir"
+	for item in "$src"/* "$src"/.[!.]*; do
+		[ -e "$item" ] || continue
+		case ${item##*/} in .git | node_modules | __pycache__) continue ;; esac
+		ln -s "$item" "$dir/${item##*/}"
+	done
+	git -C "$dir" init -q
+	git -C "$dir" add -A
+	git -C "$dir" -c user.name=bootstrap -c user.email=bootstrap@example.test commit -q -m "$name live checkout of $src"
+	log "$name linked from $src"
+}
+
 # name|url|branch|commit|path, in install order (an entry with a path lives in this repository)
 mapfile -t APPS < <(python3 -I - "$APPS_JSON" <<'PY'
 import json, sys
@@ -77,7 +94,8 @@ if [ ! -d "$BENCH_DIR/apps/frappe" ]; then
 		if [ "$name" = nxerp ] && [ -n "${NXERP_SRC:-}" ]; then
 			# dev: live checkout, edits apply without a rebuild
 			log "get-app $name (soft link to $NXERP_SRC)"
-			bench get-app --soft-link --skip-assets "$NXERP_SRC"
+			link_local "$name" "$NXERP_SRC"
+			bench get-app --soft-link --skip-assets "$VENDOR/$name"
 		elif [ -n "$path" ]; then
 			# an app of this repository: a real copy (a snapshot with its own git history, as bench needs), because
 			# Helpdesk's frontend resolves ../../frappe/ui and ../../../../sites from its real path inside apps/
