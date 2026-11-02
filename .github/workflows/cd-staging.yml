@@ -1,0 +1,20 @@
+name: CD — Staging Deploy
+
+# Deployment is intentionally gated off until the real staging environment,
+# app repositories, paths, and approval requirements have been verified.
+# See docs/deployment.md. This workflow performs no deployment.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  not-configured:
+    name: Staging deployment is not configured
+    runs-on: ubuntu-latest
+    steps:
+      - name: Explain deployment status
+        run: |
+          echo "Staging deployment is not configured or verified."
+          echo "See docs/deployment.md before implementing a deployment job."

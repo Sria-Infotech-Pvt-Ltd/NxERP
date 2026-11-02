@@ -1,0 +1,49 @@
+{
+  "$comment": "Files allowed to carry literal colors, each with a reason. Keep this list short; new entries need review. unreferencedBy: the audit fails if any other source mentions that string.",
+  "files": [
+    {
+      "path": "components/desk/global/CustomIcons.vue",
+      "reason": "Dead component: nothing imports it. Convert to tokens if it is ever used.",
+      "unreferencedBy": "CustomIcons"
+    },
+    {
+      "path": "assets/custom_icons/**",
+      "reason": "Dead assets: no import or dynamic glob reaches this folder. Convert to currentColor if ever used.",
+      "unreferencedBy": "assets/custom_icons"
+    },
+    {
+      "path": "assets/icons/**",
+      "reason": "Dead assets: no import or dynamic glob reaches this folder. Convert to currentColor if ever used.",
+      "unreferencedBy": "assets/icons/"
+    },
+    {
+      "path": "assets/images/frappe-mail.svg",
+      "reason": "Third-party brand logo, keeps its own colors."
+    },
+    {
+      "path": "tiptap-extensions.ts",
+      "kinds": [
+        "rgb/hsl"
+      ],
+      "reason": "Excel-paste detection compares against the browser's default computed colors; these are inputs, not styling."
+    },
+    {
+      "path": "index.css",
+      "kinds": [
+        "rgb/hsl"
+      ],
+      "reason": "Dark-mode shadow overrides use black and white alpha, which are effects and not palette colors."
+    },
+    {
+      "path": "components/icons/ErpnextIcon.vue",
+      "reason": "Third-party brand logo, keeps its own color."
+    },
+    {
+      "path": "components/notifications/Notifications.vue",
+      "kinds": [
+        "rgb/hsl"
+      ],
+      "reason": "Side-panel drop shadow in black alpha, an effect and not a palette color."
+    }
+  ]
+}
