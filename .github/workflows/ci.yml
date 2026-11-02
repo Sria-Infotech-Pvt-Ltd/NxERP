@@ -63,8 +63,8 @@ jobs:
         run: pre-commit run --all-files --show-diff-on-failure
       - name: ruff lint and format
         run: |
-          ruff check . --config apps/nxerp_platform/pyproject.toml --config src=["apps/nxerp_platform"] --config extend-exclude=["docs","apps/helpdesk"]
-          ruff format --check . --config apps/nxerp_platform/pyproject.toml --config src=["apps/nxerp_platform"] --config extend-exclude=["docs","apps/helpdesk"]
+          ruff check . --config apps/nxerp_platform/pyproject.toml --config 'src=["apps/nxerp_platform"]' --config 'extend-exclude=["docs","apps/helpdesk"]'
+          ruff format --check . --config apps/nxerp_platform/pyproject.toml --config 'src=["apps/nxerp_platform"]' --config 'extend-exclude=["docs","apps/helpdesk"]'
       - name: bandit (platform app, then its tests with the test-only rules relaxed)
         run: |
           bandit -r apps/nxerp_platform/nxerp -x apps/nxerp_platform/nxerp/tests -q
@@ -134,6 +134,20 @@ jobs:
         run: |
           yarn theme:check
           yarn theme:audit
+      # The SPA is built inside a bench in real life; its source links @framework/ui to ../../frappe/ui (apps/frappe/ui) and
+      # imports <bench>/sites/common_site_config.json. A bare checkout has neither, so give it both. Reproduced and verified in a
+      # clean node:24 container (exit 0); this job itself has not run green yet.
+      - name: Frappe at its pin (for @framework/ui) and the bench's sites/ stub
+        run: |
+          set -a; . deploy/versions.env; set +a
+          git init -q apps/frappe
+          git -C apps/frappe remote add origin "$FRAPPE_REPO"
+          git -C apps/frappe fetch -q --depth 1 origin "$FRAPPE_COMMIT"
+          git -C apps/frappe checkout -q --detach FETCH_HEAD
+          # bench runs a plain `yarn install` here: Frappe's own ui/yarn.lock is out of date at this pin, so --frozen-lockfile fails
+          (cd apps/frappe/ui && yarn install)
+          mkdir -p sites
+          echo '{"socketio_port": 9000}' > sites/common_site_config.json
       - name: Build the SPA
         working-directory: apps/helpdesk/hd-frontend
         run: yarn build
