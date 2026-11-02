@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 import frappe
 
+from frappe.core.doctype.communication.test_communication import create_email_account
 # a module import: importing the TestCase itself makes the loader run its tests here
 from frappe.email.doctype.email_account import test_email_account as frappe_email_tests
 from frappe.tests import IntegrationTestCase
@@ -168,7 +169,14 @@ class TestParkedMailTicketComment(IntegrationTestCase):
                 "message_id": self.message_id,
             }
         ).insert(ignore_permissions=True)
-        self.account = frappe.get_last_doc("Email Account")
+        # not get_last_doc(): any test that leaves an account behind would change which one this is. before_tests
+        # (test_utils.create_email_account) makes this IMAP-capable account once for the whole run.
+        name = "_Test Comm Account 1"
+        self.account = (
+            frappe.get_doc("Email Account", name)
+            if frappe.db.exists("Email Account", name)
+            else create_email_account()
+        )
 
     def ticket_comments(self):
         return frappe.get_all(
@@ -231,7 +239,10 @@ class TestParkedMailTicketComment(IntegrationTestCase):
                 )
 
         self.assertEqual(
-            frappe.db.count("Unhandled Email", {"message_id": f"<{bounce_id}>"}), 1
+            frappe.db.count("Unhandled Email", {"message_id": f"<{bounce_id}>"}),
+            1,
+            f"account {self.account.name!r} service={self.account.service!r} "
+            f"enable_incoming={self.account.enable_incoming} use_imap={self.account.use_imap}",
         )
         self.assertEqual(len(self.ticket_comments()), 1)
 
