@@ -88,13 +88,22 @@
         </h3>
         <dl class="grid grid-cols-[7rem_1fr] gap-x-3 gap-y-2.5 text-p-sm">
           <dt class="text-ink-gray-5">{{ __("Assignee") }}</dt>
-          <dd v-if="data.assignee || !data.hrms_employee_name">
+          <dd
+            v-if="
+              data.assignee ||
+              !(data.hrms_employee_name || data.pbt_resource_name)
+            "
+          >
             <TaskUser :user="data.assignee" />
           </dd>
           <dd v-else class="text-ink-gray-8">
-            {{ data.hrms_employee_name }}
+            {{ data.hrms_employee_name || data.pbt_resource_name }}
             <span class="text-ink-gray-5">
-              {{ __("(no linked Help Desk user)") }}
+              {{
+                data.pbt_resource_type === "freelancer"
+                  ? __("(PBT freelancer)")
+                  : __("(no linked Help Desk user)")
+              }}
             </span>
           </dd>
           <template v-if="data.hrms_department || data.hrms_designation">
@@ -105,15 +114,6 @@
           </template>
           <dt class="text-ink-gray-5">{{ __("Reviewer") }}</dt>
           <dd><TaskUser :user="data.reviewer_details" /></dd>
-          <dt class="text-ink-gray-5">{{ __("Priority") }}</dt>
-          <dd>
-            <Badge
-              :theme="priorityBadge[data.priority].theme"
-              :variant="priorityBadge[data.priority].variant"
-              :class="priorityBadgeClass[data.priority]"
-              :label="__(data.priority)"
-            />
-          </dd>
           <dt class="text-ink-gray-5">{{ __("Start date") }}</dt>
           <dd class="text-ink-gray-8">{{ formatDate(data.start_date) }}</dd>
           <dt class="text-ink-gray-5">{{ __("Due date") }}</dt>
@@ -123,6 +123,15 @@
           <dt class="text-ink-gray-5">{{ __("Project") }}</dt>
           <dd class="text-ink-gray-8">
             {{ data.pbt_project_name || data.project || "—" }}
+          </dd>
+          <dt class="text-ink-gray-5">{{ __("Milestone") }}</dt>
+          <dd class="text-ink-gray-8">
+            {{
+              data.pbt_milestone_name ||
+              data.milestone_name ||
+              data.milestone ||
+              "—"
+            }}
           </dd>
           <dt class="text-ink-gray-5">{{ __("Created by") }}</dt>
           <dd><TaskUser :user="data.creator" /></dd>
@@ -387,8 +396,6 @@ import TaskUser from "./TaskUser.vue";
 import {
   isOverdue,
   nextActions,
-  priorityBadge,
-  priorityBadgeClass,
   statusBadgeClass,
   statusTheme,
   WORKFLOW_STEPS,

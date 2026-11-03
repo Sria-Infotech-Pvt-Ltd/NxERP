@@ -21,6 +21,12 @@
   "pbt_project_id",
   "pbt_project_name",
   "pbt_project_status",
+  "pbt_milestone_id",
+  "pbt_milestone_name",
+  "pbt_assignment_id",
+  "pbt_resource_type",
+  "pbt_resource_code",
+  "pbt_resource_name",
   "column_break_external",
   "hrms_employee_id",
   "hrms_employee_name",
@@ -235,6 +241,43 @@
    "read_only": 1
   },
   {
+   "description": "Milestone id in PBT, under the PBT project. Re-checked against PBT on save.",
+   "fieldname": "pbt_milestone_id",
+   "fieldtype": "Data",
+   "label": "PBT Milestone ID"
+  },
+  {
+   "fieldname": "pbt_milestone_name",
+   "fieldtype": "Data",
+   "label": "PBT Milestone",
+   "read_only": 1
+  },
+  {
+   "description": "Resource assignment id in PBT (the assignee picked from the project's resources). Re-checked against PBT on save.",
+   "fieldname": "pbt_assignment_id",
+   "fieldtype": "Data",
+   "label": "PBT Assignment ID"
+  },
+  {
+   "fieldname": "pbt_resource_type",
+   "fieldtype": "Data",
+   "label": "PBT Resource Type",
+   "read_only": 1
+  },
+  {
+   "description": "AIRA employee id for an employee, freelancer code for a freelancer.",
+   "fieldname": "pbt_resource_code",
+   "fieldtype": "Data",
+   "label": "PBT Resource Code",
+   "read_only": 1
+  },
+  {
+   "fieldname": "pbt_resource_name",
+   "fieldtype": "Data",
+   "label": "PBT Resource",
+   "read_only": 1
+  },
+  {
    "fieldname": "column_break_external",
    "fieldtype": "Column Break"
   },
@@ -266,7 +309,7 @@
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-10-30 10:00:00.000000",
+ "modified": "2026-11-03 14:00:00.000000",
  "modified_by": "Administrator",
  "module": "Helpdesk",
  "name": "HD Task",

@@ -18,6 +18,9 @@ ALLOWED_TRANSITIONS = {
 }
 CLOSED_STATUSES = ("Completed", "Cancelled")
 MANAGER_ROLES = {"System Manager", "Agent Manager"}
+# PBT resource types a task can be assigned to; vendors and external people cannot.
+ASSIGNABLE_RESOURCE_TYPES = ("employee", "freelancer")
+PBT_RESOURCE_FIELDS = ("pbt_resource_type", "pbt_resource_code", "pbt_resource_name")
 
 
 class HDTask(Document):
@@ -25,8 +28,10 @@ class HDTask(Document):
         self.set_default_assignee()
 
     def validate(self):
-        self.validate_assignee_type()
         self.validate_pbt_project()
+        self.validate_pbt_milestone()
+        self.validate_pbt_resource()
+        self.validate_assignee_type()
         self.validate_hrms_employee()
         self.validate_milestone()
         self.validate_dates()
@@ -47,18 +52,19 @@ class HDTask(Document):
 
     def set_default_assignee(self):
         # A freelancer has no user account, so the creator must not be recorded as the assignee.
-        # An HRMS employee is mapped to a user (or to nobody) in validate_hrms_employee.
+        # An HRMS employee or PBT resource is mapped to a user (or to nobody) during validate.
         if (
             self.is_new()
             and not self.assigned_to
             and self.assignee_type != "Freelancer"
             and not self.hrms_employee_id
+            and not self.pbt_assignment_id
         ):
             self.assigned_to = frappe.session.user
 
     def validate_assignee_type(self):
         if self.assignee_type == "Freelancer":
-            if not self.freelancer:
+            if not self.freelancer and self.pbt_resource_type != "freelancer":
                 frappe.throw(_("Select a freelancer for this task"))
             self.assigned_to = None
             self.department = None
@@ -84,6 +90,88 @@ class HDTask(Document):
         self.pbt_project_name = project["project_name"]
         self.pbt_project_status = project["status"]
 
+    def validate_pbt_milestone(self):
+        """The milestone must belong to the PBT project. Its name is read from PBT when the
+        project or milestone changes, and otherwise kept from the saved task, so a client cannot spoof it."""
+        if not self.pbt_milestone_id:
+            self.pbt_milestone_name = None
+            return
+        if not self.pbt_project_id:
+            frappe.throw(_("Select a PBT project before choosing its milestone"))
+
+        previous = self.get_doc_before_save()
+        if (
+            previous
+            and previous.pbt_project_id == self.pbt_project_id
+            and previous.pbt_milestone_id == self.pbt_milestone_id
+        ):
+            self.pbt_milestone_name = previous.pbt_milestone_name
+            return
+
+        milestone = self.fetch_external(pbt.get_milestone, self.pbt_project_id, self.pbt_milestone_id)
+        if not milestone:
+            frappe.throw(
+                _("Milestone {0} was not found in PBT project {1}").format(
+                    self.pbt_milestone_id, self.pbt_project_id
+                )
+            )
+        self.pbt_milestone_name = milestone["milestone_name"]
+
+    def validate_pbt_resource(self):
+        """The assignee picked from the PBT project's resources. Type, code and name are read from PBT
+        when the project, milestone or assignment changes and otherwise kept from the saved task."""
+        if not self.pbt_assignment_id:
+            self.clear_pbt_resource()
+            return
+        if not self.pbt_project_id:
+            frappe.throw(_("Select a PBT project before choosing one of its resources"))
+
+        previous = self.get_doc_before_save()
+        if previous and all(
+            previous.get(f) == self.get(f) for f in ("pbt_project_id", "pbt_milestone_id", "pbt_assignment_id")
+        ):
+            if previous.assigned_to != self.assigned_to and previous.pbt_resource_type == "employee":
+                # Handed to a Help Desk user directly: the PBT resource no longer describes the assignee.
+                self.clear_pbt_resource()
+                return
+            for fieldname in PBT_RESOURCE_FIELDS:
+                self.set(fieldname, previous.get(fieldname))
+        else:
+            resource = self.fetch_external(
+                pbt.get_resource, self.pbt_project_id, self.pbt_assignment_id, self.pbt_milestone_id
+            )
+            if not resource:
+                frappe.throw(
+                    _("Resource assignment {0} was not found in the selected PBT project or milestone").format(
+                        self.pbt_assignment_id
+                    )
+                )
+            if resource["resource_type"] not in ASSIGNABLE_RESOURCE_TYPES:
+                frappe.throw(_("Only employees and freelancers can be assigned a task"))
+            self.pbt_resource_type = resource["resource_type"]
+            self.pbt_resource_code = resource["resource_code"]
+            self.pbt_resource_name = resource["resource_name"]
+        self.apply_pbt_resource()
+
+    def apply_pbt_resource(self):
+        """A PBT freelancer replaces the local freelancer. A PBT employee is linked through HRMS by
+        their AIRA id when PBT has one; without it the task only records the PBT name."""
+        if self.pbt_resource_type == "freelancer":
+            self.assignee_type = "Freelancer"
+            self.freelancer = None
+        else:
+            self.assignee_type = "Employee"
+            self.hrms_employee_id = self.pbt_resource_code
+            if not self.pbt_resource_code:
+                # No AIRA id means no Help Desk user can be found, and the field's "__user" default
+                # would otherwise make the creator the assignee.
+                self.assigned_to = None
+
+    def clear_pbt_resource(self):
+        self.pbt_assignment_id = None
+        for fieldname in PBT_RESOURCE_FIELDS:
+            self.set(fieldname, None)
+
     def validate_hrms_employee(self):
         """Verify the employee in HRMS and link a Frappe User only through a matching email.
         An HRMS employee id is never a user id, so an unmapped employee leaves `assigned_to` empty."""
@@ -106,12 +194,27 @@ class HDTask(Document):
             return
 
         employee = self.fetch_external(hrms.get_employee, self.hrms_employee_id)
+        if not employee and self.hrms_employee_id_from_pbt():
+            self.unlink_hrms_employee()
+            return
         if not employee:
             frappe.throw(_("Employee {0} was not found in HRMS").format(self.hrms_employee_id))
         self.hrms_employee_name = employee["employee_name"]
         self.hrms_department = employee["department"]
         self.hrms_designation = employee["designation"]
         self.assigned_to = map_emails_to_users([employee["email"]]).get(employee["email"])
+
+    def hrms_employee_id_from_pbt(self):
+        return self.pbt_resource_type == "employee" and self.hrms_employee_id == self.pbt_resource_code
+
+    def unlink_hrms_employee(self):
+        """PBT owns project assignments, and its employee codes do not always match HRMS ids, so a code
+        HRMS does not know keeps the PBT resource as the assignee with no HRMS employee or Help Desk user."""
+        self.hrms_employee_id = None
+        self.hrms_employee_name = None
+        self.hrms_department = None
+        self.hrms_designation = None
+        self.assigned_to = None
 
     def pbt_reference_unchanged(self):
         previous = self.get_doc_before_save()
@@ -293,22 +396,7 @@ class HDTask(Document):
             {"label": "ID", "type": "Data", "key": "name", "width": "minmax(0, 1.2fr)"},
             {"label": "Subject", "type": "Data", "key": "subject", "width": "minmax(0, 3fr)"},
             {"label": "Status", "type": "Select", "key": "status", "width": "minmax(0, 1.6fr)"},
-            {"label": "Priority", "type": "Select", "key": "priority", "width": "minmax(0, 1.2fr)"},
-            {
-                "label": "Assigned To",
-                "type": "Link",
-                "options": "User",
-                "key": "assigned_to",
-                "width": "minmax(0, 2fr)",
-            },
             {"label": "Due Date", "type": "Date", "key": "due_date", "width": "minmax(0, 1.4fr)"},
-            {
-                "label": "Project",
-                "type": "Link",
-                "options": "HD Task Project",
-                "key": "project",
-                "width": "minmax(0, 1.8fr)",
-            },
             {"label": "PBT Project", "type": "Data", "key": "pbt_project_name", "width": "minmax(0, 1.8fr)"},
             {"label": "Employee", "type": "Data", "key": "hrms_employee_name", "width": "minmax(0, 1.8fr)"},
         ]
@@ -316,10 +404,7 @@ class HDTask(Document):
             "name",
             "subject",
             "status",
-            "priority",
-            "assigned_to",
             "due_date",
-            "project",
             "pbt_project_name",
             "hrms_employee_name",
             "modified",

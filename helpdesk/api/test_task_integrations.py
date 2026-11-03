@@ -1,7 +1,7 @@
 """HRMS and PBT proxies and the external references on HD Task.
 
-Every external call is mocked (see mock_external_api). The HRMS response shape is UNVERIFIED,
-so those tests pin the mapping table in helpdesk.integrations.external.hrms, not a live contract.
+Every external call is mocked (see mock_external_api); the fixtures mirror the live HRMS and PBT
+responses checked on 2026-11-03.
 """
 
 import frappe
@@ -12,6 +12,8 @@ from helpdesk.api.task import (
     create_task,
     get_hrms_employee,
     get_hrms_employees,
+    get_pbt_milestones,
+    get_pbt_resources,
     get_pbt_projects,
 )
 from helpdesk.integrations.external import hrms, pbt
@@ -26,14 +28,20 @@ from helpdesk.test_utils import (
     make_task_freelancer,
     make_task_project,
     mock_external_api,
+    pbt_milestone,
+    pbt_milestone_page,
     pbt_page,
     pbt_project,
+    pbt_resource,
+    pbt_resources_with_hrms,
+    pbt_routes,
 )
 
 AGENT = "ext-agent@example.com"
 MAPPED = "ext-mapped@example.com"
 DISABLED = "ext-disabled@example.com"
 PLAIN = "ext-plain@example.com"
+DATES = {"start_date": "2026-11-03", "due_date": "2026-11-10"}
 
 
 def pbt_only(results=None, **kwargs):
@@ -206,6 +214,110 @@ class TestPBTClient(FrappeTestCase):
                 pbt.get_all_projects()
 
 
+class TestPBTMilestones(FrappeTestCase):
+    def test_milestones_keep_pbt_order_and_ids_become_strings(self):
+        rows = [pbt_milestone(17, "M1"), pbt_milestone(18, "M2", sequence=2)]
+        with mock_external_api(pbt_routes([], {"5": rows})) as calls:
+            milestones = pbt.get_milestones("5")
+        self.assertEqual([(m["milestone_id"], m["milestone_name"]) for m in milestones], [("17", "M1"), ("18", "M2")])
+        self.assertTrue(calls[0][0].endswith("/api/v1/projects/5/milestones/"))
+        self.assertEqual(calls[0][2]["X-API-Key"], "test-pbt-key")
+
+    def test_every_page_is_fetched(self):
+        def handler(url, params, headers):
+            page = params["page"]
+            return pbt_milestone_page([pbt_milestone(f"M-{page}")], page=page, total_pages=2)
+
+        with mock_external_api(handler) as calls:
+            self.assertEqual([m["milestone_id"] for m in pbt.get_milestones("5")], ["M-1", "M-2"])
+        self.assertEqual(len(calls), 2)
+
+    def test_unknown_project_is_none_and_empty_project_is_empty(self):
+        with mock_external_api(pbt_routes([], {"2": []})):
+            self.assertIsNone(pbt.get_milestones("404"))
+            self.assertIsNone(pbt.get_milestone("404", "M-1"))
+            self.assertEqual(pbt.get_milestones("2"), [])
+
+    def test_get_milestone_requires_an_exact_id_match(self):
+        with mock_external_api(pbt_routes([], {"5": [pbt_milestone(17), pbt_milestone(170)]})):
+            self.assertEqual(pbt.get_milestone("5", "17")["milestone_id"], "17")
+            self.assertIsNone(pbt.get_milestone("5", "1"))
+
+    def test_status_filter_is_sent_and_unknown_status_is_rejected_without_a_request(self):
+        with mock_external_api(pbt_routes([], {"5": []})) as calls:
+            pbt.get_milestones("5", status="not_started,in_progress")
+        self.assertEqual(calls[0][1]["status"], "not_started,in_progress")
+        with mock_external_api(pbt_routes([], {"5": []})) as calls:
+            with self.assertRaises(ExternalAPIError):
+                pbt.get_milestones("5", status="archived")
+        self.assertEqual(calls, [])
+
+    def test_project_id_cannot_alter_the_url_path(self):
+        for bad in ("", "../x", "a/b", "a?b=1", "..", " ", "a#b", "5.1"):
+            with self.subTest(project_id=bad):
+                with mock_external_api(pbt_routes([], {})) as calls:
+                    with self.assertRaises(ExternalAPIError):
+                        pbt.get_milestones(bad)
+                self.assertEqual(calls, [])
+
+    def test_rows_without_id_or_name_are_dropped(self):
+        rows = [{"milestone_id": 1}, {"milestone_name": "x"}, 5, pbt_milestone()]
+        with mock_external_api(pbt_routes([], {"5": rows})):
+            self.assertEqual(len(pbt.get_milestones("5")), 1)
+
+    def test_other_errors_raise(self):
+        for status in (400, 401, 500):
+            with self.subTest(status=status):
+                with mock_external_api(lambda *a, s=status: FakeResponse({}, s)):
+                    with self.assertRaises(ExternalAPIError):
+                        pbt.get_milestones("5")
+
+
+class TestPBTResources(FrappeTestCase):
+    def test_resources_are_normalised_with_string_ids(self):
+        rows = [
+            pbt_resource(31, "employee", "EMP00081", milestone_id=17, milestone_name="M1"),
+            pbt_resource(32, "external", ""),
+        ]
+        with mock_external_api(pbt_routes([], {"5": [pbt_milestone(17)]}, {"5": rows})) as calls:
+            resources = pbt.get_resources("5")
+        self.assertEqual([(r["assignment_id"], r["milestone_id"]) for r in resources], [("31", "17"), ("32", None)])
+        self.assertIsNone(resources[1]["resource_code"])
+        self.assertTrue(calls[0][0].endswith("/api/v1/projects/5/resources/"))
+
+    def test_filters_are_sent_and_unknown_values_are_rejected_without_a_request(self):
+        with mock_external_api(pbt_routes([], {"5": [pbt_milestone(17)]})) as calls:
+            pbt.get_resources("5", milestone_id="17", resource_type="freelancer", status="active,on_hold")
+        self.assertEqual(
+            {k: calls[0][1][k] for k in ("milestone_id", "resource_type", "status")},
+            {"milestone_id": "17", "resource_type": "freelancer", "status": "active,on_hold"},
+        )
+        for kwargs in ({"resource_type": "robot"}, {"status": "archived"}, {"milestone_id": "1/2"}):
+            with self.subTest(**kwargs), mock_external_api(pbt_routes([], {"5": []})) as calls:
+                with self.assertRaises(ExternalAPIError):
+                    pbt.get_resources("5", **kwargs)
+            self.assertEqual(calls, [])
+
+    def test_unknown_project_or_foreign_milestone_is_none(self):
+        with mock_external_api(pbt_routes([], {"5": [pbt_milestone(17)]})):
+            self.assertIsNone(pbt.get_resources("404"))
+            self.assertIsNone(pbt.get_resources("5", milestone_id="99"))
+            self.assertIsNone(pbt.get_resource("5", "31", milestone_id="99"))
+
+    def test_get_resource_matches_the_assignment_exactly_and_respects_the_milestone(self):
+        rows = [pbt_resource(31, milestone_id=17), pbt_resource(310, milestone_id=18)]
+        handler = pbt_routes([], {"5": [pbt_milestone(17), pbt_milestone(18)]}, {"5": rows})
+        with mock_external_api(handler):
+            self.assertEqual(pbt.get_resource("5", "31")["assignment_id"], "31")
+            self.assertIsNone(pbt.get_resource("5", "3"))
+            self.assertIsNone(pbt.get_resource("5", "31", milestone_id="18"))
+
+    def test_rows_without_assignment_type_or_name_are_dropped(self):
+        rows = [{"assignment_id": 1}, {"resource_type": "employee", "resource_name": "x"}, 5, pbt_resource()]
+        with mock_external_api(pbt_routes([], {"5": []}, {"5": rows})):
+            self.assertEqual(len(pbt.get_resources("5")), 1)
+
+
 class TestHRMSClient(FrappeTestCase):
     def test_list_is_normalised(self):
         rows = [hrms_employee("E-1", "Asha", "ASHA@Example.com"), hrms_employee("E-2", "Ravi", None, None, None)]
@@ -270,6 +382,16 @@ class TestHRMSClient(FrappeTestCase):
         self.assertTrue(calls[0][0].endswith("/api/external/employees/E-7/"))
         with mock_external_api(hrms_only(detail={"data": hrms_employee("E-7")})):
             self.assertEqual(hrms.get_employee("E-7")["employee_id"], "E-7")
+
+    def test_detail_404_is_not_found_but_other_errors_raise(self):
+        not_found = {"status": "error", "message": "No employee found with that employee_id.", "data": {}}
+        with mock_external_api(lambda *a: FakeResponse(not_found, 404)):
+            self.assertIsNone(hrms.get_employee("E-404"))
+        for status in (401, 500):
+            with self.subTest(status=status):
+                with mock_external_api(lambda *a, s=status: FakeResponse({}, s)):
+                    with self.assertRaises(ExternalAPIError):
+                        hrms.get_employee("E-7")
 
     def test_detail_for_another_id_is_not_accepted(self):
         with mock_external_api(hrms_only(detail=hrms_employee("E-8"))):
@@ -422,6 +544,157 @@ class TestTaskExternalReferences(FrappeTestCase):
                 make_task(hrms_employee_id="E-404")
         self.assertEqual(frappe.db.count("HD Task"), before)
 
+    # --- PBT milestones ---
+
+    def test_milestone_proxy_and_unknown_project(self):
+        with mock_external_api(pbt_routes([], {"5": [pbt_milestone(17, "M1")]})):
+            self.assertEqual(get_pbt_milestones("5")[0]["milestone_id"], "17")
+            with self.assertRaises(frappe.ValidationError):
+                get_pbt_milestones("404")
+
+    def test_milestone_proxy_rejects_guests_and_non_agents(self):
+        for user in ("Guest", PLAIN):
+            frappe.set_user(user)
+            with self.subTest(user=user):
+                with mock_external_api(pbt_routes([], {"5": []})) as calls:
+                    with self.assertRaises(frappe.PermissionError):
+                        get_pbt_milestones(project_id="5")
+                self.assertEqual(calls, [])
+
+    def test_task_with_pbt_milestone_stores_the_name_from_pbt(self):
+        handler = pbt_routes([pbt_project("5", "Portal")], {"5": [pbt_milestone(17, "M1")]})
+        with mock_external_api(handler):
+            task = make_task(pbt_project_id="5", pbt_milestone_id="17", pbt_milestone_name="Spoofed")
+        saved = frappe.db.get_value("HD Task", task.name, ["pbt_milestone_id", "pbt_milestone_name"])
+        self.assertEqual(saved, ("17", "M1"))
+
+    def test_milestone_must_belong_to_the_pbt_project(self):
+        handler = pbt_routes(
+            [pbt_project("5"), pbt_project("8")], {"5": [pbt_milestone(17)], "8": [pbt_milestone(30)]}
+        )
+        before = frappe.db.count("HD Task")
+        with mock_external_api(handler):
+            with self.assertRaises(frappe.ValidationError):
+                make_task(pbt_project_id="5", pbt_milestone_id="30")
+        with self.assertRaises(frappe.ValidationError):
+            make_task(pbt_milestone_id="17")
+        self.assertEqual(frappe.db.count("HD Task"), before)
+
+    def test_unchanged_milestone_is_not_refetched_and_its_name_cannot_be_spoofed(self):
+        handler = pbt_routes([pbt_project("5")], {"5": [pbt_milestone(17, "M1")]})
+        with mock_external_api(handler):
+            task = make_task(pbt_project_id="5", pbt_milestone_id="17")
+        with mock_external_api(handler) as calls:
+            task.reload()
+            task.pbt_milestone_name = "Spoofed"
+            task.save()
+        self.assertEqual(calls, [])
+        self.assertEqual(frappe.db.get_value("HD Task", task.name, "pbt_milestone_name"), "M1")
+
+    def test_changing_the_project_rechecks_the_milestone_and_clearing_it_clears_the_name(self):
+        handler = pbt_routes(
+            [pbt_project("5"), pbt_project("8")], {"5": [pbt_milestone(17, "M1")], "8": []}
+        )
+        with mock_external_api(handler):
+            task = make_task(pbt_project_id="5", pbt_milestone_id="17")
+            task.reload()
+            task.pbt_project_id = "8"
+            with self.assertRaises(frappe.ValidationError):
+                task.save()
+            task.reload()
+            task.pbt_milestone_id = None
+            task.save()
+        self.assertIsNone(frappe.db.get_value("HD Task", task.name, "pbt_milestone_name"))
+
+    # --- PBT resources (assignee) ---
+
+    def test_resource_proxy_lists_only_active_employees_and_freelancers(self):
+        rows = [pbt_resource(1, "employee"), pbt_resource(2, "freelancer", "FRL-1"), pbt_resource(3, "vendor", "V-1")]
+        with mock_external_api(pbt_resources_with_hrms(rows)) as calls:
+            self.assertEqual([r["assignment_id"] for r in get_pbt_resources("5")], ["1", "2"])
+            with self.assertRaises(frappe.ValidationError):
+                get_pbt_resources("5", milestone_id="99")
+        self.assertEqual(calls[0][1]["status"], "active")
+
+    def test_resource_proxy_rejects_guests_and_non_agents(self):
+        for user in ("Guest", PLAIN):
+            frappe.set_user(user)
+            with self.subTest(user=user), mock_external_api(pbt_resources_with_hrms([])) as calls:
+                with self.assertRaises(frappe.PermissionError):
+                    get_pbt_resources(project_id="5")
+            self.assertEqual(calls, [])
+
+    def test_employee_resource_with_aira_id_is_linked_through_hrms(self):
+        rows = [pbt_resource(31, "employee", "E-1", resource_name="From PBT", milestone_id=17)]
+        employee = hrms_employee("E-1", "Mapped Person", MAPPED)
+        with mock_external_api(pbt_resources_with_hrms(rows, employee)):
+            task = make_task(
+                pbt_project_id="5", pbt_milestone_id="17", pbt_assignment_id="31", pbt_resource_name="Spoofed"
+            )
+        self.assertEqual(
+            (task.pbt_resource_type, task.pbt_resource_code, task.pbt_resource_name, task.assignee_type),
+            ("employee", "E-1", "From PBT", "Employee"),
+        )
+        self.assertEqual((task.hrms_employee_id, task.assigned_to), ("E-1", MAPPED))
+
+    def test_employee_resource_without_aira_id_is_recorded_but_not_assigned(self):
+        with mock_external_api(pbt_resources_with_hrms([pbt_resource(31, "employee", None)])) as calls:
+            task = make_task(pbt_project_id="5", pbt_assignment_id="31")
+        self.assertEqual((task.pbt_resource_name, task.hrms_employee_id, task.assigned_to), ("Test Resource", None, None))
+        self.assertFalse(any(url.startswith("http://hrms.invalid") for url, _, _ in calls))
+
+    def test_employee_resource_code_unknown_to_hrms_is_recorded_but_not_assigned(self):
+        rows = [pbt_resource(31, "employee", "EMP00081", resource_name="From PBT")]
+        with mock_external_api(pbt_resources_with_hrms(rows, {"detail": "Not found."}, hrms_status=404)):
+            task = make_task(pbt_project_id="5", pbt_assignment_id="31")
+        self.assertEqual(
+            (task.pbt_resource_code, task.pbt_resource_name, task.hrms_employee_id, task.hrms_employee_name),
+            ("EMP00081", "From PBT", None, None),
+        )
+        self.assertIsNone(task.assigned_to)
+
+    def test_unknown_hrms_employee_picked_directly_is_still_rejected(self):
+        with mock_external_api(pbt_resources_with_hrms([], {"detail": "Not found."}, hrms_status=404)):
+            with self.assertRaises(frappe.ValidationError):
+                make_task(hrms_employee_id="E-404")
+
+    def test_freelancer_resource_replaces_the_local_freelancer(self):
+        local = make_task_freelancer()
+        with mock_external_api(pbt_resources_with_hrms([pbt_resource(40, "freelancer", "FRL-0013")])):
+            task = make_task(pbt_project_id="5", pbt_assignment_id="40", assignee_type="Employee", freelancer=local)
+        self.assertEqual(
+            (task.assignee_type, task.freelancer, task.assigned_to, task.pbt_resource_code),
+            ("Freelancer", None, None, "FRL-0013"),
+        )
+
+    def test_resource_must_be_assignable_and_belong_to_the_project_and_milestone(self):
+        rows = [pbt_resource(31, milestone_id=17), pbt_resource(50, "vendor", "V-1")]
+        before = frappe.db.count("HD Task")
+        with mock_external_api(pbt_resources_with_hrms(rows, hrms_employee("E-1"))):
+            for kwargs in (
+                {"pbt_project_id": "5", "pbt_assignment_id": "50"},  # vendor
+                {"pbt_project_id": "5", "pbt_assignment_id": "99"},  # not in the project
+            ):
+                with self.subTest(**kwargs), self.assertRaises(frappe.ValidationError):
+                    make_task(**kwargs)
+        with self.assertRaises(frappe.ValidationError):
+            make_task(pbt_assignment_id="31")  # no PBT project
+        self.assertEqual(frappe.db.count("HD Task"), before)
+
+    def test_unchanged_resource_is_not_refetched_and_direct_reassignment_clears_it(self):
+        handler = pbt_resources_with_hrms([pbt_resource(31, "employee", "E-1")], hrms_employee("E-1", email=MAPPED))
+        with mock_external_api(handler):
+            task = make_task(pbt_project_id="5", pbt_assignment_id="31")
+        with mock_external_api(handler) as calls:
+            task.reload()
+            task.pbt_resource_name = "Spoofed"
+            task.save()
+            self.assertEqual(calls, [])
+            self.assertEqual(task.pbt_resource_name, "Test Resource")
+            task.assigned_to = AGENT
+            task.save()
+        self.assertEqual((task.pbt_assignment_id, task.pbt_resource_name, task.hrms_employee_id), (None, None, None))
+
     def test_external_outage_blocks_only_tasks_that_use_external_references(self):
         def down(*a):
             raise requests.exceptions.ConnectionError()
@@ -553,21 +826,30 @@ class TestTaskExternalReferences(FrappeTestCase):
     def test_create_task_is_post_only_and_returns_201(self):
         self.assertEqual(frappe.allowed_http_methods_for_whitelisted_func[create_task], ["POST"])
         frappe.local.response = frappe._dict()
-        task = create_task({"subject": "Created over HTTP", "status": "Planned"})
+        task = create_task({"subject": "Created over HTTP", "status": "Planned", **DATES})
         self.assertEqual(frappe.local.response.get("http_status_code"), 201)
         self.assertEqual(task["subject"], "Created over HTTP")
         self.assertTrue(frappe.db.exists("HD Task", task["name"]))
 
     def test_create_task_ignores_a_client_supplied_doctype(self):
-        task = create_task({"doctype": "User", "subject": "Still a task"})
+        task = create_task({"doctype": "User", "subject": "Still a task", **DATES})
         self.assertEqual(task["doctype"], "HD Task")
 
     def test_create_task_validation_failure_is_422_without_201(self):
         frappe.local.response = frappe._dict()
         with self.assertRaises(frappe.ValidationError) as ctx:
-            create_task({"subject": "Blocked, no reason", "status": "Blocked"})
+            create_task({"subject": "Blocked, no reason", "status": "Blocked", **DATES})
         self.assertEqual(ctx.exception.http_status_code, 422)
         self.assertIsNone(frappe.local.response.get("http_status_code"))
+
+    def test_create_task_requires_start_and_end_dates(self):
+        before = frappe.db.count("HD Task")
+        for missing in ("start_date", "due_date"):
+            with self.subTest(missing=missing):
+                with self.assertRaises(frappe.ValidationError) as ctx:
+                    create_task({"subject": "No dates", **{k: v for k, v in DATES.items() if k != missing}})
+                self.assertEqual(ctx.exception.http_status_code, 422)
+        self.assertEqual(frappe.db.count("HD Task"), before)
 
     def test_create_task_permission_failure_is_403_without_201(self):
         frappe.set_user(PLAIN)
@@ -580,10 +862,10 @@ class TestTaskExternalReferences(FrappeTestCase):
     def test_create_task_with_same_request_id_does_not_duplicate(self):
         request_id = frappe.generate_hash(length=10)
         frappe.local.response = frappe._dict()
-        first = create_task({"subject": "Double click"}, request_id=request_id)
+        first = create_task({"subject": "Double click", **DATES}, request_id=request_id)
         self.assertEqual(frappe.local.response.get("http_status_code"), 201)
         frappe.local.response = frappe._dict()
-        second = create_task({"subject": "Double click"}, request_id=request_id)
+        second = create_task({"subject": "Double click", **DATES}, request_id=request_id)
         self.assertEqual(second["name"], first["name"])
         self.assertIsNone(frappe.local.response.get("http_status_code"))
         self.assertEqual(frappe.db.count("HD Task", {"subject": "Double click"}), 1)

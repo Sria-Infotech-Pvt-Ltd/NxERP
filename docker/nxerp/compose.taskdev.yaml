@@ -91,6 +91,14 @@ services:
 
   backend:
     <<: *backend
+    # Server-side only: the frontend service never receives these keys.
+    environment:
+      HRMS_API_BASE_URL: ${HRMS_API_BASE_URL:-}
+      HRMS_API_KEY: ${HRMS_API_KEY:-}
+      PBT_API_BASE_URL: ${PBT_API_BASE_URL:-}
+      PBT_API_KEY: ${PBT_API_KEY:-}
+      # Keys PBT sends as X-API-Key to helpdesk.api.pbt_inbound.get_tasks (comma-separated for rotation).
+      PBT_INBOUND_API_KEYS: ${PBT_INBOUND_API_KEYS:-}
     depends_on:
       configurator:
         condition: service_completed_successfully

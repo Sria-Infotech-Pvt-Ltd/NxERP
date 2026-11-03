@@ -1,8 +1,8 @@
 """HRMS employee client. Read-only.
 
-UNVERIFIED: only the two URLs and the X-API-Key header are known. The response body has not
-been seen yet (the server was unreachable), so every field name below is a guess kept in
-FIELD_CANDIDATES and LIST_KEYS. Correct those two once a real response is available.
+Checked against the live AIRA HRMS on 2026-11-03: list and detail both answer
+{"status", "message", "data": ...}, rows carry `employee_id` and `full_name`, and an unknown id is a 404.
+FIELD_CANDIDATES keeps its fallbacks so a renamed field does not silently blank the employee.
 """
 
 from frappe import _
@@ -15,7 +15,7 @@ API_KEY = "HRMS_API_KEY"
 LIST_PATH = "/api/external/employees/"
 DETAIL_PATH = "/api/external/employees/{employee_id}/"
 
-# UNVERIFIED: the first key present wins.
+# The first key present wins.
 FIELD_CANDIDATES = {
     "employee_id": ("employee_id", "id", "name"),
     "employee_name": ("employee_name", "full_name", "name"),
@@ -23,7 +23,7 @@ FIELD_CANDIDATES = {
     "department": ("department", "department_name"),
     "designation": ("designation", "designation_name"),
 }
-# UNVERIFIED: wrappers a list or detail body may use.
+# Wrappers a list or detail body may use; the live API uses data.results.
 LIST_KEYS = ("results", "data", "employees")
 PAGE_SIZE = 100
 # Guards against an upstream that never stops reporting more pages.
@@ -60,7 +60,14 @@ def get_employee(employee_id: str) -> dict | None:
         or not all(c.isalnum() or c in "-_." for c in employee_id)
     ):
         raise ExternalAPIError(_("Invalid employee id"))
-    body = get_json(SERVICE, BASE_URL, API_KEY, DETAIL_PATH.format(employee_id=employee_id))
+    try:
+        body = get_json(SERVICE, BASE_URL, API_KEY, DETAIL_PATH.format(employee_id=employee_id))
+    except ExternalAPIError as e:
+        # HRMS answers an unknown id with 404, so the caller can say "not found" instead of
+        # reporting an outage. Every other failure still raises.
+        if e.status == 404:
+            return None
+        raise
     if isinstance(body, dict):
         for key in ("data", "employee"):
             if isinstance(body.get(key), dict):

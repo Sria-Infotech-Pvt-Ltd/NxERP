@@ -8,6 +8,7 @@ from frappe.utils.html_utils import sanitize_html
 
 from helpdesk.integrations.external import hrms, pbt
 from helpdesk.integrations.external.client import ExternalAPIError
+from helpdesk.helpdesk.doctype.hd_task.hd_task import ASSIGNABLE_RESOURCE_TYPES
 from helpdesk.integrations.external.mapping import map_emails_to_users
 from helpdesk.utils import agent_only
 
@@ -28,6 +29,11 @@ LIST_FIELDS = [
     "pbt_project_id",
     "pbt_project_name",
     "pbt_project_status",
+    "pbt_milestone_id",
+    "pbt_milestone_name",
+    "pbt_assignment_id",
+    "pbt_resource_type",
+    "pbt_resource_name",
     "hrms_employee_id",
     "hrms_employee_name",
     "start_date",
@@ -237,6 +243,27 @@ def get_pbt_projects(
 
 @frappe.whitelist(methods=["GET","POST"])
 @agent_only
+def get_pbt_milestones(project_id: str, status: str | None = None) -> list[dict]:
+    """Active milestones of one PBT project, in PBT's order (all pages). Read-only proxy."""
+    milestones = external_call(pbt.get_milestones, project_id, status=status or None)
+    if milestones is None:
+        frappe.throw(_("Project {0} was not found in PBT").format(project_id))
+    return milestones
+
+
+@frappe.whitelist(methods=["GET","POST"])
+@agent_only
+def get_pbt_resources(project_id: str, milestone_id: str | None = None) -> list[dict]:
+    """Active employees and freelancers allocated to a PBT project (on `milestone_id` when given):
+    the people a task can be assigned to. One row per assignment. Read-only proxy."""
+    resources = external_call(pbt.get_resources, project_id, milestone_id=milestone_id or None, status="active")
+    if resources is None:
+        frappe.throw(_("Project {0} or its milestone was not found in PBT").format(project_id))
+    return [r for r in resources if r["resource_type"] in ASSIGNABLE_RESOURCE_TYPES]
+
+
+@frappe.whitelist(methods=["GET","POST"])
+@agent_only
 def get_hrms_employees() -> list[dict]:
     """HRMS employees. `user` is the Frappe User with the same email, when there is exactly such an
     enabled user, else None (that employee can be recorded on a task but cannot be notified)."""
@@ -278,6 +305,8 @@ def get_task(name: str) -> dict:
             "attachments": get_attachments(name),
             "comments": get_comments(name),
             "activity": get_activity(name),
+            "milestone_name": doc.milestone
+            and frappe.db.get_value("HD Task Milestone", doc.milestone, "milestone_name"),
             "permissions": {
                 "write": doc.has_permission("write"),
                 "delete": doc.has_permission("delete"),
@@ -347,11 +376,14 @@ def get_activity(name: str) -> list[dict]:
 @agent_only
 def create_task(doc: dict | str, request_id: str | None = None) -> dict:
     """Insert a Task and answer 201 Created. `request_id` is generated once per form, so a
-    double click or a retry returns the task it already made (200) instead of a second one."""
+    double click or a retry returns the task it already made (200) instead of a second one.
+    A new task needs a start and an end date; other saves (bulk edits, the desk form) do not."""
     values = parse_json(doc, {})
     if not isinstance(values, dict):
         frappe.throw(_("Invalid task"), exc=InvalidTask)
     values["doctype"] = DOCTYPE
+    if not values.get("start_date") or not values.get("due_date"):
+        frappe.throw(_("Start Date and End Date are required"), exc=InvalidTask)
 
     cache_key = f"hd_task_create:{frappe.session.user}:{request_id}" if request_id else None
     if cache_key:

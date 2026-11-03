@@ -21,6 +21,11 @@ export interface TaskRow {
   pbt_project_id?: string | null;
   pbt_project_name?: string | null;
   pbt_project_status?: string | null;
+  pbt_milestone_id?: string | null;
+  pbt_milestone_name?: string | null;
+  pbt_assignment_id?: string | null;
+  pbt_resource_type?: "employee" | "freelancer" | null;
+  pbt_resource_name?: string | null;
   hrms_employee_id?: string | null;
   hrms_employee_name?: string | null;
   hrms_department?: string | null;
@@ -43,6 +48,7 @@ export interface ChecklistItem {
 export interface TaskDetail extends TaskRow {
   description?: string;
   blocked_reason?: string | null;
+  milestone_name?: string | null; // title of the local milestone
   checklist: ChecklistItem[];
   attachments: { name: string; file_name: string; file_url: string }[];
   comments: {

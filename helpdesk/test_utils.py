@@ -1,3 +1,4 @@
+import json
 import os
 from contextlib import contextmanager
 from datetime import datetime
@@ -808,6 +809,119 @@ def pbt_page(results: list, page: int = 1, total_pages: int = 1, count: int | No
     )
 
 
+def pbt_milestone(milestone_id="M-1", milestone_name: str = "Test Milestone", **extra):
+    """One PBT milestone row shaped like the live API (ids arrive as integers there)."""
+    return {
+        "milestone_id": milestone_id,
+        "milestone_name": milestone_name,
+        "sequence": 1,
+        "status": "not_started",
+        "status_display": "Not Started",
+        "start_date": "2026-09-15",
+        "end_date": "2026-10-23",
+        "completion_percent": 0,
+        "updated_at": "2026-10-20T10:15:00Z",
+        **extra,
+    }
+
+
+def pbt_milestone_page(results: list, project_id="P-1", page: int = 1, total_pages: int = 1):
+    """A PBT milestones response in the live envelope."""
+    return FakeResponse(
+        {
+            "status": "success",
+            "message": "Milestones retrieved.",
+            "data": {
+                "project_id": project_id,
+                "project_name": "Test PBT Project",
+                "count": len(results),
+                "page": page,
+                "page_size": 100,
+                "total_pages": total_pages,
+                "results": results,
+            },
+        }
+    )
+
+
+def pbt_resource(assignment_id="A-1", resource_type: str = "employee", resource_code="E-1", **extra):
+    """One PBT resource assignment row shaped like the live API (ids arrive as integers there)."""
+    return {
+        "assignment_id": assignment_id,
+        "resource_type": resource_type,
+        "resource_type_display": resource_type.title(),
+        "resource_code": resource_code,
+        "resource_name": "Test Resource",
+        "role": "Developer",
+        "milestone_id": None,
+        "milestone_name": None,
+        "start_date": "2026-09-15",
+        "end_date": None,
+        "allocation_percent": 100,
+        "status": "active",
+        "status_display": "Active",
+        "updated_at": "2026-10-20T10:15:00Z",
+        **extra,
+    }
+
+
+def pbt_routes(projects: list, milestones: dict, resources: dict | None = None):
+    """mock_external_api handler for PBT. The project list serves `projects`;
+    /projects/<id>/milestones/ serves `milestones[id]`; /projects/<id>/resources/ serves
+    `resources[id]`, narrowed by `milestone_id` like PBT (404 when that milestone is not in
+    `milestones[id]`). A project id that is not a key of `milestones` is a 404."""
+    resources = resources or {}
+    not_found = {"status": "error", "message": "Project not found.", "data": None}
+
+    def handler(url, params, headers):
+        assert url.startswith("http://pbt.invalid"), url
+        if "/milestones/" not in url and "/resources/" not in url:
+            return pbt_page(projects)
+        project_id = url.rstrip("/").split("/")[-2]
+        if project_id not in milestones:
+            return FakeResponse(not_found, 404)
+        if "/milestones/" in url:
+            return pbt_milestone_page(milestones[project_id], project_id)
+        rows = resources.get(project_id, [])
+        if milestone_id := params.get("milestone_id"):
+            if milestone_id not in {str(m["milestone_id"]) for m in milestones[project_id]}:
+                return FakeResponse({**not_found, "message": "Milestone not found in this project."}, 404)
+            rows = [r for r in rows if str(r.get("milestone_id")) == milestone_id]
+        return pbt_milestone_page(rows, project_id)
+
+    return handler
+
+
+def pbt_resources_with_hrms(rows: list, employee: dict | None = None, hrms_status: int = 200):
+    """mock_external_api handler: PBT knows project "5" with milestone 17 ("M1") and serves `rows`
+    as its resources; every HRMS request answers `hrms_status` with `employee` as the detail body."""
+    pbt_handler = pbt_routes([pbt_project("5")], {"5": [pbt_milestone(17, "M1")]}, {"5": rows})
+
+    def handler(url, params, headers):
+        if url.startswith("http://pbt.invalid"):
+            return pbt_handler(url, params, headers)
+        return FakeResponse(employee, status_code=hrms_status)
+
+    return handler
+
+
+PBT_INBOUND_TEST_KEYS = "test-inbound-old,test-inbound-new"
+
+
+def call_pbt_inbound(key: str | None, keys: str = PBT_INBOUND_TEST_KEYS, **params) -> tuple[int, dict]:
+    """Call helpdesk.api.pbt_inbound.get_tasks as PBT would: `key` as the X-API-Key header, `keys`
+    as the configured PBT_INBOUND_API_KEYS. Returns (HTTP status, decoded JSON body)."""
+    from helpdesk.api.pbt_inbound import get_tasks
+
+    headers = {"X-API-Key": key} if key is not None else {}
+    with (
+        patch.dict(os.environ, {"PBT_INBOUND_API_KEYS": keys}),
+        patch("helpdesk.api.pbt_inbound.frappe.get_request_header", lambda name, default=None: headers.get(name, default)),
+    ):
+        response = get_tasks(**params)
+    return response.status_code, json.loads(response.get_data(as_text=True))
+
+
 def hrms_employee(
     employee_id: str = "E-1",
     employee_name: str = "Test Employee",
@@ -815,7 +929,8 @@ def hrms_employee(
     department: str | None = "Engineering",
     designation: str | None = "Developer",
 ):
-    """One HRMS employee row. UNVERIFIED shape: it mirrors FIELD_CANDIDATES in the HRMS client."""
+    """One HRMS employee row. The live API sends `full_name`; `employee_name` is the first
+    FIELD_CANDIDATES fallback, so both shapes normalize the same way."""
     return {
         "employee_id": employee_id,
         "employee_name": employee_name,
