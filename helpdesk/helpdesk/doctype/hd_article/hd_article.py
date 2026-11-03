@@ -47,6 +47,9 @@ class HDArticle(Document):
                 )
             )
 
+    def on_update(self):
+        self.queue_search_index()
+
     def after_insert(self):
         count = frappe.db.count("HD Article")
         if count == 1:
@@ -55,6 +58,20 @@ class HDArticle(Document):
 
     def on_trash(self):
         self.check_category_length()
+        self.queue_search_index()
+
+    def queue_search_index(self):
+        """Keep the Redis article index in step. The job reads the article after the commit, so one
+        method serves publish, edit, unpublish and delete, and an outage cannot block saving."""
+        try:
+            frappe.enqueue(
+                "helpdesk.search.update_article_index",
+                queue="short",
+                enqueue_after_commit=True,
+                name=self.name,
+            )
+        except Exception:
+            frappe.log_error(title=f"HD Article search index not queued: {self.name}")
 
     def check_category_length(self, category=None):
         category = category or self.get("category")

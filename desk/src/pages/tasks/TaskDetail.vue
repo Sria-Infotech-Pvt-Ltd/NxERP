@@ -88,7 +88,21 @@
         </h3>
         <dl class="grid grid-cols-[7rem_1fr] gap-x-3 gap-y-2.5 text-p-sm">
           <dt class="text-ink-gray-5">{{ __("Assignee") }}</dt>
-          <dd><TaskUser :user="data.assignee" /></dd>
+          <dd v-if="data.assignee || !data.hrms_employee_name">
+            <TaskUser :user="data.assignee" />
+          </dd>
+          <dd v-else class="text-ink-gray-8">
+            {{ data.hrms_employee_name }}
+            <span class="text-ink-gray-5">
+              {{ __("(no linked Help Desk user)") }}
+            </span>
+          </dd>
+          <template v-if="data.hrms_department || data.hrms_designation">
+            <dt class="text-ink-gray-5">{{ __("Department") }}</dt>
+            <dd class="text-ink-gray-8">{{ data.hrms_department || "—" }}</dd>
+            <dt class="text-ink-gray-5">{{ __("Designation") }}</dt>
+            <dd class="text-ink-gray-8">{{ data.hrms_designation || "—" }}</dd>
+          </template>
           <dt class="text-ink-gray-5">{{ __("Reviewer") }}</dt>
           <dd><TaskUser :user="data.reviewer_details" /></dd>
           <dt class="text-ink-gray-5">{{ __("Priority") }}</dt>
@@ -107,7 +121,9 @@
             {{ formatDate(data.due_date) }}
           </dd>
           <dt class="text-ink-gray-5">{{ __("Project") }}</dt>
-          <dd class="text-ink-gray-8">{{ data.project || "—" }}</dd>
+          <dd class="text-ink-gray-8">
+            {{ data.pbt_project_name || data.project || "—" }}
+          </dd>
           <dt class="text-ink-gray-5">{{ __("Created by") }}</dt>
           <dd><TaskUser :user="data.creator" /></dd>
         </dl>
@@ -392,6 +408,7 @@ const pending = ref<{ to: TaskStatus } | null>(null);
 
 const task = createResource({
   url: "helpdesk.api.task.get_task",
+  method: "GET",
   params: { name: props.taskId },
   auto: true,
 });
@@ -406,6 +423,7 @@ watch(
 // Only users who can open this task are offered; the server re-checks on post.
 const mentionable = createResource({
   url: "helpdesk.api.task.get_mentionable_users",
+  method: "GET",
   params: { name: props.taskId },
   auto: true,
 });

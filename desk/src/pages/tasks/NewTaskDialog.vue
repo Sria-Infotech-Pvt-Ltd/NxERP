@@ -19,6 +19,8 @@
           v-if="loadError"
           :message="__('Could not load the form options: {0}', [loadError])"
         />
+        <ErrorMessage v-if="projectsError" :message="projectsError" />
+        <ErrorMessage v-if="employeesError" :message="employeesError" />
         <p v-if="projectLabel" class="-mt-3 text-p-sm text-ink-gray-5">
           {{ __("New task in {0}", [projectLabel]) }}
         </p>
@@ -44,7 +46,13 @@
             :placeholder="__('Select project')"
             :options="projectOptions"
             :disabled="projects.loading"
-            :description="hint(projects.loading, projectOptions, __('No projects exist yet'))"
+            :description="
+              hint(
+                projects.loading || !!projectsError,
+                projectOptions,
+                __('No projects available')
+              )
+            "
           />
           <FormControl
             v-model="form.milestone"
@@ -52,14 +60,8 @@
             type="select"
             :label="__('Milestone')"
             :options="milestoneOptions"
-            :disabled="options.loading"
-            :description="
-              form.project &&
-              !options.loading &&
-              !options.data?.milestones?.length
-                ? __('This project has no milestones yet')
-                : ''
-            "
+            :disabled="options.loading || !!pbtProjectId"
+            :description="milestoneHint"
           />
 
           <div class="col-span-2 flex items-center justify-between gap-3">
@@ -72,34 +74,50 @@
               type="select"
               :label="__('Department')"
               :options="departmentOptions"
-              :disabled="options.loading"
+              :disabled="employees.loading"
             />
             <FormControl
               v-model="form.designation"
               type="select"
               :label="__('Designation')"
               :options="designationOptions"
-              :disabled="options.loading"
-              :description="
-                !options.loading && !options.data?.designations?.length
-                  ? __('No designations exist yet')
-                  : ''
-              "
+              :disabled="employees.loading"
             />
-            <FormControl
-              v-model="form.assigned_to"
-              class="col-span-2"
-              type="select"
-              :label="__('Select Employee')"
-              :placeholder="__('Select employee')"
-              :options="employeeOptions"
-              :disabled="options.loading"
-              :description="
-                !options.loading && !options.data?.employees?.length
-                  ? __('No employees match the selected department')
-                  : ''
-              "
-            />
+            <div class="col-span-2 space-y-1.5">
+              <label class="block text-base text-ink-gray-5">
+                {{ __("Select Employee") }}
+              </label>
+              <!-- Searchable by name or employee id: the HRMS list is too long for a plain select. -->
+              <EmployeeAutocomplete
+                v-model="employeeChoice"
+                class="w-full"
+                :options="employeeOptions"
+                :placeholder="
+                  employees.loading
+                    ? __('Loading employees...')
+                    : __('Search employee by name or ID')
+                "
+                :disabled="employees.loading"
+              >
+                <template #prefix>
+                  <LucideSearch class="me-2 size-4 shrink-0 text-ink-gray-5" />
+                </template>
+                <template #item-label="{ option }">
+                  <span class="min-w-0 flex-1 truncate text-ink-gray-8">
+                    {{ option.label }}
+                  </span>
+                  <span
+                    v-if="option.meta"
+                    class="ms-3 max-w-[50%] shrink-0 truncate text-xs text-ink-gray-5"
+                  >
+                    {{ option.meta }}
+                  </span>
+                </template>
+              </EmployeeAutocomplete>
+              <p v-if="employeeHint" class="text-xs text-ink-gray-5">
+                {{ employeeHint }}
+              </p>
+            </div>
           </template>
           <FormControl
             v-else
@@ -171,7 +189,6 @@
 </template>
 
 <script setup lang="ts">
-import { useAuthStore } from "@/stores/auth";
 import { __ } from "@/translation";
 import {
   Button,
@@ -185,23 +202,34 @@ import {
   toast,
 } from "frappe-ui";
 import { computed, reactive, ref, watch } from "vue";
+import EmployeeAutocomplete from "@/components/frappe-ui/Autocomplete.vue";
 import { STATUSES } from "./taskMeta";
 
 const open = defineModel<boolean>({ default: false });
 const emit = defineEmits<{ created: [name: string] }>();
 
-const authStore = useAuthStore();
-
-const projects = createListResource({
+// Projects come from PBT (server-side proxy). Local projects stay selectable because only they have milestones.
+const projects = createResource({
+  url: "helpdesk.api.task.get_pbt_projects",
+  method: "GET",
+  auto: false,
+});
+const localProjects = createListResource({
   doctype: "HD Task Project",
   fields: ["name", "project_name"],
   pageLength: 999,
   auto: false,
 });
+const employees = createResource({
+  url: "helpdesk.api.task.get_hrms_employees",
+  method: "GET",
+  auto: false,
+});
 
-// Milestones follow the project and employees follow the department, so both are refetched on change.
+// Milestones follow a local project and freelancers are local, so they are refetched on change.
 const options = createResource({
   url: "helpdesk.api.task.get_task_form_options",
+  method: "GET",
   auto: false,
 });
 
@@ -212,12 +240,12 @@ const assigneeTypes = [
 
 const blank = () => ({
   subject: "",
-  project: "",
+  project: "", // "pbt:<project_id>" or "local:<HD Task Project name>"
   milestone: "",
   assignee_type: "Employee",
   department: "",
   designation: "",
-  assigned_to: authStore.userId,
+  employee: "", // HRMS employee id, not a Frappe user id
   freelancer: "",
   status: "Planned",
   blocked_reason: "",
@@ -227,14 +255,32 @@ const blank = () => ({
 const form = reactive(blank());
 const errors = reactive<Record<string, string>>({});
 const saving = ref(false);
+// One id per form: the server returns the same task if a create is sent twice.
+const newRequestId = () =>
+  globalThis.crypto?.randomUUID?.() ??
+  `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+let requestId = newRequestId();
 
 const withBlank = (label: string, rows: { label: string; value: string }[]) => [
   { label, value: "" },
   ...rows,
 ];
-const projectOptions = computed(() =>
-  (projects.data || []).map((p) => ({ label: p.project_name, value: p.name }))
+const pbtProjectId = computed(() =>
+  form.project.startsWith("pbt:") ? form.project.slice(4) : ""
 );
+const localProject = computed(() =>
+  form.project.startsWith("local:") ? form.project.slice(6) : ""
+);
+const projectOptions = computed(() => [
+  ...(projects.data || []).map((p) => ({
+    label: p.project_name,
+    value: `pbt:${p.project_id}`,
+  })),
+  ...(localProjects.data || []).map((p) => ({
+    label: `${p.project_name} (${__("local")})`,
+    value: `local:${p.name}`,
+  })),
+]);
 const projectLabel = computed(
   () => projectOptions.value.find((p) => p.value === form.project)?.label
 );
@@ -247,32 +293,86 @@ const milestoneOptions = computed(() =>
     }))
   )
 );
+const milestoneHint = computed(() => {
+  if (pbtProjectId.value)
+    return __("Milestones are not available for PBT projects yet");
+  if (
+    localProject.value &&
+    !options.loading &&
+    !options.data?.milestones?.length
+  )
+    return __("This project has no milestones yet");
+  return "";
+});
+
+const unique = (values: (string | null | undefined)[]) =>
+  [...new Set(values.filter(Boolean) as string[])].sort();
+const hrmsEmployees = computed(() => employees.data || []);
+const matchesFilters = (e, skip: "department" | "designation" | "" = "") =>
+  (skip === "department" ||
+    !form.department ||
+    e.department === form.department) &&
+  (skip === "designation" ||
+    !form.designation ||
+    e.designation === form.designation);
+// Each filter only offers values that still leave at least one employee.
 const departmentOptions = computed(() =>
   withBlank(
-    __("All departments"),
-    (options.data?.departments || []).map((d) => ({ label: d, value: d }))
+    __("Select department"),
+    unique(
+      hrmsEmployees.value
+        .filter((e) => matchesFilters(e, "department"))
+        .map((e) => e.department)
+    ).map((d) => ({ label: d, value: d }))
   )
 );
 const designationOptions = computed(() =>
   withBlank(
-    __("All designations"),
-    (options.data?.designations || []).map((d) => ({ label: d, value: d }))
+    __("Select designation"),
+    unique(
+      hrmsEmployees.value
+        .filter((e) => matchesFilters(e, "designation"))
+        .map((e) => e.designation)
+    ).map((d) => ({ label: d, value: d }))
   )
 );
-// Two agents can share a display name, so add the user id when a name repeats.
+const filteredEmployees = computed(() =>
+  hrmsEmployees.value.filter((e) => matchesFilters(e))
+);
+// Two employees can share a name, so add the id when a name repeats.
 const employeeOptions = computed(() => {
-  const employees = options.data?.employees || [];
-  const names = employees.map((e) => e.agent_name || e.user);
-  return withBlank(
-    "",
-    employees.map((e, i) => ({
+  const names = filteredEmployees.value.map((e) => e.employee_name);
+  return filteredEmployees.value
+    .map((e, i) => ({
       label:
         names.filter((n) => n === names[i]).length > 1
-          ? `${names[i]} (${e.user})`
+          ? `${names[i]} (${e.employee_id})`
           : names[i],
-      value: e.user,
+      value: e.employee_id,
+      meta: [e.designation, e.department].filter(Boolean).join(" · "),
     }))
-  );
+    .sort((a, b) => a.label.localeCompare(b.label));
+});
+// The autocomplete hands back the chosen option (null when cleared); the form keeps the HRMS id.
+const employeeChoice = computed({
+  get: () => form.employee,
+  set: (option: { value: string } | null) => {
+    form.employee = option?.value ?? "";
+  },
+});
+const selectedEmployee = computed(() =>
+  hrmsEmployees.value.find((e) => e.employee_id === form.employee)
+);
+const employeeHint = computed(() => {
+  if (employees.loading || employeesError.value) return "";
+  if (!hrmsEmployees.value.length) return __("No employees available");
+  if (!filteredEmployees.value.length)
+    return __("No employees match the selected department and designation");
+  if (selectedEmployee.value && !selectedEmployee.value.user)
+    return __(
+      "Not linked to a Help Desk user: the task keeps this employee but is not assigned to a user"
+    );
+  return "";
 });
 const freelancerOptions = computed(() =>
   withBlank(
@@ -284,6 +384,16 @@ const freelancerOptions = computed(() =>
   )
 );
 
+const errorText = (r) => r.error?.messages?.[0] || r.error?.message || "";
+const projectsError = computed(() => {
+  const e = errorText(projects);
+  return e ? __("Could not load PBT projects: {0}", [e]) : "";
+});
+const employeesError = computed(() => {
+  const e = errorText(employees);
+  return e ? __("Could not load HRMS employees: {0}", [e]) : "";
+});
+
 const loadError = computed(
   () => options.error?.messages?.[0] || options.error?.message || ""
 );
@@ -293,17 +403,15 @@ function hint(loading: boolean, rows: unknown[], emptyText: string) {
 }
 
 function loadOptions() {
-  return options.fetch({
-    project: form.project || null,
-    department: form.department || null,
-  });
+  return options.fetch(localProject.value ? { project: localProject.value } : {});
 }
 
 watch(open, (isOpen) => {
   if (!isOpen) return;
   projects.fetch();
+  localProjects.fetch();
+  employees.fetch();
   loadOptions();
-  form.assigned_to = authStore.userId;
 });
 
 watch(
@@ -313,18 +421,14 @@ watch(
     loadOptions();
   }
 );
-watch(
-  () => form.department,
-  async () => {
-    await loadOptions();
-    // The chosen employee may not be in the new department.
-    if (
-      form.assigned_to &&
-      !(options.data?.employees || []).some((e) => e.user === form.assigned_to)
-    )
-      form.assigned_to = "";
-  }
-);
+// The chosen employee may not belong to the new department or designation.
+watch([() => form.department, () => form.designation], () => {
+  if (
+    form.employee &&
+    !filteredEmployees.value.some((e) => e.employee_id === form.employee)
+  )
+    form.employee = "";
+});
 
 function reset() {
   Object.assign(form, blank());
@@ -346,26 +450,28 @@ function validate() {
 async function save() {
   if (saving.value || !validate()) return;
   const isEmployee = form.assignee_type === "Employee";
+  // The server re-reads the project and employee from PBT / HRMS and links a user by email.
   saving.value = true;
   try {
-    const doc = await call("frappe.client.insert", {
+    const doc = await call("helpdesk.api.task.create_task", {
+      request_id: requestId,
       doc: {
         doctype: "HD Task",
         subject: form.subject.trim(),
         status: form.status,
         blocked_reason: form.status === "Blocked" ? form.blocked_reason : null,
-        project: form.project || null,
+        project: localProject.value || null,
+        pbt_project_id: pbtProjectId.value || null,
         milestone: form.milestone || null,
         assignee_type: form.assignee_type,
-        department: isEmployee ? form.department || null : null,
-        designation: isEmployee ? form.designation || null : null,
-        assigned_to: isEmployee ? form.assigned_to || null : null,
+        hrms_employee_id: isEmployee ? form.employee || null : null,
         freelancer: isEmployee ? null : form.freelancer || null,
         start_date: form.start_date || null,
         due_date: form.due_date || null,
       },
     });
     toast.success(__("Task {0} created", [doc.name]));
+    requestId = newRequestId();
     open.value = false;
     emit("created", doc.name);
   } catch (e: any) {

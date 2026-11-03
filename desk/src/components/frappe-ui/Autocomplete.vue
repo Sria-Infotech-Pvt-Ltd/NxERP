@@ -14,6 +14,7 @@
         >
           <div class="w-full">
             <button
+              type="button"
               class="flex w-full items-center justify-between focus:outline-none"
               :class="inputClasses"
               @click="() => !disabled && togglePopover()"
@@ -56,6 +57,7 @@
                 placeholder="Search"
               />
               <button
+                type="button"
                 class="absolute inset-y-0 end-3 top-px flex items-center"
                 @click="selectedValue = null"
               >

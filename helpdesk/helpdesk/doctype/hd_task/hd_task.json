@@ -17,6 +17,15 @@
   "department",
   "designation",
   "freelancer",
+  "section_external",
+  "pbt_project_id",
+  "pbt_project_name",
+  "pbt_project_status",
+  "column_break_external",
+  "hrms_employee_id",
+  "hrms_employee_name",
+  "hrms_department",
+  "hrms_designation",
   "section_dates",
   "start_date",
   "column_break_dates",
@@ -199,6 +208,60 @@
    "fieldtype": "Link",
    "label": "Freelancer",
    "options": "HD Task Freelancer"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_external",
+   "fieldtype": "Section Break",
+   "label": "External References"
+  },
+  {
+   "description": "Project id in the Project Budgeting Tool. Re-checked against PBT on save.",
+   "fieldname": "pbt_project_id",
+   "fieldtype": "Data",
+   "label": "PBT Project ID",
+   "search_index": 1
+  },
+  {
+   "fieldname": "pbt_project_name",
+   "fieldtype": "Data",
+   "label": "PBT Project",
+   "read_only": 1
+  },
+  {
+   "fieldname": "pbt_project_status",
+   "fieldtype": "Data",
+   "label": "PBT Project Status",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_external",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Employee id in HRMS. It is not a Frappe User id.",
+   "fieldname": "hrms_employee_id",
+   "fieldtype": "Data",
+   "label": "HRMS Employee ID",
+   "search_index": 1
+  },
+  {
+   "fieldname": "hrms_employee_name",
+   "fieldtype": "Data",
+   "label": "HRMS Employee",
+   "read_only": 1
+  },
+  {
+   "fieldname": "hrms_department",
+   "fieldtype": "Data",
+   "label": "HRMS Department",
+   "read_only": 1
+  },
+  {
+   "fieldname": "hrms_designation",
+   "fieldtype": "Data",
+   "label": "HRMS Designation",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 0,

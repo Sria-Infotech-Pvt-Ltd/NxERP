@@ -29,13 +29,17 @@ services:
       - db-data:/var/lib/mysql
 
   redis-cache:
-    image: redis:6.2-alpine
+    image: redis/redis-stack-server:7.2.0-v18
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 5s
       retries: 20
+    environment:
+      REDIS_ARGS: "--appendonly yes"
+    volumes:
+      - redis-cache-data:/data
 
   redis-queue:
     image: redis:6.2-alpine
@@ -96,6 +100,12 @@ services:
       default:
         aliases:
           - ${SITE_NAME}
+    # Server-side only: the frontend service never receives these keys.
+    environment:
+      HRMS_API_BASE_URL: ${HRMS_API_BASE_URL}
+      HRMS_API_KEY: ${HRMS_API_KEY}
+      PBT_API_BASE_URL: ${PBT_API_BASE_URL}
+      PBT_API_KEY: ${PBT_API_KEY}
     depends_on:
       configurator:
         condition: service_completed_successfully
@@ -157,3 +167,4 @@ volumes:
   sites:
   logs:
   redis-queue-data:
+  redis-cache-data:

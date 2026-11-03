@@ -18,6 +18,13 @@ export interface TaskRow {
   milestone?: string | null;
   assignee_type?: "Employee" | "Freelancer";
   freelancer?: string | null;
+  pbt_project_id?: string | null;
+  pbt_project_name?: string | null;
+  pbt_project_status?: string | null;
+  hrms_employee_id?: string | null;
+  hrms_employee_name?: string | null;
+  hrms_department?: string | null;
+  hrms_designation?: string | null;
   start_date?: string | null;
   due_date?: string | null;
   progress: number;

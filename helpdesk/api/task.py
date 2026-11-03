@@ -6,6 +6,9 @@ from frappe import _
 from frappe.utils import get_last_day_of_week, today
 from frappe.utils.html_utils import sanitize_html
 
+from helpdesk.integrations.external import hrms, pbt
+from helpdesk.integrations.external.client import ExternalAPIError
+from helpdesk.integrations.external.mapping import map_emails_to_users
 from helpdesk.utils import agent_only
 
 DOCTYPE = "HD Task"
@@ -22,6 +25,11 @@ LIST_FIELDS = [
     "milestone",
     "assignee_type",
     "freelancer",
+    "pbt_project_id",
+    "pbt_project_name",
+    "pbt_project_status",
+    "hrms_employee_id",
+    "hrms_employee_name",
     "start_date",
     "due_date",
     "progress",
@@ -97,7 +105,7 @@ def load_for_update(name: str):
     return frappe.get_doc(DOCTYPE, name)
 
 
-@frappe.whitelist(methods=["GET", "POST"])
+@frappe.whitelist(methods=["GET","POST"])
 @agent_only
 def get_tasks(
     filters: dict | str | None = None,
@@ -146,7 +154,7 @@ def get_tasks(
     }
 
 
-@frappe.whitelist(methods=["GET", "POST"])
+@frappe.whitelist(methods=["GET","POST"])
 @agent_only
 def get_task_form_options(project: str | None = None, department: str | None = None) -> dict:
     """Choices for the Add Task form. Milestones follow `project`; employees (active agents)
@@ -180,7 +188,73 @@ def get_task_form_options(project: str | None = None, department: str | None = N
     }
 
 
-@frappe.whitelist(methods=["GET", "POST"])
+class ExternalServiceError(frappe.ValidationError):
+    """An upstream failure; Frappe's ValidationError default would report it as 417."""
+
+    http_status_code = 502
+
+
+class ExternalServiceUnavailable(ExternalServiceError):
+    http_status_code = 503
+
+
+class ExternalServiceTimeout(ExternalServiceError):
+    http_status_code = 504
+
+
+class InvalidTask(frappe.ValidationError):
+    http_status_code = 422
+
+
+EXTERNAL_ERRORS = {503: ExternalServiceUnavailable, 504: ExternalServiceTimeout}
+
+
+def external_call(fn, *args, **kwargs):
+    """Run an external API call, turning a failure into a safe, translated error."""
+    try:
+        return fn(*args, **kwargs)
+    except ExternalAPIError as e:
+        frappe.throw(
+            e.message,
+            exc=EXTERNAL_ERRORS.get(e.http_status, ExternalServiceError),
+            title=_("External service error"),
+        )
+
+
+@frappe.whitelist(methods=["GET","POST"])
+@agent_only
+def get_pbt_projects(
+    search: str | None = None, status: str | None = None, client_id: str | None = None
+) -> list[dict]:
+    """Every PBT project matching the filters (all pages). Read-only proxy; the API key stays server-side."""
+    return external_call(
+        pbt.get_all_projects,
+        search=(search or "").strip()[:140] or None,
+        status=status or None,
+        client_id=client_id or None,
+    )
+
+
+@frappe.whitelist(methods=["GET","POST"])
+@agent_only
+def get_hrms_employees() -> list[dict]:
+    """HRMS employees. `user` is the Frappe User with the same email, when there is exactly such an
+    enabled user, else None (that employee can be recorded on a task but cannot be notified)."""
+    employees = external_call(hrms.get_employees)
+    users = map_emails_to_users([e["email"] for e in employees])
+    return [{**e, "user": users.get(e["email"])} for e in employees]
+
+
+@frappe.whitelist(methods=["GET","POST"])
+@agent_only
+def get_hrms_employee(employee_id: str) -> dict:
+    employee = external_call(hrms.get_employee, employee_id)
+    if not employee:
+        frappe.throw(_("Employee {0} was not found in HRMS").format(employee_id))
+    return {**employee, "user": map_emails_to_users([employee["email"]]).get(employee["email"])}
+
+
+@frappe.whitelist(methods=["GET"])
 @agent_only
 def get_task_counts() -> dict:
     counts = {view: count_tasks(view_filters(view)) for view in VIEWS}
@@ -188,7 +262,7 @@ def get_task_counts() -> dict:
     return counts
 
 
-@frappe.whitelist(methods=["GET", "POST"])
+@frappe.whitelist(methods=["GET"])
 @agent_only
 def get_task(name: str) -> dict:
     doc = frappe.get_doc(DOCTYPE, name)
@@ -271,6 +345,38 @@ def get_activity(name: str) -> list[dict]:
 
 @frappe.whitelist(methods=["POST"])
 @agent_only
+def create_task(doc: dict | str, request_id: str | None = None) -> dict:
+    """Insert a Task and answer 201 Created. `request_id` is generated once per form, so a
+    double click or a retry returns the task it already made (200) instead of a second one."""
+    values = parse_json(doc, {})
+    if not isinstance(values, dict):
+        frappe.throw(_("Invalid task"), exc=InvalidTask)
+    values["doctype"] = DOCTYPE
+
+    cache_key = f"hd_task_create:{frappe.session.user}:{request_id}" if request_id else None
+    if cache_key:
+        existing = frappe.cache().get_value(cache_key, expires=True)
+        if existing and frappe.db.exists(DOCTYPE, existing):
+            return frappe.get_doc(DOCTYPE, existing).as_dict()
+
+    try:
+        task = frappe.get_doc(values).insert()
+    except frappe.PermissionError:
+        raise
+    except frappe.ValidationError as e:
+        if type(e) is not frappe.ValidationError:
+            raise
+        # The reason is already queued by the original throw; only the status changes.
+        raise InvalidTask(str(e)) from e
+
+    if cache_key:
+        frappe.cache().set_value(cache_key, task.name, expires_in_sec=300)
+    frappe.local.response["http_status_code"] = 201
+    return task.as_dict()
+
+
+@frappe.whitelist(methods=["POST"])
+@agent_only
 def update_status(name: str, status: str, reason: str | None = None) -> dict:
     doc = load_for_update(name)
     apply_status(doc, status, reason)
@@ -330,7 +436,7 @@ def restrict_mentions(doc, content: str) -> str:
     return str(soup)
 
 
-@frappe.whitelist(methods=["GET", "POST"])
+@frappe.whitelist(methods=["GET"])
 @agent_only
 def get_mentionable_users(name: str) -> list[dict]:
     """Active agents who can read this task, as `{id, label}` for the editor's @ list."""

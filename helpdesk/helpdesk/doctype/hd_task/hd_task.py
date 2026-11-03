@@ -3,6 +3,10 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import add_days, getdate, now_datetime, today
 
+from helpdesk.integrations.external import hrms, pbt
+from helpdesk.integrations.external.client import ExternalAPIError
+from helpdesk.integrations.external.mapping import map_emails_to_users
+
 # (from_status, to_status). Moving to "Cancelled" is allowed from any status.
 ALLOWED_TRANSITIONS = {
     ("Planned", "In Progress"),
@@ -22,6 +26,8 @@ class HDTask(Document):
 
     def validate(self):
         self.validate_assignee_type()
+        self.validate_pbt_project()
+        self.validate_hrms_employee()
         self.validate_milestone()
         self.validate_dates()
         self.validate_status_transition()
@@ -41,7 +47,13 @@ class HDTask(Document):
 
     def set_default_assignee(self):
         # A freelancer has no user account, so the creator must not be recorded as the assignee.
-        if self.is_new() and not self.assigned_to and self.assignee_type != "Freelancer":
+        # An HRMS employee is mapped to a user (or to nobody) in validate_hrms_employee.
+        if (
+            self.is_new()
+            and not self.assigned_to
+            and self.assignee_type != "Freelancer"
+            and not self.hrms_employee_id
+        ):
             self.assigned_to = frappe.session.user
 
     def validate_assignee_type(self):
@@ -51,8 +63,66 @@ class HDTask(Document):
             self.assigned_to = None
             self.department = None
             self.designation = None
+            self.hrms_employee_id = None
         else:
             self.freelancer = None
+
+    def validate_pbt_project(self):
+        """The id is the reference; name and status are re-read from PBT so a client cannot spoof them."""
+        if not self.pbt_project_id:
+            self.pbt_project_name = None
+            self.pbt_project_status = None
+            return
+        if self.project:
+            frappe.throw(_("Choose either a PBT project or a local project, not both"))
+        if self.pbt_reference_unchanged():
+            return
+
+        project = self.fetch_external(pbt.get_project, self.pbt_project_id)
+        if not project:
+            frappe.throw(_("Project {0} was not found in PBT").format(self.pbt_project_id))
+        self.pbt_project_name = project["project_name"]
+        self.pbt_project_status = project["status"]
+
+    def validate_hrms_employee(self):
+        """Verify the employee in HRMS and link a Frappe User only through a matching email.
+        An HRMS employee id is never a user id, so an unmapped employee leaves `assigned_to` empty."""
+        previous = self.get_doc_before_save()
+        if (
+            self.hrms_employee_id
+            and previous
+            and previous.hrms_employee_id == self.hrms_employee_id
+            and previous.assigned_to != self.assigned_to
+        ):
+            # Handed to a Help Desk user directly: the HRMS employee no longer describes the assignee.
+            self.hrms_employee_id = None
+
+        if not self.hrms_employee_id:
+            self.hrms_employee_name = None
+            self.hrms_department = None
+            self.hrms_designation = None
+            return
+        if previous and previous.hrms_employee_id == self.hrms_employee_id:
+            return
+
+        employee = self.fetch_external(hrms.get_employee, self.hrms_employee_id)
+        if not employee:
+            frappe.throw(_("Employee {0} was not found in HRMS").format(self.hrms_employee_id))
+        self.hrms_employee_name = employee["employee_name"]
+        self.hrms_department = employee["department"]
+        self.hrms_designation = employee["designation"]
+        self.assigned_to = map_emails_to_users([employee["email"]]).get(employee["email"])
+
+    def pbt_reference_unchanged(self):
+        previous = self.get_doc_before_save()
+        return bool(previous and previous.pbt_project_id == self.pbt_project_id)
+
+    @staticmethod
+    def fetch_external(fn, *args):
+        try:
+            return fn(*args)
+        except ExternalAPIError as e:
+            frappe.throw(e.message, title=_("External service error"))
 
     def validate_milestone(self):
         if not self.milestone:
@@ -239,6 +309,8 @@ class HDTask(Document):
                 "key": "project",
                 "width": "minmax(0, 1.8fr)",
             },
+            {"label": "PBT Project", "type": "Data", "key": "pbt_project_name", "width": "minmax(0, 1.8fr)"},
+            {"label": "Employee", "type": "Data", "key": "hrms_employee_name", "width": "minmax(0, 1.8fr)"},
         ]
         rows = [
             "name",
@@ -248,6 +320,8 @@ class HDTask(Document):
             "assigned_to",
             "due_date",
             "project",
+            "pbt_project_name",
+            "hrms_employee_name",
             "modified",
             "creation",
         ]

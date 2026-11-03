@@ -3,6 +3,7 @@
 
 from __future__ import unicode_literals
 
+import glob
 import json
 import re
 from contextlib import suppress
@@ -23,6 +24,7 @@ except ImportError:
     from redis.commands.search.indexDefinition import IndexDefinition
 
 from redis.commands.search.query import Query
+from redis.exceptions import ConnectionError as RedisConnectionError
 from redis.exceptions import ResponseError
 
 if TYPE_CHECKING:
@@ -263,6 +265,37 @@ class HelpdeskSearch(Search):
         key = f"{doc.doctype}:{doc.name}"
         self.remove_document(key)
 
+    def has_index(self) -> bool:
+        """Whether the RediSearch index exists. Unlike index_exists() it ignores the document count,
+        which made single-document writes into a small index silently skip."""
+        try:
+            self.redis.ft(self.index_name).info()
+        except ResponseError:
+            return False
+        return True
+
+    def remove_article(self, name: str):
+        """Delete every indexed section of an article (ids are `HD Article:<name>#<heading>`)."""
+        pattern = f"{self.prefix}:HD Article:{glob.escape(name)}#"
+        self.redis.delete_value(self.redis.get_keys(pattern), make_keys=False)
+
+    def sync_article(self, name: str):
+        """Make the index match the article as stored now: Published articles are (re)indexed,
+        anything else, including a deleted article, is removed. Safe to run repeatedly.
+        The article is read inside the lock, so of two racing jobs the later one wins."""
+        lock_name = "helpdesk_article_index_" + re.sub(r"\W", "_", name)
+        with filelock(lock_name, timeout=30):
+            is_published = frappe.db.get_value("HD Article", name, "status") == "Published"
+            if is_published and not self.has_index():
+                # A partial index would give incomplete answers, so build the whole thing.
+                return build_index()
+            self.remove_article(name)
+            if not is_published:
+                return
+            self._index_exists = True
+            for doc in self.get_records("HD Article", name=name):
+                self.index_doc(doc)
+
     def extract_headings(self, content: str | None) -> str:
         try:
             soup = BeautifulSoup(content, "html.parser")
@@ -303,11 +336,14 @@ class HelpdeskSearch(Search):
         if doctype == "HD Article":
             return len(self.get_records(doctype))
 
-    def get_records(self, doctype):
+    def get_records(self, doctype, name=None):
         records = []
+        filters = {"status": "Published"}
+        if name:
+            filters["name"] = name
         for d in frappe.db.get_all(
             doctype,
-            filters={"status": "Published"},
+            filters=filters,
             fields=self.DOCTYPE_FIELDS[doctype],
         ):
             d.doctype = doctype
@@ -339,7 +375,15 @@ def search(query, qtype: Literal["and", "or"] = "and") -> list[dict[str, list[di
             query += f"{sep}{part}*"
 
     query = query.lstrip(sep)  # Remove leading separator (| at beginning is invalid)
-    result = search.search(query, start=0, highlight=True)
+    try:
+        result = search.search(query, start=0, highlight=True)
+    except (ResponseError, RedisConnectionError) as e:
+        # Missing index (e.g. being rebuilt) or Redis down: suggestions are optional, so answer
+        # with no results instead of a 500. Only the error type is logged, never the connection.
+        frappe.logger("helpdesk.search").warning(
+            "Article search unavailable: %s", type(e).__name__
+        )
+        return []
     groups = {}
     for r in result.docs:
         doctype, name = r.id.split(":")
@@ -361,6 +405,13 @@ def build_index():
     search = HelpdeskSearch()
     search.build_index()
     frappe.cache().set_value("helpdesk_search_indexing_in_progress", False)
+
+
+def update_article_index(name: str):
+    """Background job queued by HDArticle on every save and delete. A failure is not caught: the
+    job fails, Frappe records an Error Log entry, and the index is repaired by saving the article
+    again or with Build Index in HD Settings."""
+    HelpdeskSearch().sync_article(name)
 
 
 def build_index_in_background():

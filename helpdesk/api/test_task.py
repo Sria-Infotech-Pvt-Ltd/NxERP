@@ -402,7 +402,11 @@ class TestHDTask(FrappeTestCase):
         calls = {
             task_api.get_tasks: {},
             task_api.get_task_counts: {},
+            task_api.get_pbt_projects: {},
+            task_api.get_hrms_employees: {},
+            task_api.get_hrms_employee: {"employee_id": "E-1"},
             task_api.get_task: {"name": "TASK-0001"},
+            task_api.create_task: {"doc": {"subject": "x"}},
             task_api.update_status: {"name": "TASK-0001", "status": "In Progress"},
             task_api.update_checklist: {"name": "TASK-0001", "checklist": []},
             task_api.add_comment: {"name": "TASK-0001", "content": "hi"},
@@ -422,7 +426,7 @@ class TestHDTask(FrappeTestCase):
 
     def test_guest_cannot_reach_endpoints_over_http(self):
         endpoints = task_api_endpoints()
-        self.assertEqual(len(endpoints), 10)
+        self.assertEqual(len(endpoints), 14)
         frappe.set_user("Guest")
         for name in endpoints:
             with self.subTest(endpoint=name):
@@ -621,7 +625,17 @@ class TestHDTask(FrappeTestCase):
         result = get_list_data("HD Task", is_default=True)
         self.assertEqual(
             [c["key"] for c in result["columns"]],
-            ["name", "subject", "status", "priority", "assigned_to", "due_date", "project"],
+            [
+                "name",
+                "subject",
+                "status",
+                "priority",
+                "assigned_to",
+                "due_date",
+                "project",
+                "pbt_project_name",
+                "hrms_employee_name",
+            ],
         )
         self.assertEqual([r["subject"] for r in result["data"]], ["mine"])
 
@@ -733,20 +747,33 @@ class TestHDTask(FrappeTestCase):
         )
         self.assertEqual([c.reference_doctype for c in comment], ["HD Task"])
 
-    def test_endpoints_accept_the_verb_frappe_ui_uses(self):
-        """createResource POSTs by default; a GET-only whitelist made the browser get a 403."""
-        for fn in (
+    def test_reads_are_get_only_and_writes_are_post_only(self):
+        """Reads must be cacheable GETs and a GET must never reach a function that changes a Task."""
+        reads = (
             task_api.get_tasks,
             task_api.get_task,
             task_api.get_task_counts,
+            task_api.get_task_form_options,
             task_api.get_mentionable_users,
+            task_api.get_pbt_projects,
+            task_api.get_hrms_employees,
+            task_api.get_hrms_employee,
+        )
+        writes = (
+            task_api.create_task,
             task_api.update_status,
             task_api.update_checklist,
             task_api.add_comment,
             task_api.bulk_assign,
             task_api.bulk_update_status,
-        ):
-            self.assertIn("POST", frappe.allowed_http_methods_for_whitelisted_func[fn], fn.__name__)
+        )
+        allowed = frappe.allowed_http_methods_for_whitelisted_func
+        for fn in reads:
+            self.assertEqual(allowed[fn], ["GET"], fn.__name__)
+        for fn in writes:
+            self.assertEqual(allowed[fn], ["POST"], fn.__name__)
+        # every whitelisted Task endpoint is classified above
+        self.assertEqual(len(task_api_endpoints()), len(reads) + len(writes))
 
     # --- notifications ---
 

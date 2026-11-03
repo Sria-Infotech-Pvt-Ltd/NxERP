@@ -1,4 +1,7 @@
+import os
+from contextlib import contextmanager
 from datetime import datetime
+from unittest.mock import patch
 
 import frappe
 from frappe.core.doctype.communication.test_communication import create_email_account
@@ -714,3 +717,116 @@ def make_plain_user(email: str):
             }
         ).insert(ignore_permissions=True)
     return frappe.get_doc("User", email)
+
+
+class FakeResponse:
+    """Minimal stand-in for requests.Response, used by mock_external_api."""
+
+    def __init__(self, body=None, status_code: int = 200, headers: dict | None = None):
+        self.body = body
+        self.status_code = status_code
+        self.headers = headers or {}
+
+    @property
+    def ok(self):
+        return self.status_code < 400
+
+    def json(self):
+        if self.body is _INVALID_JSON:
+            raise ValueError("not json")
+        return self.body
+
+
+_INVALID_JSON = object()
+INVALID_JSON = FakeResponse(_INVALID_JSON)
+# Dummy values only; they exist so the clients see a configured integration.
+FAKE_EXTERNAL_CONFIG = {
+    "HRMS_API_BASE_URL": "http://hrms.invalid",
+    "HRMS_API_KEY": "test-hrms-key",
+    "PBT_API_BASE_URL": "http://pbt.invalid",
+    "PBT_API_KEY": "test-pbt-key",
+}
+
+
+@contextmanager
+def mock_external_api(handler, config: dict | None = None):
+    """Route every HRMS / PBT request to `handler(url, params, headers)` instead of the network.
+
+    The handler returns a FakeResponse or raises a requests exception. Yields the list of
+    (url, params, headers) calls made. `config` replaces the dummy API settings, e.g. {} for
+    an unconfigured integration. Retry sleeps are skipped."""
+    calls = []
+
+    def fake_get(url, params=None, headers=None, **kwargs):
+        calls.append((url, params or {}, headers or {}))
+        return handler(url, params or {}, headers or {})
+
+    settings = FAKE_EXTERNAL_CONFIG if config is None else config
+    cleared = {k: "" for k in FAKE_EXTERNAL_CONFIG}
+    with (
+        patch.dict(os.environ, {**cleared, **settings}),
+        patch("helpdesk.integrations.external.client.requests.get", fake_get),
+        patch("helpdesk.integrations.external.client.time.sleep"),
+    ):
+        yield calls
+
+
+def pbt_project(project_id: str = "P-1", project_name: str = "Test PBT Project", **extra):
+    """One PBT project row shaped like the documented API, with every field present."""
+    return {
+        "project_id": project_id,
+        "project_name": project_name,
+        "client_id": "C-1",
+        "client_name": "Test Client",
+        "status": "development",
+        "status_display": "Development",
+        "project_type": "web",
+        "project_type_display": "Web",
+        "engagement_type": "fixed",
+        "engagement_type_display": "Fixed",
+        "start_date": "2026-01-01",
+        "end_date": None,
+        "project_manager_name": None,
+        **extra,
+    }
+
+
+def pbt_page(results: list, page: int = 1, total_pages: int = 1, count: int | None = None):
+    """A PBT list response in the documented envelope."""
+    return FakeResponse(
+        {
+            "status": "success",
+            "message": "Projects retrieved.",
+            "data": {
+                "count": len(results) if count is None else count,
+                "page": page,
+                "page_size": len(results),
+                "total_pages": total_pages,
+                "results": results,
+            },
+        }
+    )
+
+
+def hrms_employee(
+    employee_id: str = "E-1",
+    employee_name: str = "Test Employee",
+    email: str | None = "test.employee@example.com",
+    department: str | None = "Engineering",
+    designation: str | None = "Developer",
+):
+    """One HRMS employee row. UNVERIFIED shape: it mirrors FIELD_CANDIDATES in the HRMS client."""
+    return {
+        "employee_id": employee_id,
+        "employee_name": employee_name,
+        "email": email,
+        "department": department,
+        "designation": designation,
+    }
+
+
+def make_article(title: str = "Test Article", status: str = "Published", content: str = "<p>Test content</p>"):
+    """Insert an HD Article and return its name. Published articles need content."""
+    return frappe.get_doc(
+        {"doctype": "HD Article", "title": title, "status": status, "content": content}
+    ).insert(ignore_permissions=True).name
