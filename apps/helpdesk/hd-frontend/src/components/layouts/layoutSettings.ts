@@ -3,6 +3,7 @@ import LucideBookOpen from "~icons/lucide/book-open";
 import LucideUsers from "~icons/lucide/users";
 import LucideTicket from "~icons/lucide/ticket";
 import LucideLayoutDashboard from "~icons/lucide/layout-dashboard";
+import LucideListChecks from "~icons/lucide/list-checks";
 import { OrganizationsIcon } from "../icons";
 import PhoneIcon from "../icons/PhoneIcon.vue";
 import LucideHome from "~icons/lucide/home";
@@ -44,6 +45,11 @@ export const agentPortalSidebarOptions = [
     label: __("Contacts"),
     icon: LucideUsers,
     to: "ContactList",
+  },
+  {
+    label: __("Tasks"),
+    icon: LucideListChecks,
+    to: "Tasks",
   },
   {
     label: __("Call Logs"),

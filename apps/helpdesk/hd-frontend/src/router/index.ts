@@ -107,6 +107,17 @@ const portalRoutes = [
     props: true,
   },
   {
+    path: "/tasks",
+    name: "Tasks",
+    component: () => import("@/pages/tasks/Tasks.vue"),
+  },
+  {
+    path: "/tasks/:taskId",
+    name: "Task",
+    component: () => import("@/pages/tasks/TaskPage.vue"),
+    props: true,
+  },
+  {
     path: "/agents",
     name: "AgentList",
     redirect: "/tickets",

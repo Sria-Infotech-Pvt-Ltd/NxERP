@@ -7,10 +7,16 @@
     ]"
     v-if="showViewControls"
   >
-    <QuickFilters v-if="!isMobileView" />
-    <div v-if="!isMobileView" class="-ms-2 h-5 border-s"></div>
+    <QuickFilters v-if="!isMobileView && !options.hideQuickFilters" />
     <div
-      class="flex items-start gap-2 justify-end h-full py-1 ps-0.5"
+      v-if="!isMobileView && !options.hideQuickFilters"
+      class="-ms-2 h-5 border-s"
+    ></div>
+    <div
+      :class="[
+        'flex items-start gap-2 justify-end h-full py-1 ps-0.5',
+        options.hideQuickFilters && 'ms-auto',
+      ]"
       v-if="!isMobileView"
     >
       <Button
@@ -53,11 +59,16 @@
       selectable: options.selectable,
       showTooltip: false,
       resizeColumn: true,
-      getRowRoute: (row) => ({
-        name: options.rowRoute?.name,
-        params: { [options.rowRoute?.prop]: row.name },
-        query: { view: route.query?.view },
-      }),
+      getRowRoute: options.onRowClick
+        ? undefined
+        : (row) => ({
+            name: options.rowRoute?.name,
+            params: { [options.rowRoute?.prop]: row.name },
+            query: { view: route.query?.view },
+          }),
+      onRowClick: options.onRowClick
+        ? (row) => options.onRowClick(row.name)
+        : undefined,
       emptyState,
     }"
   >
@@ -204,6 +215,11 @@ interface P {
   options: {
     doctype: string;
     defaultFilters?: Record<string, any>;
+    // Keeps filters out of the saved default view, so a one-off filter never becomes the landing state.
+    skipDefaultViewFilters?: boolean;
+    hideQuickFilters?: boolean;
+    // Replaces the row link, so the page can open the record beside the list.
+    onRowClick?: (name: string) => void;
     columnConfig?: Record<string, any>;
     emptyState?: {
       // type of a h componnt
@@ -585,6 +601,8 @@ function listCell(column: any, row: any, item: any, idx: number) {
 }
 
 function handleFieldClick(e: MouseEvent, column, row, item) {
+  // The whole row opens the record, so a cell click must not turn into a filter.
+  if (options.value.onRowClick) return;
   const noFilterFields = ["Data", "Datetime", "Rating", "Int", "Float"];
   if (noFilterFields.includes(column.type)) {
     if (options.value.rowRoute?.name !== "") {
@@ -658,7 +676,7 @@ function applyFilters(filters) {
   list.submit({ ...defaultParams });
 
   // automatically update filters for default view
-  if (!defaultParams.is_default) return;
+  if (!defaultParams.is_default || options.value.skipDefaultViewFilters) return;
   handleViewUpdate();
   isViewUpdated.value = false;
 }
@@ -793,7 +811,11 @@ function switchToView(view: string): boolean {
   const currentView: View = findCurrentView();
   if (currentView) {
     // normalize so legacy dict-format saved views become list conditions
-    viewFilters = normalizeFilters(currentView.filters);
+    viewFilters = normalizeFilters(
+      options.value.skipDefaultViewFilters && defaultParams.is_default
+        ? options.value.defaultFilters
+        : currentView.filters
+    );
     defaultParams.order_by = currentView.order_by || "modified desc";
     defaultParams.columns = currentView.columns;
     defaultParams.rows = currentView.rows;
