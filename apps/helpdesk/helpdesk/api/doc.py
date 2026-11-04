@@ -428,7 +428,7 @@ def get_quick_filters(doctype: str, show_customer_portal_fields: bool = False):
     elif doctype == "TP Call Log":
         quick_filters.append(name_filter)
         return quick_filters
-    name_filter_doctypes = ["HD Agent", "HD Customer", "HD Ticket"]
+    name_filter_doctypes = ["HD Agent", "HD Customer", "HD Ticket", "HD Task"]  # HD Task module
     if doctype in name_filter_doctypes:
         quick_filters.append(name_filter)
 

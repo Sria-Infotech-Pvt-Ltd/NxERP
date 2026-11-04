@@ -1,5 +1,6 @@
 import json
 import os
+from contextlib import contextmanager
 from datetime import datetime
 from typing import Any
 from unittest.mock import MagicMock, patch
@@ -1020,3 +1021,180 @@ def get_number_cards(agent: str, from_date: str, to_date: str) -> dict[str, dict
     filters = frappe._dict(from_date=from_date, to_date=to_date, agent=agent)
     cards = HelpdeskDashboard(filters).get_number_card_data()
     return {card["title"]: card for card in cards}
+
+
+def create_agent_manager(email: str):
+    """Create (or fetch) an agent that also has the Agent Manager role."""
+    create_agent(email)
+    user = frappe.get_doc("User", email)
+    if "Agent Manager" not in frappe.get_roles(email):
+        user.add_roles("Agent Manager")
+    return user
+
+
+def make_task_project(project_name: str = "Test Task Project"):
+    """Create (or fetch) an HD Task Project and return its name."""
+    if frappe.db.exists("HD Task Project", project_name):
+        return project_name
+    return (
+        frappe.get_doc({"doctype": "HD Task Project", "project_name": project_name})
+        .insert(ignore_permissions=True)
+        .name
+    )
+
+
+def make_task(subject: str = "Test Task", **kwargs):
+    """Insert an HD Task as the current user, bypassing permission checks.
+    Pass checklist=[{"item": ..., "done": ...}] for checklist rows."""
+    return frappe.get_doc({"doctype": "HD Task", "subject": subject, **kwargs}).insert(
+        ignore_permissions=True
+    )
+
+
+def make_task_milestone(project: str, milestone_name: str = "Test Milestone"):
+    """Create an HD Task Milestone under `project` and return its name."""
+    return (
+        frappe.get_doc(
+            {
+                "doctype": "HD Task Milestone",
+                "milestone_name": milestone_name,
+                "project": project,
+            }
+        )
+        .insert(ignore_permissions=True)
+        .name
+    )
+
+
+def make_task_freelancer(freelancer_name: str = "Test Freelancer"):
+    """Create (or fetch) an HD Task Freelancer and return its name."""
+    if frappe.db.exists("HD Task Freelancer", freelancer_name):
+        return freelancer_name
+    return (
+        frappe.get_doc({"doctype": "HD Task Freelancer", "freelancer_name": freelancer_name})
+        .insert(ignore_permissions=True)
+        .name
+    )
+
+
+def make_plain_user(email: str):
+    """Create (or fetch) an enabled user with no Helpdesk role, to test that task APIs reject non-agents."""
+    if not frappe.db.exists("User", email):
+        frappe.get_doc(
+            {
+                "doctype": "User",
+                "email": email,
+                "first_name": email.split("@")[0],
+                "send_welcome_email": 0,
+            }
+        ).insert(ignore_permissions=True)
+    return frappe.get_doc("User", email)
+
+
+class FakeResponse:
+    """Minimal stand-in for requests.Response, used by mock_external_api."""
+
+    def __init__(self, body=None, status_code: int = 200, headers: dict | None = None):
+        self.body = body
+        self.status_code = status_code
+        self.headers = headers or {}
+
+    @property
+    def ok(self):
+        return self.status_code < 400
+
+    def json(self):
+        if self.body is _INVALID_JSON:
+            raise ValueError("not json")
+        return self.body
+
+
+_INVALID_JSON = object()
+
+
+INVALID_JSON = FakeResponse(_INVALID_JSON)
+
+
+FAKE_EXTERNAL_CONFIG = {
+    "HRMS_API_BASE_URL": "http://hrms.invalid",
+    "HRMS_API_KEY": "test-hrms-key",
+    "PBT_API_BASE_URL": "http://pbt.invalid",
+    "PBT_API_KEY": "test-pbt-key",
+}
+
+
+@contextmanager
+def mock_external_api(handler, config: dict | None = None):
+    """Route every HRMS / PBT request to `handler(url, params, headers)` instead of the network.
+
+    The handler returns a FakeResponse or raises a requests exception. Yields the list of
+    (url, params, headers) calls made. `config` replaces the dummy API settings, e.g. {} for
+    an unconfigured integration. Retry sleeps are skipped."""
+    calls = []
+
+    def fake_get(url, params=None, headers=None, **kwargs):
+        calls.append((url, params or {}, headers or {}))
+        return handler(url, params or {}, headers or {})
+
+    settings = FAKE_EXTERNAL_CONFIG if config is None else config
+    cleared = {k: "" for k in FAKE_EXTERNAL_CONFIG}
+    with (
+        patch.dict(os.environ, {**cleared, **settings}),
+        patch("helpdesk.integrations.external.client.requests.get", fake_get),
+        patch("helpdesk.integrations.external.client.time.sleep"),
+    ):
+        yield calls
+
+
+def pbt_project(project_id: str = "P-1", project_name: str = "Test PBT Project", **extra):
+    """One PBT project row shaped like the documented API, with every field present."""
+    return {
+        "project_id": project_id,
+        "project_name": project_name,
+        "client_id": "C-1",
+        "client_name": "Test Client",
+        "status": "development",
+        "status_display": "Development",
+        "project_type": "web",
+        "project_type_display": "Web",
+        "engagement_type": "fixed",
+        "engagement_type_display": "Fixed",
+        "start_date": "2026-01-01",
+        "end_date": None,
+        "project_manager_name": None,
+        **extra,
+    }
+
+
+def pbt_page(results: list, page: int = 1, total_pages: int = 1, count: int | None = None):
+    """A PBT list response in the documented envelope."""
+    return FakeResponse(
+        {
+            "status": "success",
+            "message": "Projects retrieved.",
+            "data": {
+                "count": len(results) if count is None else count,
+                "page": page,
+                "page_size": len(results),
+                "total_pages": total_pages,
+                "results": results,
+            },
+        }
+    )
+
+
+def hrms_employee(
+    employee_id: str = "E-1",
+    employee_name: str = "Test Employee",
+    email: str | None = "test.employee@example.com",
+    department: str | None = "Engineering",
+    designation: str | None = "Developer",
+):
+    """One HRMS employee row. UNVERIFIED shape: it mirrors FIELD_CANDIDATES in the HRMS client."""
+    return {
+        "employee_id": employee_id,
+        "employee_name": employee_name,
+        "email": email,
+        "department": department,
+        "designation": designation,
+    }

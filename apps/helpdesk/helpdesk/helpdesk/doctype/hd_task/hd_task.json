@@ -1,0 +1,314 @@
+{
+ "actions": [],
+ "autoname": "TASK-.####",
+ "creation": "2026-10-28 10:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "subject",
+  "status",
+  "priority",
+  "column_break_assign",
+  "assigned_to",
+  "reviewer",
+  "project",
+  "milestone",
+  "assignee_type",
+  "department",
+  "designation",
+  "freelancer",
+  "section_external",
+  "pbt_project_id",
+  "pbt_project_name",
+  "pbt_project_status",
+  "column_break_external",
+  "hrms_employee_id",
+  "hrms_employee_name",
+  "hrms_department",
+  "hrms_designation",
+  "section_dates",
+  "start_date",
+  "column_break_dates",
+  "due_date",
+  "section_progress",
+  "progress",
+  "checklist",
+  "section_blocked",
+  "blocked_reason",
+  "section_completion",
+  "completed_on",
+  "completed_by",
+  "section_description",
+  "description"
+ ],
+ "fields": [
+  {
+   "fieldname": "subject",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Subject",
+   "reqd": 1
+  },
+  {
+   "default": "Planned",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Planned\nIn Progress\nIn Review\nCompleted\nBlocked\nCancelled",
+   "reqd": 1
+  },
+  {
+   "default": "Medium",
+   "fieldname": "priority",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Priority",
+   "options": "Low\nMedium\nHigh\nUrgent",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_assign",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "__user",
+   "fieldname": "assigned_to",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Assigned To",
+   "options": "User"
+  },
+  {
+   "fieldname": "reviewer",
+   "fieldtype": "Link",
+   "label": "Reviewer",
+   "options": "User"
+  },
+  {
+   "fieldname": "project",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Project",
+   "options": "HD Task Project"
+  },
+  {
+   "fieldname": "section_dates",
+   "fieldtype": "Section Break",
+   "label": "Dates"
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "label": "Start Date"
+  },
+  {
+   "fieldname": "column_break_dates",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "due_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Due Date"
+  },
+  {
+   "fieldname": "section_progress",
+   "fieldtype": "Section Break",
+   "label": "Progress"
+  },
+  {
+   "default": "0",
+   "fieldname": "progress",
+   "fieldtype": "Percent",
+   "label": "Progress",
+   "read_only": 1
+  },
+  {
+   "fieldname": "checklist",
+   "fieldtype": "Table",
+   "label": "Checklist",
+   "options": "HD Task Checklist Item"
+  },
+  {
+   "depends_on": "eval: doc.status == \"Blocked\"",
+   "fieldname": "section_blocked",
+   "fieldtype": "Section Break",
+   "label": "Blocked"
+  },
+  {
+   "fieldname": "blocked_reason",
+   "fieldtype": "Small Text",
+   "label": "Blocked Reason",
+   "mandatory_depends_on": "eval: doc.status == \"Blocked\""
+  },
+  {
+   "collapsible": 1,
+   "depends_on": "eval: doc.completed_on",
+   "fieldname": "section_completion",
+   "fieldtype": "Section Break",
+   "label": "Completion"
+  },
+  {
+   "fieldname": "completed_on",
+   "fieldtype": "Datetime",
+   "label": "Completed On",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "completed_by",
+   "fieldtype": "Link",
+   "label": "Completed By",
+   "no_copy": 1,
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_description",
+   "fieldtype": "Section Break",
+   "label": "Description"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text Editor",
+   "label": "Description"
+  },
+  {
+   "fieldname": "milestone",
+   "fieldtype": "Link",
+   "label": "Milestone",
+   "options": "HD Task Milestone"
+  },
+  {
+   "fieldname": "assignee_type",
+   "fieldtype": "Select",
+   "label": "Assign To",
+   "options": "Employee\nFreelancer",
+   "default": "Employee"
+  },
+  {
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "label": "Department",
+   "options": "HD Team"
+  },
+  {
+   "fieldname": "designation",
+   "fieldtype": "Link",
+   "label": "Designation",
+   "options": "HD Task Designation"
+  },
+  {
+   "fieldname": "freelancer",
+   "fieldtype": "Link",
+   "label": "Freelancer",
+   "options": "HD Task Freelancer"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_external",
+   "fieldtype": "Section Break",
+   "label": "External References"
+  },
+  {
+   "description": "Project id in the Project Budgeting Tool. Re-checked against PBT on save.",
+   "fieldname": "pbt_project_id",
+   "fieldtype": "Data",
+   "label": "PBT Project ID",
+   "search_index": 1
+  },
+  {
+   "fieldname": "pbt_project_name",
+   "fieldtype": "Data",
+   "label": "PBT Project",
+   "read_only": 1
+  },
+  {
+   "fieldname": "pbt_project_status",
+   "fieldtype": "Data",
+   "label": "PBT Project Status",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_external",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Employee id in HRMS. It is not a Frappe User id.",
+   "fieldname": "hrms_employee_id",
+   "fieldtype": "Data",
+   "label": "HRMS Employee ID",
+   "search_index": 1
+  },
+  {
+   "fieldname": "hrms_employee_name",
+   "fieldtype": "Data",
+   "label": "HRMS Employee",
+   "read_only": 1
+  },
+  {
+   "fieldname": "hrms_department",
+   "fieldtype": "Data",
+   "label": "HRMS Department",
+   "read_only": 1
+  },
+  {
+   "fieldname": "hrms_designation",
+   "fieldtype": "Data",
+   "label": "HRMS Designation",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-30 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Helpdesk",
+ "name": "HD Task",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Agent Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Agent",
+   "select": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "subject",
+ "track_changes": 1
+}
