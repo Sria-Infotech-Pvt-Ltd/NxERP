@@ -41,3 +41,10 @@ The versions of the *running* legacy Docker site (Frappe 15, Helpdesk 1.30.2) ar
 - **Major upgrades** (Frappe 17): a new ADR; never in a patch PR.
 - Pins are exact commits. A moving branch is only allowed for `nxerp` itself.
 - **Not implemented yet:** an automated check that compares pins with the latest upstream tags (recommended scheduled workflow).
+
+## Amendment 1 (2026-11-05): ERPNext is fetched from the company fork
+
+- **DECISION (owner):** ERPNext is installed from the company fork `Sriainfotech/NextERP`, branch `sria-version-16`, instead of `frappe/erpnext`. The fork is public and keeps GitHub's "Sync fork" link to upstream. Frappe, payments and telephony stay on upstream.
+- **FACT:** the pinned commit is unchanged: `sria-version-16` = tag `v16.52.1` = `ade850bbd6a7412e9994a9637d2c5c713771632a` (`git ls-remote https://github.com/Sriainfotech/NextERP`). The fork also carries tag `v16.52.0` = `90cb7f9`, the commit running on `nxerp.nxsys.in`.
+- Company changes to ERPNext go on `sria-version-16` only, kept small. Behaviour that can live in an app (hooks, custom fields, overrides) still belongs in an app, not in the fork.
+- Upstream security fixes: "Sync fork" on `version-16`, merge the new tag into `sria-version-16`, then repin here as usual.

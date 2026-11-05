@@ -7,8 +7,8 @@
   },
   {
     "name": "erpnext",
-    "url": "https://github.com/frappe/erpnext",
-    "branch": "v16.52.1",
+    "url": "https://github.com/Sriainfotech/NextERP",
+    "branch": "sria-version-16",
     "commit": "ade850bbd6a7412e9994a9637d2c5c713771632a"
   },
   {
