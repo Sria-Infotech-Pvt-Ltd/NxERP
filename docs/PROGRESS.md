@@ -41,6 +41,25 @@ On `develop` (commit `98029e2`). The local `nxerp-develop` stack runs image `…
   `www/helpdesk/index.html` (the Vite config fixes its outDir); both were restored from the `dirty.5` image, checksums equal.
   Do not run `vite build` against the container's app tree to test; use a full copy or a rebuild.
 
+## Local develop stack and Frappe 16 fixes (2026-11-04)
+
+Committed and pushed to `develop` on 2026-11-05 (the seven commits after `35a74d0`). New stack `deploy/docker/compose/develop/` (project `nxerp-develop`, port 8012, site
+`nxerp.localhost`, image from `deploy/docker/Dockerfile`). Verified by execution (FACT) in Chrome, by HTTP and in logs:
+
+- Image build fixed: bench 5.31 rewrites `sites/apps.txt` in directory order; `install_apps.sh` restores apps.json order.
+- Image defaults fixed: backend CMD is `application_with_statics()` (plain WSGI serves no `/assets`), HEALTHCHECK sends
+  the site name, entrypoint refreshes the image's generated `sites/` files, sets `webserver_host`/`webserver_port`
+  (socket auth callback) and drops the cached `assets_json` (stale map = 404 on every bundle after an image change).
+- nginx template: upstreams re-resolved via Docker DNS; `/files/` served from the read-only sites volume (missing
+  file 404, not Frappe's 500); dot-segment URIs refused (400). Helpdesk `socket.ts` uses the page origin, not port 9000.
+- Login on Frappe 16.53.0: submit button lost `btn-primary btn-login` (restored by the page script), card shrank below
+  its content on short viewports (`flex: none`), loading/error states follow `aria-busy` and the error banner,
+  "Forgot password?" sits under the button; "Keep me signed in" removed.
+- Tasks API: `get_tasks` / `get_task_counts` used string SQL in `fields` (Frappe 16 rejects it): version-aware `COUNT_NAME`.
+- NOT verified: `staging-like/` was never started (config validated, `nginx -t` passed); Helpdesk/Tasks Python test suites
+  were not run on this site; password reset email cannot be delivered (no outgoing Email Account); ERPNext setup wizard
+  not completed (needs real company data from the owner); PBT/HRMS keys not configured.
+
 ## Retire the bare `/desk` gateway (2026-11-02)
 
 Branch `feature/retire-bare-desk-gateway`. `/nxerp/apps` is the only gateway; ERPNext's tile now targets `/desk/home` and an exact

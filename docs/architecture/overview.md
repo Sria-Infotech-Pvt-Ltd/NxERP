@@ -198,4 +198,4 @@ CI (`.github/workflows/ci.yml`) is authored but, per `docs/PROGRESS.md`, has not
 - **Validation of a User Invitation's `redirect_to_path`** and a "Keep me signed in" that lengthens the session (the cosmetic checkbox was removed): open items in ADR-004 amendment 1.
 - **Branded outgoing email** (Frappe still titles login mail "Login To Frappe") and **a screen-reader accessibility audit** (only automated basics exist).
 - **Production deployment**: a production image, registry, staging and secrets management are being added under `deploy/` in Phase 4 by their owners; this page does not claim they work. Nothing has been deployed anywhere.
-- **Anything on GitHub**: no push, no PR, no branch protection and no CI run has been verified (see the owner action list in `docs/governance/owner-action-list.md`).
+- **Anything on GitHub beyond pushes to `develop`**: pushes to `develop` have been verified (2026-11-05, local and remote hashes equal by `git ls-remote`); no PR, no branch protection and no CI run has been verified (see the owner action list in `docs/governance/owner-action-list.md`).
