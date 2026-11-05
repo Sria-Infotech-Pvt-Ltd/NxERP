@@ -121,14 +121,15 @@ through the Filter button.
 - Columns: `default_list_data` widths are proportional (`minmax(0, Nfr)`) so the list fits its width with no horizontal
   scrollbar.
 - Header: breadcrumb `Tasks / List` with the view dropdown, and a **Create** button that opens `NewTaskDialog` (titled Add Task). Field order: Task Title (required), Project, Milestone
-  (follows the project), an Employee/Freelancer switch, then for Employee the Department / Designation filters and
-  Select Employee (Department narrows the employee list to that team), or for Freelancer a Select Freelancer dropdown,
+  (follows the project), an Employee/Freelancer switch, then for Employee Select Employee (disabled with "Select project
+  first" until a project is chosen; changing the project clears it and the milestone), or for Freelancer a Select Freelancer dropdown,
   then Status (all six, default Planned; Blocked shows a required Blocked reason), Start Date and End Date (stored as
   `due_date`; may not precede the start). It saves with `frappe.client.insert`. There is no Allocated Hours field.
   **Project** lists PBT projects (value `pbt:<project_id>`) followed by existing local `HD Task Project`s marked
   "(local)" (value `local:<name>`); **Milestone** is only enabled for a local project, because milestones exist only for
-  those. **Select Employee**, **Department** and **Designation** come from HRMS: Department and Designation narrow each
-  other and the employee list, and an employee who no longer matches is cleared. The form never sends `assigned_to` for an
+  those. **Select Employee** comes from HRMS and lists every HRMS employee: there is no project or milestone team data
+  yet (not in HD Task Project, HD Task Milestone or the PBT contract), so the list is not narrowed by project. The form has no
+  Department or Designation field; the `department` / `designation` fields stay on `HD Task` for existing records. The form never sends `assigned_to` for an
   HRMS employee. See "External integrations (PBT and HRMS)". Freelancers still come from `HD Task Freelancer`.
 - Default views (frontend only, no saved records): All tasks, My tasks, Overdue, Due this week, Unassigned. Each puts its
   filters on the URL (`?tview=...&filters=[...]`), see `viewFilters` in `taskMeta.ts`. `@me` is resolved server-side.
