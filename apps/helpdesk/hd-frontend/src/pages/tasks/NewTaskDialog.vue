@@ -66,59 +66,28 @@
 
           <div class="col-span-2 flex items-center justify-between gap-3">
             <span class="text-base text-ink-gray-5">{{ __("Assign to") }}</span>
-            <TabButtons v-model="form.assignee_type" :buttons="assigneeTypes" />
+            <TabButtons v-model="form.assignee_type" :options="assigneeTypes" />
           </div>
-          <template v-if="form.assignee_type === 'Employee'">
-            <FormControl
-              v-model="form.department"
-              type="select"
-              :label="__('Department')"
-              :options="departmentOptions"
-              :disabled="employees.loading"
-            />
-            <FormControl
-              v-model="form.designation"
-              type="select"
-              :label="__('Designation')"
-              :options="designationOptions"
-              :disabled="employees.loading"
-            />
-            <div class="col-span-2 space-y-1.5">
-              <label class="block text-base text-ink-gray-5">
-                {{ __("Select Employee") }}
-              </label>
-              <!-- Searchable by name or employee id: the HRMS list is too long for a plain select. -->
-              <EmployeeAutocomplete
-                v-model="employeeChoice"
-                class="w-full"
-                :options="employeeOptions"
-                :placeholder="
-                  employees.loading
-                    ? __('Loading employees...')
-                    : __('Search employee by name or ID')
-                "
-                :disabled="employees.loading"
-              >
-                <template #prefix>
-                  <LucideSearch class="me-2 size-4 shrink-0 text-ink-gray-5" />
-                </template>
-                <template #item-label="{ option }">
-                  <span class="min-w-0 flex-1 truncate text-ink-gray-8">
-                    {{ option.label }}
-                  </span>
-                  <span
-                    v-if="option.meta"
-                    class="ms-3 max-w-[50%] shrink-0 truncate text-xs text-ink-gray-5"
-                  >
-                    {{ option.meta }}
-                  </span>
-                </template>
-              </EmployeeAutocomplete>
-              <p v-if="employeeHint" class="text-xs text-ink-gray-5">
-                {{ employeeHint }}
-              </p>
-            </div>
-          </template>
+          <!-- Searchable by name or employee id: the HRMS list is too long for a plain select.
+               Filtered here, not by the combobox, because its own filter only matches the label. -->
+          <Combobox
+            v-if="form.assignee_type === 'Employee'"
+            v-model="employeeChoice"
+            v-model:query="employeeQuery"
+            class="col-span-2"
+            :label="__('Select Employee')"
+            :options="filteredEmployeeOptions"
+            :filterable="false"
+            :placeholder="
+              form.project
+                ? __('Search employee by name or ID')
+                : __('Select project first')
+            "
+            :disabled="!form.project"
+            :loading="employees.loading"
+            :empty-text="employeeEmptyText"
+            :description="employeeHint"
+          />
           <FormControl
             v-else
             v-model="form.freelancer"
@@ -193,6 +162,7 @@ import { __ } from "@/translation";
 import {
   Button,
   call,
+  Combobox,
   createListResource,
   createResource,
   Dialog,
@@ -202,7 +172,6 @@ import {
   toast,
 } from "frappe-ui";
 import { computed, reactive, ref, watch } from "vue";
-import EmployeeAutocomplete from "@/components/frappe-ui/Autocomplete.vue";
 import { STATUSES } from "./taskMeta";
 
 const open = defineModel<boolean>({ default: false });
@@ -243,8 +212,6 @@ const blank = () => ({
   project: "", // "pbt:<project_id>" or "local:<HD Task Project name>"
   milestone: "",
   assignee_type: "Employee",
-  department: "",
-  designation: "",
   employee: "", // HRMS employee id, not a Frappe user id
   freelancer: "",
   status: "Planned",
@@ -305,69 +272,46 @@ const milestoneHint = computed(() => {
   return "";
 });
 
-const unique = (values: (string | null | undefined)[]) =>
-  [...new Set(values.filter(Boolean) as string[])].sort();
 const hrmsEmployees = computed(() => employees.data || []);
-const matchesFilters = (e, skip: "department" | "designation" | "" = "") =>
-  (skip === "department" ||
-    !form.department ||
-    e.department === form.department) &&
-  (skip === "designation" ||
-    !form.designation ||
-    e.designation === form.designation);
-// Each filter only offers values that still leave at least one employee.
-const departmentOptions = computed(() =>
-  withBlank(
-    __("Select department"),
-    unique(
-      hrmsEmployees.value
-        .filter((e) => matchesFilters(e, "department"))
-        .map((e) => e.department)
-    ).map((d) => ({ label: d, value: d }))
-  )
-);
-const designationOptions = computed(() =>
-  withBlank(
-    __("Select designation"),
-    unique(
-      hrmsEmployees.value
-        .filter((e) => matchesFilters(e, "designation"))
-        .map((e) => e.designation)
-    ).map((d) => ({ label: d, value: d }))
-  )
-);
-const filteredEmployees = computed(() =>
-  hrmsEmployees.value.filter((e) => matchesFilters(e))
-);
 // Two employees can share a name, so add the id when a name repeats.
 const employeeOptions = computed(() => {
-  const names = filteredEmployees.value.map((e) => e.employee_name);
-  return filteredEmployees.value
+  const names = hrmsEmployees.value.map((e) => e.employee_name);
+  return hrmsEmployees.value
     .map((e, i) => ({
       label:
         names.filter((n) => n === names[i]).length > 1
           ? `${names[i]} (${e.employee_id})`
           : names[i],
       value: e.employee_id,
-      meta: [e.designation, e.department].filter(Boolean).join(" · "),
     }))
     .sort((a, b) => a.label.localeCompare(b.label));
 });
-// The autocomplete hands back the chosen option (null when cleared); the form keeps the HRMS id.
+const employeeQuery = ref("");
+const filteredEmployeeOptions = computed(() => {
+  const q = employeeQuery.value.trim().toLowerCase();
+  if (!q) return employeeOptions.value;
+  return employeeOptions.value.filter(
+    (o) => o.label.toLowerCase().includes(q) || o.value.toLowerCase().includes(q)
+  );
+});
+// The combobox reads null as "nothing selected"; the form keeps the HRMS id or "".
 const employeeChoice = computed({
-  get: () => form.employee,
-  set: (option: { value: string } | null) => {
-    form.employee = option?.value ?? "";
+  get: () => form.employee || null,
+  set: (value: string | null) => {
+    form.employee = value ?? "";
   },
+});
+const employeeEmptyText = computed(() => {
+  if (employeesError.value) return __("Employees could not be loaded");
+  if (!hrmsEmployees.value.length) return __("No employees available");
+  return __("No employees match your search");
 });
 const selectedEmployee = computed(() =>
   hrmsEmployees.value.find((e) => e.employee_id === form.employee)
 );
 const employeeHint = computed(() => {
-  if (employees.loading || employeesError.value) return "";
+  if (!form.project || employees.loading || employeesError.value) return "";
   if (!hrmsEmployees.value.length) return __("No employees available");
-  if (!filteredEmployees.value.length)
-    return __("No employees match the selected department and designation");
   if (selectedEmployee.value && !selectedEmployee.value.user)
     return __(
       "Not linked to a Help Desk user: the task keeps this employee but is not assigned to a user"
@@ -418,20 +362,15 @@ watch(
   () => form.project,
   () => {
     form.milestone = "";
+    form.employee = "";
+    employeeQuery.value = "";
     loadOptions();
   }
 );
-// The chosen employee may not belong to the new department or designation.
-watch([() => form.department, () => form.designation], () => {
-  if (
-    form.employee &&
-    !filteredEmployees.value.some((e) => e.employee_id === form.employee)
-  )
-    form.employee = "";
-});
 
 function reset() {
   Object.assign(form, blank());
+  employeeQuery.value = "";
   Object.keys(errors).forEach((key) => delete errors[key]);
 }
 
