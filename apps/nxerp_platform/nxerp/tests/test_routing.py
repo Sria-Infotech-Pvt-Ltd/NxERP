@@ -218,7 +218,14 @@ class TestRouting(IntegrationTestCase):
 			self.assertIsNone(self.desk_root(user), user)
 
 	def test_only_the_exact_desk_root_is_moved(self):
-		for path in ("/desk/home", "/desk/user", "/desk/customer", "/desk/customer/x", "/app", "/helpdesk/home"):
+		for path in (
+			"/desk/home",
+			"/desk/user",
+			"/desk/customer",
+			"/desk/customer/x",
+			"/app",
+			"/helpdesk/home",
+		):
 			self.assertIsNone(self.desk_root(self.erp, path), path)
 			self.assertIsNone(self.desk_root(self.both, path), path)
 		self.assertIsNone(self.desk_root(self.erp, method="POST"))
@@ -229,7 +236,15 @@ class TestRouting(IntegrationTestCase):
 		self.assertEqual(self.desk_root(self.erp, nxerp_keep_desk_root=0), "/desk/home")
 
 	def test_the_desk_root_redirect_never_points_back_at_the_desk_root(self):
-		for user in ("Administrator", self.agent, self.erp, self.both, self.sysmgr, self.noapps, self.customer):
+		for user in (
+			"Administrator",
+			self.agent,
+			self.erp,
+			self.both,
+			self.sysmgr,
+			self.noapps,
+			self.customer,
+		):
 			self.assertNotIn(self.desk_root(user), routing.DESK_ROOT_PATHS, user)
 
 	def test_a_good_redirect_wins_only_when_authorised(self):
