@@ -51,13 +51,16 @@ services:
     volumes:
       - redis-queue-data:/data
 
-  # one-shot: writes sites/common_site_config.json from environment (no secrets in it)
+  # one-shot: refreshes the image's generated sites/ files (assets, apps.txt) into the volume, drops the cached asset
+  # map in redis-cache, and writes sites/common_site_config.json from environment (no secrets in it)
   configurator:
     <<: *nxerp
     restart: "no"
     depends_on:
       mariadb:
         condition: service_healthy
+      redis-cache:
+        condition: service_started
     environment:
       NXERP_CONFIGURE: "1"
       NXERP_DB_HOST: mariadb

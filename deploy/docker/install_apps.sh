@@ -71,6 +71,12 @@ PY
 		cd "$BENCH_DIR"
 		bench get-app --skip-assets "$BUILD/src/$name"
 	done
+	# bench 5.x rewrites sites/apps.txt in directory-listing order on every get-app (same issue as deploy/bootstrap/bootstrap.sh);
+	# restore frappe, then apps.json order
+	python3 -I - "$BUILD/apps.json" > sites/apps.txt <<'PY'
+import json, sys
+print("\n".join(["frappe"] + [app["name"] for app in json.load(open(sys.argv[1]))]))
+PY
 	log "bench build"
 	bench build
 	# the order of installed apps is the order of sites/apps.txt; nxerp must be last (ADR-005)

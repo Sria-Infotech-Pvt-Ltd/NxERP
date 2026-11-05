@@ -8,7 +8,7 @@
 # The base is the digest-pinned frappe/bench image from deploy/versions.env (BENCH_IMAGE). The default below must equal it:
 # `python3 -I deploy/check_pins.py` fails when they drift. build.sh always passes the values from versions.env.
 #
-# STATUS: build-check linted only; a full build has NOT been run (see docs/runbooks/release.md).
+# STATUS: built and run locally (deploy/docker/compose/develop/, 2026-11-04); never built in CI or pushed (see docs/runbooks/release.md).
 
 ARG BENCH_IMAGE=frappe/bench@sha256:cb24e8a76f93e39d6e9fe0efdf13cbe2bfb60312befa39a01a7b1804088c9f4a
 
@@ -51,14 +51,21 @@ COPY deploy/docker/entrypoint.sh /usr/local/bin/nxerp-entrypoint
 USER root
 RUN chmod 0755 /usr/local/bin/nxerp-entrypoint
 USER frappe
+# The sites volume hides sites/ of a newer image: keep a copy of its generated files (assets, apps.txt, apps.json),
+# which the entrypoint refreshes into the volume when it configures the bench.
+RUN cp -a /home/frappe/frappe-bench/sites /home/frappe/image-sites
 WORKDIR /home/frappe/frappe-bench
 # No secrets are baked in: database host, redis URLs and credentials arrive at run time (see deploy/env/).
 ENV NXERP_VERSION=${NXERP_VERSION} \
     NXERP_REVISION=${NXERP_REVISION}
 EXPOSE 8000 9000
+# gunicorn picks the site from the request, not from default_site: name it, or every probe answers 404
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=5 \
-    CMD curl -fsS http://localhost:8000/api/method/ping || exit 1
+    CMD curl -fsS -H "X-Frappe-Site-Name: $(python3 -I -c 'import json; print(json.load(open("sites/common_site_config.json")).get("default_site", ""))')" \
+        http://localhost:8000/api/method/ping || exit 1
 ENTRYPOINT ["/usr/local/bin/nxerp-entrypoint"]
+# application_with_statics: the plain frappe.app:application serves neither /assets nor /files, and the nginx in front
+# cannot serve /assets itself (sites/assets links into apps/, which only this image has)
 CMD ["/home/frappe/frappe-bench/env/bin/gunicorn", "--chdir=/home/frappe/frappe-bench/sites", "--bind=0.0.0.0:8000", \
      "--threads=4", "--workers=2", "--worker-class=gthread", "--worker-tmp-dir=/dev/shm", "--timeout=120", \
-     "--preload", "frappe.app:application"]
+     "--preload", "frappe.app:application_with_statics()"]
