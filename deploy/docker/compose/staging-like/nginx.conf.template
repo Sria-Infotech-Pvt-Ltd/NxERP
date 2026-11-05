@@ -1,12 +1,23 @@
 # Rendered by the nginx image's entrypoint (envsubst): only ${NXERP_SITE} is substituted; nginx's own $variables stay.
 # HTTP only. TLS is terminated by the host's real reverse proxy / load balancer in staging and production.
-upstream nxerp_backend { server backend:8000 fail_timeout=0; }
-upstream nxerp_websocket { server websocket:9000 fail_timeout=0; }
+#
+# Upstreams are resolved through Docker's DNS on each request (cached 10 s), not once at start: a restarted backend or
+# websocket container gets a new IP, and a start-time lookup would keep answering 502 until nginx itself restarted.
+resolver 127.0.0.11 valid=10s ipv6=off;
 
 server {
   listen 8080;
   server_name _;
   client_max_body_size 50m;
+
+  set $nxerp_backend backend:8000;
+  set $nxerp_websocket websocket:9000;
+
+  # proxy_pass forwards the client's raw URI: refuse dot-segments (plain or percent-encoded) instead of handing a
+  # traversal attempt to the backend. Frappe never generates such URLs.
+  if ($request_uri ~* "(^|/|%2f|\\|%5c)(\.|%2e)(\.|%2e)(/|%2f|\\|%5c|\?|$)") {
+    return 400;
+  }
 
   add_header X-Content-Type-Options nosniff always;
   add_header X-Frame-Options SAMEORIGIN always;
@@ -19,7 +30,25 @@ server {
     proxy_set_header X-Frappe-Site-Name ${NXERP_SITE};
     proxy_set_header Origin $scheme://$http_host;
     proxy_set_header Host $host;
-    proxy_pass http://nxerp_websocket;
+    proxy_pass http://$nxerp_websocket;
+  }
+
+  # Public files straight from the sites volume (mounted read-only at the same path as in the image). The root is the
+  # site's public/ folder, so private/ and site_config.json are unreachable; symlinks are not followed; a missing file
+  # is a plain 404. (Frappe's own /files handler answers 500 for a missing file and ignores X-Frappe-Site-Name.)
+  location /files/ {
+    root /home/frappe/frappe-bench/sites/${NXERP_SITE}/public;
+    disable_symlinks on;
+    try_files $uri =404;
+
+    # same list as frappe.utils.response.FORCE_DOWNLOAD_EXTENSIONS: never rendered inline from this origin
+    location ~* \.(svgz?|html?|xhtml?|xht|shtml?|mhtml?|mht|xml|xslt?|swf)$ {
+      add_header Content-Disposition "attachment" always;
+      add_header X-Content-Type-Options nosniff always;
+      add_header X-Frame-Options SAMEORIGIN always;
+      add_header Referrer-Policy strict-origin-when-cross-origin always;
+      try_files $uri =404;
+    }
   }
 
   location / {
@@ -30,6 +59,6 @@ server {
     proxy_set_header X-Real-IP $remote_addr;
     proxy_read_timeout 120s;
     proxy_redirect off;
-    proxy_pass http://nxerp_backend;
+    proxy_pass http://$nxerp_backend;
   }
 }
