@@ -9,6 +9,7 @@ name: nxerp-staging-like
 #   docker compose --env-file deploy/env/staging-like/.env -f deploy/docker/compose/staging-like/compose.yaml --profile init run --rm create-site
 #
 # STATUS: `docker compose config` validated; the stack itself has NOT been started (needs the image from deploy/docker/build.sh).
+# The same image, nginx template and service layout run as deploy/docker/compose/develop/ (verified there, 2026-11-04).
 
 x-nxerp: &nxerp
   image: ${NXERP_IMAGE:-ghcr.io/sria-infotech-pvt-ltd/nxerp}:${NXERP_IMAGE_TAG:?set NXERP_IMAGE_TAG, e.g. 0.1.0-ab12cd34ef56}

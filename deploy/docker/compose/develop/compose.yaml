@@ -1,0 +1,213 @@
+name: nxerp-develop
+
+# Local develop environment: the NXERP image built from the checked-out branch (deploy/docker/build.sh) + MariaDB + Redis
+# + nginx. Same layout as staging-like/, with names, port and volumes of its own so it never touches other stacks.
+# Values come from .env next to this file (git-ignored; template .env.example). See README.md.
+
+x-nxerp: &nxerp
+  image: ${IMAGE:?set IMAGE in .env}
+  restart: unless-stopped
+  environment:
+    NXERP_CONFIGURE: "0"
+  volumes:
+    - sites:/home/frappe/frappe-bench/sites
+    - logs:/home/frappe/frappe-bench/logs
+  depends_on:
+    configurator:
+      condition: service_completed_successfully
+
+services:
+  mariadb:
+    image: ${MARIADB_IMAGE:-mariadb:11.8}
+    restart: unless-stopped
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --skip-character-set-client-handshake
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?set DB_ROOT_PASSWORD in .env}
+      MARIADB_AUTO_UPGRADE: "1"
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  redis-cache:
+    image: ${REDIS_IMAGE:-redis:8.6-alpine}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  redis-queue:
+    image: ${REDIS_IMAGE:-redis:8.6-alpine}
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-queue-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # one-shot on every `up`: copies the image-owned files of sites/ (assets, apps.txt, ...) into the sites volume, so a
+  # rebuilt image is not hidden by an older volume, drops the cached asset map in redis-cache (it would still name the
+  # previous image's bundles), and writes common_site_config.json (no secrets in it).
+  # The volume is mounted beside the image's sites/ so both are visible; site folders and uploads are never touched.
+  configurator:
+    image: ${IMAGE:?set IMAGE in .env}
+    restart: "no"
+    user: root
+    depends_on:
+      redis-cache:
+        condition: service_healthy
+    environment:
+      SITE_NAME: ${SITE_NAME:?set SITE_NAME in .env}
+    volumes:
+      - sites:/mnt/sites
+      - logs:/home/frappe/frappe-bench/logs
+    entrypoint: ["bash", "-c"]
+    command:
+      - |
+        set -euo pipefail
+        cd /home/frappe/frappe-bench/sites
+        for entry in * .[!.]*; do
+          [ -e "$$entry" ] && [ "$$entry" != common_site_config.json ] || continue
+          rm -rf "/mnt/sites/$$entry"
+          cp -a "$$entry" /mnt/sites/
+        done
+        /home/frappe/frappe-bench/env/bin/python -I -c 'import redis; redis.Redis.from_url("redis://redis-cache:6379").delete("assets_json")'
+        python3 -I - <<'PY'
+        import json, os
+        path = "/mnt/sites/common_site_config.json"
+        config = json.load(open(path)) if os.path.exists(path) else {}
+        config.update(
+            db_host="mariadb",
+            db_port=3306,
+            redis_cache="redis://redis-cache:6379",
+            redis_queue="redis://redis-queue:6379",
+            redis_socketio="redis://redis-queue:6379",
+            socketio_port=9000,
+            # where the websocket service calls back to authenticate a socket; without these it uses the browser's
+            # Origin (http://localhost:8012), which is unreachable from inside the websocket container
+            webserver_host="backend",
+            webserver_port=8000,
+            default_site=os.environ["SITE_NAME"],
+        )
+        with open(path, "w") as f:
+            json.dump(config, f, indent=1)
+        PY
+        chown -R frappe:frappe /mnt/sites /home/frappe/frappe-bench/logs
+        echo "configured: $$(cat /mnt/sites/apps.txt | tr '\n' ' ')"
+
+  # one-shot, profile "init": creates the site only when it does not exist, then installs every app in apps.txt order
+  create-site:
+    <<: *nxerp
+    profiles: ["init"]
+    restart: "no"
+    depends_on:
+      configurator:
+        condition: service_completed_successfully
+      mariadb:
+        condition: service_healthy
+      redis-cache:
+        condition: service_healthy
+      redis-queue:
+        condition: service_healthy
+    environment:
+      NXERP_CONFIGURE: "0"
+      SITE_NAME: ${SITE_NAME:?set SITE_NAME in .env}
+      DB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?set DB_ROOT_PASSWORD in .env}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?set ADMIN_PASSWORD in .env}
+      HTTP_PORT: ${HTTP_PORT:-8012}
+    command:
+      - bash
+      - -c
+      - |
+        set -euo pipefail
+        if [ -d "sites/$$SITE_NAME" ]; then echo "site $$SITE_NAME already exists: not created again"; exit 0; fi
+        bench new-site "$$SITE_NAME" --mariadb-root-password "$$DB_ROOT_PASSWORD" \
+          --admin-password "$$ADMIN_PASSWORD" --no-mariadb-socket
+        for app in $$(grep -vx frappe sites/apps.txt); do bench --site "$$SITE_NAME" install-app "$$app"; done
+        bench --site "$$SITE_NAME" set-config host_name "http://localhost:$$HTTP_PORT"
+        echo "site $$SITE_NAME created"
+
+  backend:
+    <<: *nxerp
+    # application_with_statics: gunicorn's plain frappe.app:application serves neither /assets nor /files
+    command: ["/home/frappe/frappe-bench/env/bin/gunicorn", "--chdir=/home/frappe/frappe-bench/sites", "--bind=0.0.0.0:8000",
+              "--threads=4", "--workers=2", "--worker-class=gthread", "--worker-tmp-dir=/dev/shm", "--timeout=120",
+              "--preload", "frappe.app:application_with_statics()"]
+    environment:
+      NXERP_CONFIGURE: "0"
+      # the only service that calls the external APIs (helpdesk/api/task.py, HD Task validation)
+      HRMS_API_BASE_URL: ${HRMS_API_BASE_URL:-}
+      HRMS_API_KEY: ${HRMS_API_KEY:-}
+      PBT_API_BASE_URL: ${PBT_API_BASE_URL:-}
+      PBT_API_KEY: ${PBT_API_KEY:-}
+    # the image's HEALTHCHECK sends Host: localhost, which matches no site (404); name the site explicitly
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "-H", "X-Frappe-Site-Name: ${SITE_NAME}", "http://localhost:8000/api/method/ping"]
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+    depends_on:
+      configurator:
+        condition: service_completed_successfully
+      mariadb:
+        condition: service_healthy
+      redis-cache:
+        condition: service_healthy
+      redis-queue:
+        condition: service_healthy
+
+  websocket:
+    <<: *nxerp
+    command: ["node", "/home/frappe/frappe-bench/apps/frappe/socketio.js"]
+    healthcheck:
+      disable: true
+
+  queue-worker:
+    <<: *nxerp
+    command: ["bench", "worker", "--queue", "short,default,long"]
+    healthcheck:
+      disable: true
+
+  scheduler:
+    <<: *nxerp
+    command: ["bench", "schedule"]
+    healthcheck:
+      disable: true
+
+  frontend:
+    image: ${NGINX_IMAGE:-nginx:1.27-alpine}
+    restart: unless-stopped
+    environment:
+      NXERP_SITE: ${SITE_NAME:?set SITE_NAME in .env}
+    volumes:
+      - ../staging-like/nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
+      # read-only: nginx serves <site>/public/files from it (see the template)
+      - sites:/home/frappe/frappe-bench/sites:ro
+    ports:
+      - "${HTTP_PORT:-8012}:8080"
+    depends_on:
+      - backend
+      - websocket
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/api/method/ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db-data:
+  sites:
+  logs:
+  redis-queue-data:
