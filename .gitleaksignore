@@ -1,0 +1,17 @@
+# Reviewed gitleaks false positives, one exact fingerprint per line (<commit>:<file>:<rule>:<line>). gitleaks reads this file
+# from the scanned repository root. A fingerprint matches only that finding at that commit, file, rule and line: any other
+# finding, including a new one in the same file, still fails the scan. Never add a pattern or a path here; .gitleaks.toml holds
+# the only allowlist.
+#
+# All five are in upstream Frappe/ERPNext/Helpdesk history (2019-2023) that reaches this repository only through the remote
+# branch `nxerp-apitask`, which CI's full-history scan includes. None is reachable from `develop`. Reviewed 2026-11-05: no
+# credential, nothing to rotate.
+
+# generic-api-key on the DocType field name "response_key_list" in a JSON field list (a field label, not a key)
+b6c1ad3cfda1e58145d532b39912b9eb2de8a602:frappedesk/frappedesk/doctype/frappe_desk_settings/frappe_desk_settings.json:generic-api-key:26
+09bf356373b6159e0525ece79b0f20753843d8cc:frappedesk/frappedesk/doctype/frappe_desk_settings/frappe_desk_settings.json:generic-api-key:21
+11ed01b2afbf6dcd2603cbd109055bb2c46327ee:erpnext/support/doctype/support_settings/support_settings.json:generic-api-key:17
+
+# generic-api-key on the keyboard constant `g.SHORTKEY=...` in a minified vue-quill vendor bundle (a key code, not a secret)
+649d9746b6589a18236074a0743f16853e55732f:helpdesk/public/desk/assets/vue-quill.snow.e0554409.js:generic-api-key:27
+175136c66c2d64f0d186767eab37749e8398b2d8:helpdesk/public/desk/assets/vue-quill.snow.e0554409.js:generic-api-key:27
