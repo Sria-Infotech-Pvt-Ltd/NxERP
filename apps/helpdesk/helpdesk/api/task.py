@@ -9,10 +9,16 @@ from frappe.utils.html_utils import sanitize_html
 from helpdesk.integrations.external import hrms, pbt
 from helpdesk.integrations.external.client import ExternalAPIError
 from helpdesk.integrations.external.mapping import map_emails_to_users
-from helpdesk.utils import agent_only
+from helpdesk.utils import agent_only, is_frappe_version
 
 DOCTYPE = "HD Task"
 CLOSED_STATUSES = ["Completed", "Cancelled"]
+# Frappe 16 rejects SQL functions written as strings in `fields` (same as api/dashboard.py)
+COUNT_NAME = (
+    {"COUNT": "name", "as": "count"}
+    if is_frappe_version("16", above=True)
+    else "count(name) as count"
+)
 VIEWS = ("my", "all", "overdue", "due_this_week", "unassigned")
 LIST_FIELDS = [
     "name",
@@ -71,7 +77,7 @@ def view_filters(view: str) -> list[list]:
 
 def count_tasks(filters: list[list]) -> int:
     rows = frappe.get_list(
-        DOCTYPE, filters=filters, fields=["count(name) as count"], limit_page_length=0
+        DOCTYPE, filters=filters, fields=[COUNT_NAME], limit_page_length=0
     )
     return rows[0].count if rows else 0
 
@@ -142,7 +148,7 @@ def get_tasks(
         DOCTYPE,
         filters=conditions,
         or_filters=or_filters,
-        fields=["count(name) as count"],
+        fields=[COUNT_NAME],
         limit_page_length=0,
     )[0].count
 
