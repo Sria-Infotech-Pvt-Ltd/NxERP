@@ -95,7 +95,7 @@ wizard really finishes. Fixed by setting it to `workspace` (what a finished wiza
 no longer touch the dev site (the browser suite uses its own fresh site). Not a platform-code bug, but a fresh site's setup-wizard UI was
 not driven end to end by the tests (they finish the wizard through its API).
 
-**Open decisions for the owner:** a User Invitation `redirect_to_path` is not validated by the platform; "Keep me signed in" is cosmetic;
+**Open decisions for the owner:** a User Invitation `redirect_to_path` is not validated by the platform; "Keep me signed in" was cosmetic (removed 2026-11-04);
 Helpdesk's menu still links to Frappe support/docs; the grant migration heuristic over-suggests (a "Website Manager" role also has
 ERPNext DocPerms), so review its dry-run output before applying.
 

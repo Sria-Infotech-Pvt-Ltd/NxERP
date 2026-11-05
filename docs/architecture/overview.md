@@ -195,7 +195,7 @@ CI (`.github/workflows/ci.yml`) is authored but, per `docs/PROGRESS.md`, has not
 - **A custom RBAC engine or a grant table**: grants are Frappe roles (ADR-003); the resolver is derived from them.
 - **A hook-based registry extension point**: the registry is one declarative list in `nxerp` (ADR-003 amendment A1); it can be added later without changing the resolver.
 - **Gating of static assets, public files, `allow_guest` methods and non-document realtime rooms**: public by design or Frappe's own decision ([`../security/shared-set.md`](../security/shared-set.md)).
-- **Validation of a User Invitation's `redirect_to_path`** and a "Keep me signed in" that lengthens the session: open items in ADR-004 amendment 1.
+- **Validation of a User Invitation's `redirect_to_path`** and a "Keep me signed in" that lengthens the session (the cosmetic checkbox was removed): open items in ADR-004 amendment 1.
 - **Branded outgoing email** (Frappe still titles login mail "Login To Frappe") and **a screen-reader accessibility audit** (only automated basics exist).
 - **Production deployment**: a production image, registry, staging and secrets management are being added under `deploy/` in Phase 4 by their owners; this page does not claim they work. Nothing has been deployed anywhere.
 - **Anything on GitHub**: no push, no PR, no branch protection and no CI run has been verified (see the owner action list in `docs/governance/owner-action-list.md`).

@@ -174,6 +174,18 @@
 		function each(sel, fn, root) { Array.prototype.forEach.call((root || document).querySelectorAll(sel), fn); }
 
 		ready(function () {
+			// 0. The framework renders its submit button as a bare .es-button (older markup carried btn-primary btn-login,
+			//    which the NXERP look and the steps below select on), with "Forgot password?" above it: restore the
+			//    classes and move the link under the button. Handlers are bound to the form and the #forgot hash, not to these.
+			try {
+				each("section.for-login form.form-login button[type=submit]", function (b) {
+					b.classList.add("btn-primary", "btn-login");
+					var forgot = b.form.querySelector("a[href='#forgot']");
+					var row = forgot && forgot.closest("p");
+					if (row) b.insertAdjacentElement("afterend", row);
+				});
+			} catch (e) {}
+
 			// 1. Headings / sub-lines
 			try {
 				var copy = {
@@ -203,24 +215,8 @@
 				each("section.for-login .forgot-password-message a", function (a) { a.textContent = {{ _("Forgot password?") | tojson }}; });
 			} catch (e) {}
 
-			// 3. "Keep me signed in" (remembers the choice in this browser only)
-			try {
-				var row = document.querySelector("section.for-login .forgot-password-message");
-				if (row && !row.querySelector(".nx-keep")) {
-					var label = document.createElement("label");
-					label.className = "nx-keep";
-					var box = document.createElement("input");
-					box.type = "checkbox"; box.id = "nx-keep-signed-in"; box.checked = true;
-					try { if (localStorage.getItem("nxerp_keep_signed_in") === "0") box.checked = false; } catch (e) {}
-					box.addEventListener("change", function () {
-						try { localStorage.setItem("nxerp_keep_signed_in", box.checked ? "1" : "0"); } catch (e) {}
-					});
-					var text = document.createElement("span");
-					text.textContent = {{ _("Keep me signed in") | tojson }};
-					label.appendChild(box); label.appendChild(text);
-					row.insertBefore(label, row.firstChild);
-				}
-			} catch (e) {}
+			// 3. (removed) a "Keep me signed in" checkbox: it only stored a browser preference and never changed the
+			//    session length (the framework has no such option), so it misled users. See ADR-004 amendment 1.
 
 			// 4. Provider buttons (off by default; SHOW_SOCIAL_LOGIN in login.py turns them on)
 			try {
@@ -254,14 +250,21 @@
 					var sync = function () {
 						var t = btn.textContent.trim();
 						var invalid = document.querySelector("section.for-login .page-card-body.invalid");
-						btn.classList.toggle("nx-busy", t === verifying);
-						btn.classList.toggle("nx-err", t !== verifying && t !== idle && !!invalid);
+						// the framework marks a request in flight with aria-busy (older versions set the text "Verifying..."),
+						// and reports a failed sign-in in its error banner (older versions put the message in the button)
+						var busy = btn.getAttribute("aria-busy") === "true" || t === verifying;
+						var banner = document.querySelector("section.for-login .login-error-banner:not(.hidden)");
+						btn.classList.toggle("nx-busy", busy);
+						btn.classList.toggle("nx-err", !busy && ((t !== idle && !!invalid) || !!banner));
 					};
-					new MutationObserver(sync).observe(btn, { childList: true, characterData: true, subtree: true });
+					var observer = new MutationObserver(sync);
+					observer.observe(btn, { childList: true, characterData: true, subtree: true, attributes: true, attributeFilter: ["aria-busy"] });
+					each("section.for-login .login-error-banner", function (b) { observer.observe(b, { attributes: true, attributeFilter: ["class"] }); });
 					each("section.for-login #login_email, section.for-login #login_password", function (el) {
 						el.addEventListener("input", function () {
 							if (!btn.classList.contains("nx-err")) return;
 							each("section.for-login .page-card-body.invalid", function (b) { b.classList.remove("invalid"); });
+							each("section.for-login .login-error-banner", function (b) { b.classList.add("hidden"); });
 							btn.textContent = idle;
 						});
 					});
