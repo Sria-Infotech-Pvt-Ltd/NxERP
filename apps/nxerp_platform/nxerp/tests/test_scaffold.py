@@ -40,14 +40,19 @@ class TestScaffold(IntegrationTestCase):
 			hooks.get("override_whitelisted_methods"), {"frappe.apps.get_apps": ["nxerp.launcher.get_apps"]}
 		)
 		self.assertEqual(hooks.get("website_redirects"), [{"source": "/login/.+", "target": "/login"}])
+		# NXDESK Phase 1: the public site. Only a guest's "/" is re-pointed; the pages are plain www pages.
+		self.assertEqual(
+			hooks.get("get_website_user_home_page"), ["nxerp.public_site.website_user_home_page"]
+		)
+		self.assertEqual(
+			hooks.get("website_route_rules"),
+			[
+				{"from_route": "/products", "to_route": "nxerp/products"},
+				{"from_route": "/products/<key>", "to_route": "nxerp/product"},
+			],
+		)
 		# nothing else reaches into requests or sessions
-		for hook in (
-			"before_request",
-			"on_login",
-			"on_logout",
-			"website_route_rules",
-			"get_website_user_home_page",
-		):
+		for hook in ("before_request", "on_login", "on_logout"):
 			self.assertFalse(hooks.get(hook), f"{hook} is not expected")
 
 	def test_desk_palette_is_registered_and_shipped(self):
