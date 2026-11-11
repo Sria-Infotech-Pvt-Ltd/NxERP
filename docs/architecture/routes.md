@@ -1,4 +1,4 @@
-# NXERP routes and endpoints
+# NXDESK routes and endpoints (platform app `nxerp`)
 
 Status: Phase 3. Every route the platform owns or depends on, who may open it, and what happens otherwise.
 Companion to [ADR-004](../adr/ADR-004-route-map.md) (the decision) and
@@ -15,6 +15,11 @@ contains a stack trace, a list of the apps a user lacks, or the name of a grant 
 | URL | Owner | Authentication | Who may open it | Unauthorised | Invalid or unknown |
 | --- | --- | --- | --- | --- | --- |
 | `GET /login` | `nxerp` (`www/login.*`) | none | everyone | n/a. A **signed-in** visitor is redirected to `/nxerp/go` (carrying `redirect-to`, which the router re-validates) | `redirect-to` that is not a safe same-origin path is **dropped** (301 to a plain `/login`); a safe one is rewritten to travel through the router (`/login?redirect-to=/nxerp/go?redirect-to=<target>`) |
+| `GET /` | `nxerp` (`public_site.website_user_home_page`, hook `get_website_user_home_page`) | none | **a guest sees the public Home** (the page `www/nxerp/home.*`). Anyone signed in keeps Frappe's own answer for `/`, so the router still decides | n/a | site config `nxerp_keep_login_home` = 1 restores the old behaviour (a guest at `/` gets the login page). Cached per user outside developer mode: run `bench clear-cache` after changing it |
+| `GET /nxerp/home` | `nxerp` (`www/nxerp/home.*`) | none | everyone; the same Home page, for a signed-in visitor too (header shows the avatar pill and "Open your apps") | n/a | n/a |
+| `GET /products` | `nxerp` (`website_route_rules` -> `www/nxerp/products.*`) | none | everyone. Lists the **installed registry products** (never a test-only stand-in, never an uninstalled app), grouped by category; "Open application" instead of "Learn more" for a product the viewer holds | n/a | n/a |
+| `GET /products/<key>` | `nxerp` (`website_route_rules` -> `www/nxerp/product.*`) | none | everyone, for an installed product key (`erpnext`, `helpdesk`) | n/a | **404**, the same page as any unknown URL, for an unknown, uninstalled, test-only or differently-cased key |
+| `GET /get-started?product=<key>` | **nobody yet** | n/a | n/a | n/a | **404 in Phase 1.** The public pages link to it; the sign-up flow is Phase 2. Nothing creates an account or grants access in Phase 1 |
 | `GET /login/<anything>` (e.g. the old `/login/helpdesk`) | `nxerp` (`website_redirects`) | none | everyone | n/a | 301 to `/login` |
 | `GET /nxerp/go` | `nxerp` (`www/nxerp/go.*`) | session | everyone; **the post-login router** | Guest: 301 to `/login` | Always answers with a redirect to a same-origin path; a bad `redirect-to` is ignored and the user's landing is used |
 | `GET /nxerp/apps` | `nxerp` (`www/nxerp/apps.*`) | session | users with **two or more** apps (the launcher) | Guest: 301 to `/login?redirect-to=/nxerp/go`. A user who does not need a launcher is redirected to where the router would send them (one app: that app; none: the friendly page; customer: the portal) | n/a |
