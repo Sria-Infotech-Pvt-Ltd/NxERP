@@ -4,11 +4,11 @@ NXERP is Sria Infotech's enterprise platform on the [Frappe Framework](https://g
 
 | Name | What it is |
 | --- | --- |
-| **NXERP** | The umbrella platform and brand: one login, one launcher, one identity |
-| **ERPNext** | The ERP application inside NXERP. Keeps its own identity; never renamed |
-| **Helpdesk** | A separate support / ticket application inside NXERP. Never "NXERP" |
+| **NXDESK** | The umbrella platform and brand: one login, one launcher, one identity ([ADR-008](docs/adr/ADR-008-nxdesk-platform-identity.md)) |
+| **NXERP** | The display name of the ERP product. The application inside it is **ERPNext**, which keeps its own technical identity |
+| **Sria Helpdesk** | The display name of the support / ticket product. The application inside it is **Helpdesk**, a separate app that is never the ERP |
 | **Frappe Framework** | The underlying technology; not presented to business users as an application |
-| **`nxerp` (this app)** | The platform app that lets the other apps feel like one product |
+| **`nxerp` (this app)** | The platform app that lets the other apps feel like one product. Its technical name does not change |
 
 Future apps (HRMS, Project Management, Budget Management, ...) are **not installed** and are not shown anywhere.
 

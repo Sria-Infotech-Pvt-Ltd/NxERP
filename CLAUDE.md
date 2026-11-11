@@ -4,8 +4,9 @@ Rules for every contributor and every AI assistant working in this repository.
 
 ## Product identity (non-negotiable)
 
-- **NXERP** = the umbrella platform and brand. **ERPNext** = the ERP app inside it, keeping its technical identity: never rename it NXERP and never treat Helpdesk as the ERP.
-- **Helpdesk** = a separate support/ticket app inside NXERP. Helpdesk is never "NXERP".
+- **NXDESK** = the umbrella platform (ADR-008). Display names: **NXERP** = the ERPNext-based ERP product, **Sria Helpdesk** = the support product, **Royal HRMS** = a future HRMS that is not installed and is never shown until it is installed and registered.
+- **Technical identifiers never change**: the Python app `nxerp`, the folder `apps/nxerp_platform`, the `/nxerp/*` routes, the roles `NXERP Access: ...`, and ERPNext's and Helpdesk's own packages and DocTypes. The person sees the display name, the code sees the identifier.
+- **ERPNext** keeps its technical identity: never treat Helpdesk as the ERP. **Helpdesk** is a separate support/ticket app inside the platform, never the ERP.
 - **Frappe Framework** = underlying technology, not shown to business users as an application.
 - Future apps (HRMS, Project Management, Budget Management, ...) are **not installed**. Make adding them cheap; never build, mock or display them as if they exist.
 - A unified experience is not merged code: do not copy apps into one package or rename upstream packages.
@@ -29,7 +30,7 @@ Rules for every contributor and every AI assistant working in this repository.
 
 - Apps never import each other. The platform resolves apps through hooks and registries (ADR-005).
 - `nxerp` declares no `required_apps`.
-- Platform code goes in `apps/nxerp_platform/nxerp/`; app-specific code stays in that app's repo.
+- Platform code goes in `apps/nxerp_platform/nxerp/`; app-specific code stays in that app's repo. Platform names, tagline, logo paths and support link live only in `nxerp/branding.py`; a product's display name and copy live only in its registry entry.
 - Every patch is idempotent and listed in `patches.txt`; fixtures and migrations are versioned.
 - Version pins live in `deploy/versions.env` and `deploy/apps.json`; changing one needs an ADR-002 update.
 

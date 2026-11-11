@@ -16,7 +16,7 @@ new app is checked as soon as its folder exists.
 5. **Import-boundary test in CI.** `scripts/check_architecture.py` fails (exit 1) on any violation: R1 platform imports
    another app, R2 `required_apps` or app dependencies, R3 another app imports `nxerp`, R4 platform code outside the
    platform app. Negative tests prove each rule catches its violation.
-6. **Names.** Python packages and Frappe app names are snake_case; other folders and docs are lowercase-with-hyphens.
+6. **Names.** The platform is NXDESK, the ERP product NXERP, the support product Sria Helpdesk (ADR-008); these are display names only. Python packages and Frappe app names are snake_case; other folders and docs are lowercase-with-hyphens.
    Never rename the Python packages `nxerp` and `helpdesk`, `hooks.py`, `modules.txt`, `patches.txt`, `www/`, `public/`,
    `.github/`, tool configs or the `frappe-ui` submodule.
 7. **Fixed names inside Helpdesk:** `realtime/` must keep its name (Frappe loads `<app>/realtime/handlers.js` by path);

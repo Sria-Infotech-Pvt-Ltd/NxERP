@@ -11,7 +11,7 @@ test or document that shows it is named next to it. Decisions are in [`../adr/`]
 flowchart TB
   user([Browser: employee / agent / manager / customer])
 
-  subgraph NXERP["NXERP platform: one site, one login, one identity"]
+  subgraph NXERP["NXDESK platform (app nxerp): one site, one login, one identity"]
     direction TB
     subgraph PLAT["nxerp  (platform app, this repo)"]
       registry["registry.py<br/>the list of apps (ERPNext, Helpdesk)"]
@@ -167,9 +167,10 @@ CI (`.github/workflows/ci.yml`) is authored but, per `docs/PROGRESS.md`, has not
 
 | Layer | Name | Rule |
 | --- | --- | --- |
-| Platform / brand | **NXERP** | Umbrella. Owns the shared shell only (login, router, launcher, no-access, branding, access resolver) |
-| ERP application | **ERPNext** | Keeps its technical identity; never renamed |
-| Support application | **Helpdesk** | Separate app; never "NXERP" |
+| Platform / brand | **NXDESK** (technical name `nxerp`) | Umbrella (ADR-008). Owns the shared shell only (login, router, launcher, no-access, branding, access resolver, public site) |
+| ERP application | **ERPNext**, shown as **NXERP** | Keeps its technical identity; never renamed in code |
+| Support application | **Helpdesk**, shown as **Sria Helpdesk** | Separate app; never the ERP |
+| Future HRMS | **Royal HRMS** | Not installed: never shown until installed and registered |
 | Technology | **Frappe Framework** | Not shown to business users as an application |
 
 ## Rules this overview implies
