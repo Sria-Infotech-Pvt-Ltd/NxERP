@@ -11,18 +11,17 @@ Kill-switch: set site config `nxerp_stock_login` to 1 and /login serves the unmo
 
 import os
 import re
-from urllib.parse import quote, urlencode
+from urllib.parse import quote
 
 import frappe
 from frappe import _
 from frappe.www.login import get_context as frappe_login_context
 
-from nxerp import routing
+from nxerp import branding, routing
 
-BRAND = "NXERP"
-ASSETS = "/assets/nxerp/nxerp_login"
-LOGO = f"{ASSETS}/images/nxerp-wordmark.png"
-FAVICON = f"{ASSETS}/images/nxerp-favicon.png"
+BRAND = branding.LOGIN_NAME
+LOGO = branding.LOGIN_LOGO
+FAVICON = branding.LOGIN_FAVICON
 STOCK_NAMES = {"frappe", "helpdesk", "erpnext"}
 
 # UI switch. Social sign-in (e.g. Microsoft) still works in the backend; flip this to show its button.
@@ -66,7 +65,7 @@ def get_context(context):
 	context.nx_theme_version = _asset_version("css", "nxerp-theme.css")
 	context.nx_lang_code = frappe.local.lang or "en"
 	context.nx_lang_name = _language_name(context.nx_lang_code)
-	context.nx_support_url = _support_url()
+	context.nx_support_url = branding.support_url(BRAND)
 	context.nx_show_social = SHOW_SOCIAL_LOGIN
 	# The email-link option is not offered; the social block only renders when switched on.
 	context.login_with_email_link = 0
@@ -117,17 +116,3 @@ def _language_name(code):
 		return re.sub(r"\s*\(.*\)\s*$", "", name)  # "English (United States)" -> "English"
 	except Exception:
 		return "English"
-
-
-def _support_url():
-	"""The "Contact IT Support" link. Nothing is hard-coded: set site config `nxerp_support_url` (any
-	mailto:, https:// or site-relative link) or `nxerp_support_email` (opens a Gmail compose window).
-	Neither set = no link."""
-	custom = (frappe.conf.get("nxerp_support_url") or "").strip()
-	if custom.lower().startswith(("mailto:", "https://", "http://", "/")):
-		return custom
-	email = (frappe.conf.get("nxerp_support_email") or "").strip()
-	if not email or "@" not in email:
-		return None
-	query = urlencode({"view": "cm", "fs": 1, "to": email, "su": f"{BRAND} IT Support"}, quote_via=quote)
-	return f"https://mail.google.com/mail/?{query}"
