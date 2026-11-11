@@ -8,11 +8,24 @@ DocTypes, methods and routes are the "shared set" that stays governed by Frappe'
 Adding an app = one `AppEntry` below + role grants (docs/architecture/adding-an-app.md).
 
 This module only holds strings. It never imports the apps it describes (ADR-005).
+
+Presentation fields (display name, tagline, summary, features, category) feed the public site and are all
+optional. They describe only what the installed app really does. There is deliberately no per-app colour.
 """
 
 from dataclasses import dataclass
 
 import frappe
+
+SIGNUP_POLICIES = ("invite_only", "request_access", "open_portal")
+DEFAULT_SIGNUP_POLICY = "request_access"
+DEFAULT_CATEGORY = "Business apps"
+
+# Copy limits, so a card never overflows (enforced by tests/test_registry.py)
+TAGLINE_MAX = 60
+SUMMARY_MAX = 180
+FEATURES_MAX = 4
+FEATURE_WORDS_MAX = 6
 
 
 @dataclass(frozen=True)
@@ -32,10 +45,22 @@ class AppEntry:
 	portal_route: str | None = None  # where a portal-only user lands
 	admin_shell: bool = False  # platform administrators may open the path prefixes to administer
 	test_only: bool = False  # declared through site config on a test site only; never a shipped app
+	# Presentation (public site). `title` stays what the launcher shows; `display_name` is what the public pages call it (ADR-008).
+	display_name: str = ""
+	tagline: str = ""
+	summary: str = ""
+	features: tuple = ()
+	category: str = DEFAULT_CATEGORY
+	signup_policy: str = DEFAULT_SIGNUP_POLICY  # invite_only | request_access | open_portal
+	onboarding_steps: tuple = ("basics", "about")
 
 	@property
 	def grant_roles(self) -> frozenset:
 		return frozenset((self.access_role, *self.implied_roles))
+
+	@property
+	def public_title(self) -> str:
+		return self.display_name or self.title
 
 
 APPS: tuple = (
@@ -52,6 +77,15 @@ APPS: tuple = (
 		# ERPNext's own customer/supplier website model keeps working for website users
 		portal_roles=("Customer", "Supplier"),
 		admin_shell=True,
+		display_name="NXERP",
+		tagline="Accounts, sales, stock and projects in one place",
+		summary="Run accounting, selling, buying, stock, manufacturing and projects in one system, with access that follows each person's role.",
+		features=(
+			"Accounts and invoicing",
+			"Sales, buying and stock",
+			"Manufacturing and projects",
+			"Assets and maintenance",
+		),
 	),
 	AppEntry(
 		key="helpdesk",
@@ -67,6 +101,16 @@ APPS: tuple = (
 		portal_roles=("HD Customer", "HD Customer Manager"),
 		portal_prefixes=("/helpdesk",),
 		portal_route="/helpdesk/my-tickets",
+		display_name="Sria Helpdesk",
+		tagline="Support tickets and a shared knowledge base",
+		summary="Handle customer requests as tickets, share answers in a knowledge base and track service levels, with a portal where customers follow their own requests.",
+		features=(
+			"Tickets with teams and assignment",
+			"Knowledge base articles",
+			"Service level agreements",
+			"Customer portal for requests",
+		),
+		category="Support",
 	),
 )
 
@@ -114,6 +158,15 @@ def installed_entries() -> list:
 
 def get_entry(key: str) -> AppEntry | None:
 	return next((e for e in installed_entries() if e.key == key), None)
+
+
+def public_entries() -> list:
+	"""The products the public site may show: installed, and never a test-only stand-in."""
+	return [e for e in installed_entries() if not e.test_only]
+
+
+def public_entry(key) -> AppEntry | None:
+	return next((e for e in public_entries() if e.key == key), None)
 
 
 def entry_for_package(package: str) -> AppEntry | None:

@@ -1,3 +1,5 @@
+import dataclasses
+
 import frappe
 from frappe.tests import IntegrationTestCase
 
@@ -52,3 +54,41 @@ class TestRegistry(IntegrationTestCase):
 		for entry in registry.installed_entries():
 			self.assertTrue(frappe.db.exists("Role", entry.access_role), entry.access_role)
 			self.assertEqual(frappe.db.get_value("Role", entry.access_role, "desk_access"), 0)
+
+	# --- presentation fields (public site) ---------------------------------------------------------
+
+	def test_presentation_copy_respects_the_card_limits(self):
+		for entry in registry.APPS:
+			self.assertTrue(entry.display_name or entry.title, entry.key)
+			self.assertLessEqual(len(entry.tagline), registry.TAGLINE_MAX, entry.key)
+			self.assertLessEqual(len(entry.summary), registry.SUMMARY_MAX, entry.key)
+			self.assertLessEqual(len(entry.features), registry.FEATURES_MAX, entry.key)
+			for feature in entry.features:
+				self.assertLessEqual(
+					len(feature.split()), registry.FEATURE_WORDS_MAX, f"{entry.key}: {feature}"
+				)
+			# sentence case, no shouting, no exclamation marks
+			for text in (entry.tagline, entry.summary, *entry.features):
+				self.assertNotIn("!", text)
+
+	def test_shipped_products_have_copy(self):
+		for entry in registry.APPS:
+			self.assertTrue(entry.tagline and entry.summary and entry.features, entry.key)
+
+	def test_signup_policy_and_onboarding_defaults_are_safe(self):
+		for entry in registry.APPS:
+			self.assertIn(entry.signup_policy, registry.SIGNUP_POLICIES, entry.key)
+			self.assertTrue(entry.category, entry.key)
+		self.assertEqual(registry.get_entry("erpnext").signup_policy, "request_access")
+		self.assertEqual(registry.get_entry("helpdesk").signup_policy, "request_access")
+		self.assertEqual(registry.get_entry("erpnext").onboarding_steps, ("basics", "about"))
+
+	def test_no_product_has_its_own_colour(self):
+		names = {field.name for field in dataclasses.fields(registry.AppEntry)}
+		self.assertFalse({n for n in names if "color" in n or "colour" in n or "accent" in n})
+
+	def test_public_entries_are_installed_products_only(self):
+		keys = [e.key for e in registry.public_entries()]
+		self.assertEqual(keys, [e.key for e in registry.installed_entries() if not e.test_only])
+		self.assertIsNone(registry.public_entry("no-such-product"))
+		self.assertIsNone(registry.public_entry(None))
