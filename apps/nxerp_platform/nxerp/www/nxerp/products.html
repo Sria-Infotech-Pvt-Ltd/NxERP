@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="{{ nx.lang | e }}">
+<head>
+	{% include "nxerp/templates/includes/nxdesk/head.html" %}
+</head>
+<body class="nxp-body">
+	<a class="nxp-skip" href="#main">{{ _("Skip to content") }}</a>
+	{% include "nxerp/templates/includes/nxdesk/header.html" %}
+	<main class="nxp-main nxp-site" id="main">
+		<div class="nxp-intro">
+			<p class="nxp-eyebrow">{{ _("Products") }}</p>
+			<h1 class="nxp-title">{{ _("Products") }}</h1>
+			<p class="nxp-sub">{{ _("The applications you can use with one sign-in.") }}</p>
+		</div>
+		<div>
+			{% for category, items in categories %}
+			<section class="nxp-category" aria-labelledby="cat-{{ loop.index }}">
+				<h2 class="nxp-eyebrow" id="cat-{{ loop.index }}">{{ category | e }}</h2>
+				<ul class="nxp-grid">
+					{% for p in items %}
+					<li style="--i: {{ loop.index0 }}">{% include "nxerp/templates/includes/nxdesk/tile.html" %}</li>
+					{% endfor %}
+				</ul>
+			</section>
+			{% endfor %}
+		</div>
+	</main>
+	{% include "nxerp/templates/includes/nxdesk/footer.html" %}
+	{% include "nxerp/templates/includes/nxdesk/scripts.html" %}
+</body>
+</html>

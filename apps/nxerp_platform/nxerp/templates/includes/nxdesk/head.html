@@ -1,0 +1,24 @@
+{#- Shared <head> for the public pages. Reads `nx` (nxerp.public_site.base_context) and `title`. -#}
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="{{ nx.description | e }}" />
+{% if nx.canonical %}<link rel="canonical" href="{{ nx.canonical | e }}" />{% endif %}
+<title>{{ title | e }}</title>
+<link rel="icon" href="{{ nx.favicon | e }}" />
+<script>
+	// Pre-paint theme: sets data-theme before the first paint so the page never flashes the wrong theme. Same
+	// "theme" key (light, dark, system) as the launcher, the login page and the apps.
+	(function () {
+		try {
+			var t = localStorage.getItem("theme");
+			if (t !== "light" && t !== "dark" && t !== "system") t = "system";
+			var dark = t === "dark" || (t === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
+			document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+		} catch (e) {
+			document.documentElement.setAttribute("data-theme", "light");
+		}
+	})();
+</script>
+<link rel="stylesheet" href="/assets/nxerp/css/nxerp-theme.css?v={{ nx.css_theme }}" />
+<link rel="stylesheet" href="/assets/nxerp/css/nxerp-platform.css?v={{ nx.css_platform }}" />
+<link rel="stylesheet" href="/assets/nxerp/css/nxerp-site.css?v={{ nx.css_site }}" />

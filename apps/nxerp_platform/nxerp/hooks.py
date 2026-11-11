@@ -78,6 +78,14 @@ standard_navbar_items = [
 # /login/<anything> (a client-side redirect quirk) is just /login
 website_redirects = [{"source": "/login/.+", "target": "/login"}]
 
+# Public site (NXDESK plan, Phase 1): Home at "/" for guests, /products and /products/<key>. The pages live under
+# www/nxerp/; only a guest's "/" is re-pointed (signed-in users keep Frappe's own answer, so the router still decides).
+get_website_user_home_page = "nxerp.public_site.website_user_home_page"
+website_route_rules = [
+	{"from_route": "/products", "to_route": "nxerp/products"},
+	{"from_route": "/products/<key>", "to_route": "nxerp/product"},
+]
+
 # who may change grants, and the last-administrator guard
 doc_events = {
 	"User": {

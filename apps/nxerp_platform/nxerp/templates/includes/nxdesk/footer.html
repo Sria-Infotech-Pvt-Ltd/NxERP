@@ -1,0 +1,9 @@
+{#- The public footer. Reads `nx`. -#}
+<footer class="nxp-footer">
+	<nav class="nxp-foot-nav" aria-label="{{ _('Footer') }}">
+		<a class="nxp-foot-link" href="{{ nx.products_href | e }}">{{ _("Products") }}</a>
+		{% if nx.guest %}<a class="nxp-foot-link" href="{{ nx.login_href | e }}">{{ _("Sign in") }}</a>{% else %}<a class="nxp-foot-link" href="{{ nx.open_apps_href | e }}">{{ _("Open your apps") }}</a>{% endif %}
+		{% if nx.support_url %}<a class="nxp-foot-link" href="{{ nx.support_url | e }}" target="_blank" rel="noopener noreferrer">{{ _("Contact") }}</a>{% endif %}
+	</nav>
+	<p class="nxp-foot-note">&copy; {{ nx.year }} {{ nx.name | e }}. {{ _("One sign-in for all your applications.") }}</p>
+</footer>

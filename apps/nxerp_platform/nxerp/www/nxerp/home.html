@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="{{ nx.lang | e }}">
+<head>
+	{% include "nxerp/templates/includes/nxdesk/head.html" %}
+</head>
+<body class="nxp-body">
+	<a class="nxp-skip" href="#main">{{ _("Skip to content") }}</a>
+	{% include "nxerp/templates/includes/nxdesk/header.html" %}
+	<main class="nxp-main nxp-site" id="main">
+		<section class="nxp-hero">
+			<p class="nxp-eyebrow">{{ nx.name | e }}</p>
+			<h1 class="nxp-title">{{ _("Your business applications, in one place") }}</h1>
+			<p class="nxp-sub">{{ _("One sign-in for the applications your team uses, with access that follows each person's role.") }}</p>
+			<p class="nxp-actions nxp-actions--cta">
+				{% if nx.guest %}
+				<a class="nxp-cta nxp-cta--primary" href="{{ nx.products_href | e }}">{{ _("Explore products") }}</a>
+				<a class="nxp-button nxp-cta" href="{{ nx.login_href | e }}">{{ _("Sign in") }}</a>
+				{% else %}
+				<a class="nxp-cta nxp-cta--primary" href="{{ nx.open_apps_href | e }}">{{ _("Open your apps") }}</a>
+				<a class="nxp-button nxp-cta" href="{{ nx.products_href | e }}">{{ _("Explore products") }}</a>
+				{% endif %}
+			</p>
+		</section>
+
+		<section aria-labelledby="home-products">
+			<h2 class="nxp-sr-only" id="home-products">{{ _("Products") }}</h2>
+			<ul class="nxp-grid">
+				{% for p in products %}
+				<li style="--i: {{ loop.index0 }}">{% include "nxerp/templates/includes/nxdesk/tile.html" %}</li>
+				{% endfor %}
+			</ul>
+		</section>
+
+		<section aria-labelledby="home-how">
+			<div class="nxp-section-head"><h2 class="nxp-h2" id="home-how">{{ _("How it works") }}</h2></div>
+			<ul class="nxp-steps">
+				<li style="--i: 0">
+					<div class="nxp-card">
+						<span class="nxp-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="15" r="4"/><path d="m10.8 12.2 8.7-8.7M15.5 7.5l2.5 2.5M18 5l2.5 2.5"/></svg></span>
+						<h3>{{ _("One sign-in") }}</h3>
+						<p>{{ _("Use the same account for every application you are given.") }}</p>
+					</div>
+				</li>
+				<li style="--i: 1">
+					<div class="nxp-card">
+						<span class="nxp-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8 4.5 5.7v5.6c0 4.6 3.1 8.4 7.5 9.9 4.4-1.5 7.5-5.3 7.5-9.9V5.7L12 2.8Z"/><path d="m8.8 12 2.2 2.2 4.3-4.4"/></svg></span>
+						<h3>{{ _("Access by role") }}</h3>
+						<p>{{ _("What you can open and do follows the role your administrator gives you.") }}</p>
+					</div>
+				</li>
+				<li style="--i: 2">
+					<div class="nxp-card">
+						<span class="nxp-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.8"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.8"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.8"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.8"/></svg></span>
+						<h3>{{ _("Your apps in one place") }}</h3>
+						<p>{{ _("Open every application you can use from a single page.") }}</p>
+					</div>
+				</li>
+			</ul>
+		</section>
+	</main>
+	{% include "nxerp/templates/includes/nxdesk/footer.html" %}
+	{% include "nxerp/templates/includes/nxdesk/scripts.html" %}
+</body>
+</html>

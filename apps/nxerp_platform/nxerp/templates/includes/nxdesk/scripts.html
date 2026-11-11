@@ -1,0 +1,30 @@
+{#- Theme toggle, logo swap for image wordmarks, and the pointer spotlight on tiles. No dependencies. -#}
+<script>
+	(function () {
+		var root = document.documentElement;
+		var button = document.getElementById("nxp-theme-toggle");
+		var logos = document.querySelectorAll(".nxp-wordmark-img");
+		logos.forEach(function (img) { img.dataset.lightSrc = img.getAttribute("src"); });
+		function apply(theme) {
+			root.setAttribute("data-theme", theme);
+			logos.forEach(function (img) {
+				img.setAttribute("src", theme === "dark" ? img.dataset.darkSrc : img.dataset.lightSrc);
+			});
+		}
+		apply(root.getAttribute("data-theme") || "light");
+		if (button) {
+			button.addEventListener("click", function () {
+				var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+				try { localStorage.setItem("theme", next); } catch (e) {}
+				apply(next);
+			});
+		}
+		document.querySelectorAll(".nxp-tile").forEach(function (t) {
+			t.addEventListener("pointermove", function (e) {
+				var r = t.getBoundingClientRect();
+				t.style.setProperty("--mx", e.clientX - r.left + "px");
+				t.style.setProperty("--my", e.clientY - r.top + "px");
+			});
+		});
+	})();
+</script>
