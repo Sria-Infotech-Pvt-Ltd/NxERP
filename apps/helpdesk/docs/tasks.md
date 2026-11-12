@@ -12,7 +12,7 @@ shared notifications, no hooks on ticket events.
 | `HD Task Project`        | Autoname from `project_name`. Optional grouping for tasks.                      |
 | `HD Task Checklist Item` | Child table (`istable`): `item` (required), `done` (default 0).                 |
 | `HD Task Milestone`      | Autoname `MS-####`. `milestone_name` and `project` (both required).             |
-| `HD Task Designation`    | Autoname from `designation_name`. Master for the Add Task form's Designation.   |
+| `HD Task Designation`    | Autoname from `designation_name`. Master for the task form's Designation.   |
 | `HD Task Freelancer`     | Autoname from `freelancer_name`; optional `email`. Master for freelancer assignees. |
 
 `HD Task` fields: `subject` (required), `description`, `status` (default Planned), `priority` (default Medium),
@@ -69,12 +69,12 @@ Enforced by DocType permissions plus `permission_query` (list filtering) and `ha
 
 ## API (`helpdesk.api.task`)
 
-All endpoints require an Agent, Agent Manager or System Manager.
+All endpoints require an Agent, Agent Manager or System Manager. Read endpoints accept GET and POST; write endpoints are POST-only.
 
 | Endpoint                | Purpose                                                                                 |
 | ----------------------- | --------------------------------------------------------------------------------------- |
 | `get_tasks`             | Paginated list. `view`: my, all, overdue, due_this_week, unassigned. `filters`: status, priority, assigned_to, project, search. `page_size` is capped at 100. |
-| `get_task_form_options` | Choices for the Add Task form: milestones of `project`, departments (HD Teams), designations, freelancers, and active agents (narrowed to the `department` team's members). |
+| `get_task_form_options` | Choices for the New task form: milestones of `project`, departments (HD Teams), designations, freelancers, and active agents (narrowed to the `department` team's members). |
 | `get_pbt_projects`      | PBT projects (every page) as a read-only proxy. Optional `search`, `status`, `client_id`. |
 | `get_hrms_employees`    | HRMS employees, each with `user`: the enabled Frappe User with the same email, else null. |
 | `get_hrms_employee`     | One HRMS employee by id (same shape, 404-style error when unknown).                     |
@@ -83,6 +83,7 @@ All endpoints require an Agent, Agent Manager or System Manager.
 | `update_status`         | Move a task through the workflow; `reason` is the blocked reason or return comment.     |
 | `update_checklist`      | Replace the checklist; progress is recalculated server-side.                            |
 | `add_comment`           | Add a comment (mentions are restricted to users who can access the task).               |
+| `reply_via_email`       | Email a reply about the task (write access). Validates To/Cc/Bcc, throws "No outgoing email account is configured" before writing anything, stores a `Communication` linked to the task (`Sent`) and queues the email. `get_task` also returns `emails` (those Communications) and `reply_recipients` (assignee and reviewer emails). |
 | `get_mentionable_users` | Users who may be mentioned on a task.                                                   |
 | `bulk_assign`           | Assign many tasks. Each task is processed in its own savepoint; failures are reported per task. |
 | `bulk_update_status`    | Same, for status changes.                                                               |
@@ -120,11 +121,23 @@ through the Filter button.
   state. Sort and columns are still saved.
 - Columns: `default_list_data` widths are proportional (`minmax(0, Nfr)`) so the list fits its width with no horizontal
   scrollbar.
-- Header: breadcrumb `Tasks / List` with the view dropdown, and a **Create** button that opens `NewTaskDialog` (titled Add Task). Field order: Task Title (required), Project, Milestone
+- Header: breadcrumb `Tasks / List` with the view dropdown, and a **Create** button that opens `NewTaskDialog` (titled New task; its button is **Assigned**). Field order: Task Title (required), Project, Milestone
   (follows the project), an Employee/Freelancer switch, then for Employee Select Employee (disabled with "Select project
   first" until a project is chosen; changing the project clears it and the milestone), or for Freelancer a Select Freelancer dropdown,
   then Status (all six, default Planned; Blocked shows a required Blocked reason), Start Date and End Date (stored as
-  `due_date`; may not precede the start). It saves with `frappe.client.insert`. There is no Allocated Hours field.
+  `due_date`; may not precede the start). **Assigned** validates Task Title and the assignee (Select Employee, or Select Freelancer when that switch is active), with inline errors
+  that clear on edit, then saves the form into the module-level draft (`taskDraft.ts`), closes the dialog and goes to
+  `/helpdesk/tasks/new`. Nothing is created there. The task is created only by **Submit** on that page. There is no Allocated Hours field.
+  **New task page** (`TaskNew.vue`): breadcrumb `Tasks / New task`; a read-only summary of the draft (project, milestone,
+  assignee and type, status, due date) with **Edit** (or **Assign** when nobody is chosen), which reopens the dialog prefilled
+  from the draft and, on **Assigned**, updates the draft without navigating; a **Subject** input (placeholder "A short
+  description", max 140) prefilled from the title; and the ticket composer (`TicketTextEditor`) bound to the draft
+  description. Attach, image and video are hidden (`hide-uploads`), because uploads would attach to a task that does not
+  exist yet. **Submit** requires a Subject, then calls `create_task` with the draft and a per-draft `request_id` (a retry
+  returns the task already created); on success it clears the draft, toasts "Task created" and replaces the route with
+  `/helpdesk/tasks/:taskId`; on error it shows the server message and keeps the draft. Opening `/helpdesk/tasks/new` with no
+  draft (or after a reload) starts an empty draft and shows "Not assigned"; the server still decides what is valid, and an
+  Employee task with no employee defaults to the creator as before.
   **Project** lists PBT projects (value `pbt:<project_id>`) followed by existing local `HD Task Project`s marked
   "(local)" (value `local:<name>`); **Milestone** is only enabled for a local project, because milestones exist only for
   those. **Select Employee** comes from HRMS and lists every HRMS employee: there is no project or milestone team data
@@ -208,3 +221,31 @@ docker/nxerp/build-local-image.sh <image-tag>   # base image + working-tree chan
 
 Then point `IMAGE` in `docker/nxerp/.env` at the tag, `docker compose -p nxerp-helpdesk --env-file .env up -d`, and run
 `bench --site <site> migrate` (only needed when the DocTypes are not yet on the site) followed by `clear-cache`.
+
+### Reply and Comment on the task page
+
+Under the Activity area two toggle buttons, **Reply** and **Comment**, open their composer; clicking the active one collapses
+it. **Comment** is unchanged (`add_comment`, @mentions from `get_mentionable_users`). **Reply** (`TaskReplyComposer.vue`)
+shows removable "To" chips prefilled from `reply_recipients` (the assignee's user email or the freelancer's email, plus the
+reviewer's), Cc / Bcc toggles, the same toolbar as the task comment composer, **Discard** (clears the text and puts the
+recipients back) and **Send (Ctrl+Enter)**. It calls `reply_via_email`; on any error, including a site with no outgoing
+Email Account, the message is shown and the text stays in the editor. Sent replies show in the Activity timeline and on the
+Emails tab. Reply is disabled for users without write access to the task. Attachments are hidden in this composer: a file
+would have to be linked to the task and to the email at send time, which is not built yet. The composer reuses
+`EmailMultiSelect` and the editor config from the ticket page unchanged; no ticket file is involved.
+
+### Frontend build check
+
+`npm run build` in `hd-frontend` cannot run on a host checkout: `package.json` links `@framework/ui` to `../../frappe/ui`,
+which exists only inside a bench (error: `Cannot find package '@framework/ui'`). Do not symlink or copy `frappe/ui` to work
+around it. The official check runs the same step `bench build` runs for this app (`cd hd-frontend && yarn build`), in a
+throwaway container from the image, so the running backend and the site volumes are untouched (a build against the live
+container writes into its `public/desk/`):
+
+```
+cd deploy/docker/compose/nxerp-develop
+docker compose run --rm --no-deps -T backend bash -c 'cd apps/helpdesk/hd-frontend && yarn build'
+```
+
+It must end with `✓ built in …` and exit 0. It checks the image's current contents, so rebuild the image first
+(`deploy/docker/build.sh`) to check working-tree changes; the image build itself also runs this step.
