@@ -1,7 +1,7 @@
 <template>
   <Dialog
     v-model:open="open"
-    :title="__('Add Task')"
+    :title="__('New task')"
     size="lg"
     @after-leave="reset"
   >
@@ -78,16 +78,17 @@
             :label="__('Select Employee')"
             :options="filteredEmployeeOptions"
             :filterable="false"
-            :placeholder="
-              form.project
-                ? __('Search employee by name or ID')
-                : __('Select project first')
-            "
-            :disabled="!form.project"
+            :placeholder="__('Search employee by name or ID')"
             :loading="employees.loading"
             :empty-text="employeeEmptyText"
             :description="employeeHint"
           />
+          <p
+            v-if="form.assignee_type === 'Employee' && errors.employee"
+            class="col-span-2 -mt-3 text-p-sm text-ink-red-4"
+          >
+            {{ errors.employee }}
+          </p>
           <FormControl
             v-else
             v-model="form.freelancer"
@@ -121,6 +122,7 @@
             :placeholder="__('Why is this task blocked?')"
             :error="errors.blocked_reason"
           />
+
           <FormControl
             v-model="form.start_date"
             type="date"
@@ -146,10 +148,9 @@
           />
           <Button
             type="submit"
-            :label="__('Add Task')"
+            :label="__('Assigned')"
             theme="gray"
             variant="solid"
-            :loading="saving"
           />
         </div>
       </form>
@@ -161,7 +162,6 @@
 import { __ } from "@/translation";
 import {
   Button,
-  call,
   Combobox,
   createListResource,
   createResource,
@@ -169,13 +169,15 @@ import {
   ErrorMessage,
   FormControl,
   TabButtons,
-  toast,
 } from "frappe-ui";
 import { computed, reactive, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { STATUSES } from "./taskMeta";
+import { clearTaskDraft, newRequestId, taskDraft } from "./taskDraft";
 
 const open = defineModel<boolean>({ default: false });
-const emit = defineEmits<{ created: [name: string] }>();
+const router = useRouter();
+const route = useRoute();
 
 // Projects come from PBT (server-side proxy). Local projects stay selectable because only they have milestones.
 const projects = createResource({
@@ -194,7 +196,6 @@ const employees = createResource({
   method: "GET",
   auto: false,
 });
-
 // Milestones follow a local project and freelancers are local, so they are refetched on change.
 const options = createResource({
   url: "helpdesk.api.task.get_task_form_options",
@@ -211,7 +212,7 @@ const blank = () => ({
   subject: "",
   project: "", // "pbt:<project_id>" or "local:<HD Task Project name>"
   milestone: "",
-  assignee_type: "Employee",
+  assignee_type: "Employee" as "Employee" | "Freelancer",
   employee: "", // HRMS employee id, not a Frappe user id
   freelancer: "",
   status: "Planned",
@@ -220,14 +221,6 @@ const blank = () => ({
   due_date: "",
 });
 const form = reactive(blank());
-const errors = reactive<Record<string, string>>({});
-const saving = ref(false);
-// One id per form: the server returns the same task if a create is sent twice.
-const newRequestId = () =>
-  globalThis.crypto?.randomUUID?.() ??
-  `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-let requestId = newRequestId();
-
 const withBlank = (label: string, rows: { label: string; value: string }[]) => [
   { label, value: "" },
   ...rows,
@@ -272,7 +265,9 @@ const milestoneHint = computed(() => {
   return "";
 });
 
-const hrmsEmployees = computed(() => employees.data || []);
+const hrmsEmployees = computed<
+  { employee_id: string; employee_name: string; user?: string | null }[]
+>(() => employees.data || []);
 // Two employees can share a name, so add the id when a name repeats.
 const employeeOptions = computed(() => {
   const names = hrmsEmployees.value.map((e) => e.employee_name);
@@ -302,37 +297,42 @@ const employeeChoice = computed({
   },
 });
 const employeeEmptyText = computed(() => {
-  if (employeesError.value) return __("Employees could not be loaded");
+  if (employees.error) return __("Employees could not be loaded");
   if (!hrmsEmployees.value.length) return __("No employees available");
   return __("No employees match your search");
 });
 const selectedEmployee = computed(() =>
   hrmsEmployees.value.find((e) => e.employee_id === form.employee)
 );
-const employeeHint = computed(() => {
-  if (!form.project || employees.loading || employeesError.value) return "";
-  if (!hrmsEmployees.value.length) return __("No employees available");
-  if (selectedEmployee.value && !selectedEmployee.value.user)
-    return __(
-      "Not linked to a Help Desk user: the task keeps this employee but is not assigned to a user"
-    );
-  return "";
-});
-const freelancerOptions = computed(() =>
-  withBlank(
-    "",
-    (options.data?.freelancers || []).map((f) => ({
-      label: f.freelancer_name,
-      value: f.name,
-    }))
-  )
+const employeeHint = computed(() =>
+  selectedEmployee.value && !selectedEmployee.value.user
+    ? __(
+        "Not linked to a Help Desk user: the task keeps this employee but is not assigned to a user"
+      )
+    : ""
 );
+const freelancerOptions = computed(() => [
+  { label: "", value: "" },
+  ...(options.data?.freelancers || []).map((f) => ({
+    label: f.freelancer_name,
+    value: f.name,
+  })),
+]);
+const assigneeLabel = computed(() => {
+  if (form.assignee_type === "Freelancer")
+    return (
+      (options.data?.freelancers || []).find((f) => f.name === form.freelancer)
+        ?.freelancer_name || ""
+    );
+  return selectedEmployee.value?.employee_name || "";
+});
 
 const errorText = (r) => r.error?.messages?.[0] || r.error?.message || "";
 const projectsError = computed(() => {
   const e = errorText(projects);
   return e ? __("Could not load PBT projects: {0}", [e]) : "";
 });
+
 const employeesError = computed(() => {
   const e = errorText(employees);
   return e ? __("Could not load HRMS employees: {0}", [e]) : "";
@@ -350,22 +350,62 @@ function loadOptions() {
   return options.fetch(localProject.value ? { project: localProject.value } : {});
 }
 
-watch(open, (isOpen) => {
-  if (!isOpen) return;
-  projects.fetch();
-  localProjects.fetch();
-  employees.fetch();
-  loadOptions();
+const errors = reactive<Record<string, string>>({});
+
+// An error goes as soon as its field is edited.
+const clearError = (key: string) => () => delete errors[key];
+watch(() => form.subject, clearError("subject"));
+watch(() => form.employee, clearError("employee"));
+watch(() => form.freelancer, clearError("freelancer"));
+watch(() => form.blocked_reason, clearError("blocked_reason"));
+watch(() => form.assignee_type, () => {
+  delete errors.employee;
+  delete errors.freelancer;
 });
+watch([() => form.start_date, () => form.due_date], clearError("due_date"));
+
+// Set while a saved draft is put back, so picking its project does not clear its milestone.
+let restoring = false;
 
 watch(
   () => form.project,
   () => {
-    form.milestone = "";
-    form.employee = "";
-    employeeQuery.value = "";
+    if (restoring) restoring = false;
+    else form.milestone = "";
     loadOptions();
   }
+);
+
+watch(
+  open,
+  (isOpen) => {
+    if (!isOpen) return;
+    projects.fetch();
+    localProjects.fetch();
+    employees.fetch();
+    const draft = taskDraft.reopen ? taskDraft.value : null;
+    if (draft) {
+      // Back from the description page: put everything the user entered back.
+      restoring = draft.project !== form.project;
+      Object.assign(form, {
+        subject: draft.subject,
+        milestone: draft.milestone,
+        assignee_type: draft.assignee_type,
+        employee: draft.hrms_employee_id,
+        freelancer: draft.freelancer,
+        status: draft.status,
+        blocked_reason: draft.blocked_reason,
+        start_date: draft.start_date,
+        due_date: draft.due_date,
+      });
+      form.project = draft.project;
+      taskDraft.reopen = false;
+    } else {
+      clearTaskDraft();
+    }
+    loadOptions();
+  },
+  { immediate: true }
 );
 
 function reset() {
@@ -379,6 +419,8 @@ function validate() {
   if (!form.subject.trim()) errors.subject = __("Task title is required");
   if (form.assignee_type === "Freelancer" && !form.freelancer)
     errors.freelancer = __("Select a freelancer");
+  if (form.assignee_type === "Employee" && !form.employee)
+    errors.employee = __("Select an employee");
   if (form.status === "Blocked" && !form.blocked_reason.trim())
     errors.blocked_reason = __("Blocked reason is required");
   if (form.start_date && form.due_date && form.due_date < form.start_date)
@@ -386,38 +428,33 @@ function validate() {
   return !Object.keys(errors).length;
 }
 
-async function save() {
-  if (saving.value || !validate()) return;
-  const isEmployee = form.assignee_type === "Employee";
-  // The server re-reads the project and employee from PBT / HRMS and links a user by email.
-  saving.value = true;
-  try {
-    const doc = await call("helpdesk.api.task.create_task", {
-      request_id: requestId,
-      doc: {
-        doctype: "HD Task",
-        subject: form.subject.trim(),
-        status: form.status,
-        blocked_reason: form.status === "Blocked" ? form.blocked_reason : null,
-        project: localProject.value || null,
-        pbt_project_id: pbtProjectId.value || null,
-        milestone: form.milestone || null,
-        assignee_type: form.assignee_type,
-        hrms_employee_id: isEmployee ? form.employee || null : null,
-        freelancer: isEmployee ? null : form.freelancer || null,
-        start_date: form.start_date || null,
-        due_date: form.due_date || null,
-      },
-    });
-    toast.success(__("Task {0} created", [doc.name]));
-    requestId = newRequestId();
-    open.value = false;
-    emit("created", doc.name);
-  } catch (e: any) {
-    errors.form =
-      e?.messages?.[0] || e?.message || __("Could not create the task");
-  } finally {
-    saving.value = false;
-  }
+// Nothing is created here: the task is created when the description page is submitted.
+// The "Assigned" button saves the draft and goes (or stays) on that page.
+function save() {
+  if (!validate()) return;
+  const previous = taskDraft.value;
+  taskDraft.value = {
+    subject: form.subject.trim(),
+    project: form.project,
+    milestone: form.milestone,
+    assignee_type: form.assignee_type,
+    hrms_employee_id: form.assignee_type === "Employee" ? form.employee : "",
+    freelancer: form.assignee_type === "Freelancer" ? form.freelancer : "",
+    status: form.status,
+    blocked_reason: form.status === "Blocked" ? form.blocked_reason.trim() : "",
+    assigneeLabel: assigneeLabel.value,
+    start_date: form.start_date,
+    due_date: form.due_date,
+    description: previous?.description ?? "",
+    projectLabel: projectLabel.value || "",
+    milestoneLabel:
+      milestoneOptions.value.find((m) => m.value === form.milestone)?.label ||
+      "",
+    requestId: previous?.requestId ?? newRequestId(),
+  };
+  taskDraft.reopen = false;
+  open.value = false;
+  // Opened from the description page (Edit / Assign): the draft is updated in place, no navigation.
+  if (route.name !== "TaskNew") router.push({ name: "TaskNew" });
 }
 </script>

@@ -56,7 +56,7 @@
       v-model="viewDialogConfig"
       @update="onViewModalUpdate"
     />
-    <NewTaskDialog v-model="showNew" @created="onCreated" />
+    <NewTaskDialog v-model="showNew" />
     <TaskBulkDialog
       v-model="bulkDialog.show"
       :mode="bulkDialog.mode"
@@ -88,6 +88,7 @@ import LucideUserX from "~icons/lucide/user-x";
 import NewTaskDialog from "./NewTaskDialog.vue";
 import TaskBulkDialog from "./TaskBulkDialog.vue";
 import TaskDetail from "./TaskDetail.vue";
+import { taskDraft } from "./taskDraft";
 import TaskUser from "./TaskUser.vue";
 import {
   dueLabel,
@@ -116,7 +117,8 @@ const {
 } = useView("HD Task");
 
 const listViewRef = ref(null);
-const showNew = ref(false);
+// Back from the description page reopens the form with what was entered.
+const showNew = ref(taskDraft.reopen);
 const bulkDialog = reactive({
   show: false,
   mode: "assign" as "assign" | "status",
@@ -152,9 +154,9 @@ function openBulk(mode: "assign" | "status", selections: Set<string>) {
 // The open task lives in the URL so Back, refresh and shared links keep the panel.
 const selectedTaskId = computed(() => route.query.task as string | undefined);
 
+// A row opens the full task page. The ?task= side panel below only serves old links.
 function openTask(name: string) {
-  if (name === selectedTaskId.value) return;
-  router.push({ name: route.name, query: { ...route.query, task: name } });
+  router.push({ name: "Task", params: { taskId: name } });
 }
 
 function closeTask() {
@@ -244,11 +246,6 @@ const options = computed(() => ({
 function reset(reload = false) {
   listViewRef.value?.unselectAll();
   if (reload) listViewRef.value?.reload();
-}
-
-function onCreated(name: string) {
-  listViewRef.value?.reload();
-  openTask(name);
 }
 
 // Fixed views are plain filters on the URL, so they need no saved HD View records.
