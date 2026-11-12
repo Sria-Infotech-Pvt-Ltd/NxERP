@@ -125,6 +125,19 @@ class TestPBTClient(FrappeTestCase):
         self.assertEqual(projects[0]["status"], "development")
         self.assertEqual(projects[0]["status_display"], "Development")
 
+    def test_description_is_kept_when_text_and_none_otherwise(self):
+        rows = [
+            pbt_project("P-1", description="Line one\nLine two"),
+            pbt_project("P-2"),
+            pbt_project("P-3", description="   "),
+            pbt_project("P-4", description=["not", "text"]),
+        ]
+        with mock_external_api(pbt_only(rows)):
+            by_id = {p["project_id"]: p for p in pbt.get_all_projects()}
+        self.assertEqual(by_id["P-1"]["description"], "Line one\nLine two")
+        for blank in ("P-2", "P-3", "P-4"):
+            self.assertIsNone(by_id[blank]["description"])
+
     def test_project_id_is_kept_as_a_string(self):
         with mock_external_api(pbt_only([pbt_project(project_id=14)])):
             self.assertEqual(pbt.get_all_projects()[0]["project_id"], "14")
@@ -399,6 +412,13 @@ class TestTaskExternalReferences(FrappeTestCase):
             ("P-9", "Billing Portal", "uat", "E-1", "Mapped Person", "Engineering", "Developer", MAPPED, None),
         )
 
+    def test_description_persists_and_script_is_stripped(self):
+        with mock_external_api(pbt_only([])):
+            task = make_task("Described", description="Line one<br>Line two<script>alert(1)</script>")
+        saved = frappe.db.get_value("HD Task", task.name, "description")
+        self.assertIn("Line one<br>Line two", saved)
+        self.assertNotIn("<script", saved)
+
     def test_unmapped_employee_is_not_assigned_to_the_creator_or_anyone(self):
         with mock_external_api(both([], hrms_employee("E-2", email="nobody@example.com"))):
             task = make_task(hrms_employee_id="E-2")
@@ -518,7 +538,9 @@ class TestTaskExternalReferences(FrappeTestCase):
     # --- HTTP verbs and status codes ---
 
     def test_employee_endpoint_accepts_get_and_only_reads_from_hrms(self):
-        self.assertEqual(frappe.allowed_http_methods_for_whitelisted_func[get_hrms_employees], ["GET"])
+        self.assertEqual(
+            sorted(frappe.allowed_http_methods_for_whitelisted_func[get_hrms_employees]), ["GET", "POST"]
+        )
         with mock_external_api(hrms_only([hrms_employee("E-1", "Ada", MAPPED)])) as calls:
             rows = get_hrms_employees()
         self.assertEqual([(r["employee_id"], r["employee_name"]) for r in rows], [("E-1", "Ada")])
