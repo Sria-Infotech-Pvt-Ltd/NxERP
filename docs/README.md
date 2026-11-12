@@ -28,6 +28,7 @@ The project rules live in the repository root: [CLAUDE.md](../CLAUDE.md) (non-ne
 | [architecture/overview.md](architecture/overview.md) | Components, request flow including the gate, sign-in flow and landing rules, login ownership and the kill-switch, the test harness, version matrix, repositories and branches, what is deliberately not built |
 | [architecture/routes.md](architecture/routes.md) | Every route and endpoint the platform owns or depends on: who may open it, what happens otherwise; redirect safety; login flows |
 | [architecture/access-admin.md](architecture/access-admin.md) | Managing application access: grant and revoke in Desk or by API, the administrator lockout guard, what a refused user sees, the denial log |
+| [design/ui-contract.md](design/ui-contract.md) | The UI contract for every NXDESK screen: the two page families, tokens, type, shape, motion, accessibility, the visual QA loop. Read before building a screen |
 | [architecture/adding-an-app.md](architecture/adding-an-app.md) | The short reference for registering an app (the full checklist is [guides/how-to-add-an-app.md](guides/how-to-add-an-app.md)) |
 
 ## Architecture decision records

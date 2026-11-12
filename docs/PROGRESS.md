@@ -11,6 +11,20 @@ Resume point for the next session. Update this file in every PR that changes pha
 | 3: Unified login, launcher, routing | **Complete locally and browser-verified (55/55); not pushed, no PR** |
 | 4: Helpdesk parity, CI/CD, release readiness, acceptance | **Built locally; nothing ran on GitHub; see `docs/acceptance/acceptance-report.md`** (9 BLOCKED-NEEDS-OWNER, most others PARTIAL) |
 
+## NXDESK plan, Phase 1: public site (2026-11-11 / 12)
+
+Branch `feat/nxdesk-public-site` (off `develop`). Not pushed, no PR. Owner decisions D1 to D5 are in ADR-008 and `docs/design/ui-contract.md`.
+
+**Built:** ADR-008 (NXDESK umbrella, NXERP / Sria Helpdesk display names; technical names unchanged); `nxerp/branding.py` (one place for names, logo paths, support link; typographic wordmark until logo files exist);
+registry presentation fields and copy limits; public Home (`/` for guests), `/products`, `/products/<key>` (`nxerp/public_site.py`, `www/nxerp/home|products|product.*`, `templates/includes/nxdesk/`, `public/css/nxerp-site.css`);
+`docs/design/ui-contract.md`; routes doc. Nothing creates an account or grants access.
+
+**Decisions:** only a guest's `/` is re-pointed (hook `get_website_user_home_page`); signed-in users keep Frappe's answer so the router still decides. Kill-switch `nxerp_keep_login_home`. Registry gained `display_name` (not in the brief's field list) so the launcher keeps "ERPNext" / "Helpdesk" unchanged while public pages say "NXERP" / "Sria Helpdesk".
+
+**Open (not done on purpose):** `/get-started` is a 404 until Phase 2 (the "Get started" buttons and the three steps point at it); the launcher tiles still say ERPNext / Helpdesk; the login still carries NXERP logo images and copy; the favicon is the existing NXERP one (placeholder); a signed-in non-holder sees "Get started" (request-access is Phase 2).
+
+**Evidence:** `docs/evidence/ui/phase1/` (`baseline/`, `after/`, `screens/`, `contrast.json`, `baseline-tests.md`). Baseline tests had 4 pre-existing failures (see `baseline-tests.md`). After Phase 1: `bench run-tests --app nxerp` ran 210 + 17 tests with the same 4 failures and nothing new; `site.test.mjs` 10/10 on the dev site (not via `run.sh`); the other browser suites were not re-run. Launcher, no-access and login screenshots are pixel-identical to baseline (`after/` vs `baseline/`).
+
 ## Retire the bare `/desk` gateway (2026-11-02)
 
 Branch `feature/retire-bare-desk-gateway`. `/nxerp/apps` is the only gateway; ERPNext's tile now targets `/desk/home` and an exact

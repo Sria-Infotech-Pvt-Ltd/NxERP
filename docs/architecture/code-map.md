@@ -7,7 +7,9 @@ Paths are relative to the repository root.
 | Shared login page (`/login`) | `apps/nxerp_platform/nxerp/www/login.html`, `login.py`; styles in `nxerp/public/nxerp_login/` |
 | Post-login router (`/nxerp/go`) | `nxerp/www/nxerp/go.*`, `nxerp/routing.py` |
 | Launcher (`/nxerp/apps`) and no-access page | `nxerp/www/nxerp/apps.*`, `no-access.html` + `no_access.py`, `nxerp/launcher.py` |
-| App registry (which apps exist, tiles) | `nxerp/registry.py` |
+| App registry (which apps exist, tiles, public copy) | `nxerp/registry.py` |
+| Public site (Home, Products, a product page) | `nxerp/public_site.py`, `nxerp/www/nxerp/home.*`, `products.*`, `product.*`, `nxerp/templates/includes/nxdesk/`, `nxerp/public/css/nxerp-site.css`, routes in `nxerp/hooks.py` |
+| Platform names, logo paths, support link | `nxerp/branding.py` (ADR-008) |
 | Access rules (who may enter which app) | `nxerp/access.py`; server-side gate `nxerp/enforcement.py` (hooks `auth_hooks`, `has_permission`, `after_request`) |
 | Grant API and last-admin guard | `nxerp/api/access.py`, `nxerp/guard.py`, `nxerp/migration.py`, `nxerp/audit.py` |
 | Install, roles, patches | `nxerp/install.py`, `nxerp/patches/`, `nxerp/patches.txt`, `nxerp/hooks.py` |

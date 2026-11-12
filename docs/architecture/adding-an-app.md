@@ -24,6 +24,14 @@ AppEntry(
 	implied_roles=(),                   # existing app roles that also count as staff access (see below)
 	portal_roles=(),                    # roles allowed to use the app's customer-facing surface
 	portal_prefixes=(), portal_route=None,
+	# public site (all optional; see docs/design/ui-contract.md for the copy limits):
+	display_name="Royal HRMS",          # what the public pages call it (the launcher still shows `title`)
+	tagline="...",                      # at most 60 characters
+	summary="...",                      # at most 180 characters
+	features=("...", "..."),            # at most 4, each at most 6 words
+	category="Business apps",           # groups products on /products
+	signup_policy="request_access",     # invite_only | request_access | open_portal
+	# there is deliberately no colour field
 )
 ```
 
