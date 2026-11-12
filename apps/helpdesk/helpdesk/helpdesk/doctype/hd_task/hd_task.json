@@ -194,7 +194,7 @@
   {
    "fieldname": "department",
    "fieldtype": "Link",
-   "label": "Department",
+   "label": "Team",
    "options": "HD Team"
   },
   {
