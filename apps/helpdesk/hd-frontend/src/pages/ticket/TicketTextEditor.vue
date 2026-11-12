@@ -5,6 +5,7 @@
     :model-value="content"
     :placeholder="placeholder"
     :upload-function="uploadFunction"
+    :hide-uploads="hideUploads"
     @update:model-value="$emit('update:content', $event)"
     @clear="() => $emit('update:attachments', [])"
   >
@@ -37,6 +38,7 @@
       <span class="flex items-center">
         <slot name="bottom-left" />
         <FileUploader
+          v-if="!hideUploads"
           class="flex items-center"
           folder="Home/Helpdesk"
           private
@@ -100,6 +102,7 @@ interface P {
   placeholder: string;
   attachments: File[];
   expand?: boolean;
+  hideUploads?: boolean; // no attach, image or video: for a document that is not saved yet
   uploadFunction?: (file: any, options?: any) => Promise<any>;
 }
 
@@ -111,6 +114,7 @@ interface E {
 
 withDefaults(defineProps<P>(), {
   expand: false,
+  hideUploads: false,
 });
 defineEmits<E>();
 const e = ref(null);
