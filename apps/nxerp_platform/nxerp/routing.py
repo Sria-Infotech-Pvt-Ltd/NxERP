@@ -27,6 +27,12 @@ DECODE_ROUNDS = 3  # `%252f` style double encoding is decoded this many times be
 # Paths outside any app that any signed-in user may be sent to.
 SHARED_TARGETS = (access.LAUNCHER_ROUTE,)
 
+# /welcome/<key>: the first-run wizard of an installed product. Any signed-in user may be sent there (that is how a
+# person without the grant asks for it); it grants nothing, and the API behind it re-checks the session.
+WELCOME_PREFIX = "/welcome/"
+WELCOME_ROUTE = "/welcome/{key}"
+GET_STARTED_ROUTE = "/get-started"
+
 
 def safe_target(raw) -> str | None:
 	"""A normalised same-origin path (with optional query), or None. Never a scheme, host or `//`."""
@@ -82,6 +88,12 @@ def authorised_target(user: str, target: str | None) -> str | None:
 	if path in SHARED_TARGETS:
 		return target if user != "Guest" else None
 
+	if path.startswith(WELCOME_PREFIX):
+		key = path[len(WELCOME_PREFIX) :]
+		if user != "Guest" and "/" not in key and registry.get_entry(key):
+			return target
+		return None
+
 	entry, _ = registry.entry_for_path(path)
 	if entry is None:
 		return None  # unknown destinations are never honoured
@@ -90,6 +102,22 @@ def authorised_target(user: str, target: str | None) -> str | None:
 	if registry.under(path, entry.portal_prefixes) and access.can_use_portal(user, entry.key):
 		return target
 	return None
+
+
+def get_started_target(user: str, entry, *, has_app: bool, has_pending: bool) -> tuple:
+	"""Where /get-started?product=<key> sends a visitor: (view, location). Pure: the caller supplies the facts.
+
+	guest -> ("guest", None): show the page. Holds the app -> ("open", router URL carrying the app's route).
+	A pending request -> ("pending", /welcome/<key>), which renders the pending view. Otherwise
+	("welcome", /welcome/<key>): the wizard resumes where the person left it."""
+	if not user or user == "Guest":
+		return "guest", None
+	welcome = WELCOME_ROUTE.format(key=entry.key)
+	if has_app:
+		return "open", f"{ROUTER_ROUTE}?redirect-to={quote(entry.route, safe='')}"
+	if has_pending:
+		return "pending", welcome
+	return "welcome", welcome
 
 
 def landing_for(user: str) -> dict:

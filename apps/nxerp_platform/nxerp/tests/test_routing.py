@@ -7,7 +7,7 @@ from urllib.parse import urlsplit
 import frappe
 from frappe.tests import IntegrationTestCase
 
-from nxerp import routing
+from nxerp import registry, routing
 from nxerp.tests.utils import (
 	ERP_ACCESS,
 	PLAIN_DESK_ROLE,
@@ -139,6 +139,71 @@ class TestRouting(IntegrationTestCase):
 		):
 			self.assertIsNone(routing.authorised_target(self.both, routing.safe_target(raw)), raw)
 
+	def test_welcome_is_honoured_for_signed_in_users_and_installed_keys_only(self):
+		for user in (self.agent, self.both):
+			for key in ("helpdesk", "erpnext"):
+				raw = f"/welcome/{key}"
+				self.assertEqual(routing.authorised_target(user, routing.safe_target(raw)), raw, (user, raw))
+		self.assertEqual(
+			self.route(self.agent, "/welcome/erpnext"),
+			"/welcome/erpnext",
+			"a user without the grant may still ask for it",
+		)
+		self.assertIsNone(routing.authorised_target("Guest", "/welcome/helpdesk"))
+
+	def test_welcome_refuses_other_keys_and_hostile_shapes(self):
+		for raw in (
+			"/welcome",
+			"/welcome/",
+			"/welcome/unknown",
+			"/welcome/test-projects",
+			"/welcome/HELPDESK",
+			"/welcome/helpdesk/",
+			"/welcome/helpdesk/extra",
+			"/welcome/helpdesk/../erpnext/../../me",
+			"/welcome/helpdesk%2fextra",
+			"/welcome/helpdesk%252fextra",
+			"/welcome/..%2fapps",
+			"/welcome//evil.example",
+			"/welcome/%2f%2fevil.example",
+			"/welcome/helpdesk%00",
+			"/welcomehelpdesk",
+			"/welcome/helpdesk\\x",
+			"//welcome/helpdesk",
+			"/welcome/helpdesk@evil.example",
+		):
+			self.assertIsNone(routing.authorised_target(self.both, routing.safe_target(raw)), raw)
+
+	def test_welcome_is_not_a_way_to_reach_anything_else(self):
+		for raw in ("/welcome/helpdesk?redirect-to=//evil.example", "/welcome/helpdesk#x"):
+			result = self.route(self.both, raw)
+			self.assertTrue(result.startswith("/") and not result.startswith("//"), result)
+
+	def test_get_started_target_is_pure_and_total(self):
+		entry = registry.get_entry("helpdesk")
+		self.assertEqual(
+			routing.get_started_target("Guest", entry, has_app=False, has_pending=False), ("guest", None)
+		)
+		self.assertEqual(
+			routing.get_started_target("Guest", entry, has_app=True, has_pending=True), ("guest", None)
+		)
+		self.assertEqual(
+			routing.get_started_target("u@example.test", entry, has_app=True, has_pending=False),
+			("open", "/nxerp/go?redirect-to=%2Fhelpdesk%2Fhome"),
+		)
+		self.assertEqual(
+			routing.get_started_target("u@example.test", entry, has_app=False, has_pending=True),
+			("pending", "/welcome/helpdesk"),
+		)
+		self.assertEqual(
+			routing.get_started_target("u@example.test", entry, has_app=False, has_pending=False),
+			("welcome", "/welcome/helpdesk"),
+		)
+		# the app wins over a stale pending request
+		self.assertEqual(
+			routing.get_started_target("u@example.test", entry, has_app=True, has_pending=True)[0], "open"
+		)
+
 	def test_portal_users_may_be_sent_to_the_customer_portal_only(self):
 		self.assertEqual(
 			routing.authorised_target(self.customer, "/helpdesk/my-tickets"), "/helpdesk/my-tickets"
@@ -218,7 +283,14 @@ class TestRouting(IntegrationTestCase):
 			self.assertIsNone(self.desk_root(user), user)
 
 	def test_only_the_exact_desk_root_is_moved(self):
-		for path in ("/desk/home", "/desk/user", "/desk/customer", "/desk/customer/x", "/app", "/helpdesk/home"):
+		for path in (
+			"/desk/home",
+			"/desk/user",
+			"/desk/customer",
+			"/desk/customer/x",
+			"/app",
+			"/helpdesk/home",
+		):
 			self.assertIsNone(self.desk_root(self.erp, path), path)
 			self.assertIsNone(self.desk_root(self.both, path), path)
 		self.assertIsNone(self.desk_root(self.erp, method="POST"))
@@ -229,7 +301,15 @@ class TestRouting(IntegrationTestCase):
 		self.assertEqual(self.desk_root(self.erp, nxerp_keep_desk_root=0), "/desk/home")
 
 	def test_the_desk_root_redirect_never_points_back_at_the_desk_root(self):
-		for user in ("Administrator", self.agent, self.erp, self.both, self.sysmgr, self.noapps, self.customer):
+		for user in (
+			"Administrator",
+			self.agent,
+			self.erp,
+			self.both,
+			self.sysmgr,
+			self.noapps,
+			self.customer,
+		):
 			self.assertNotIn(self.desk_root(user), routing.DESK_ROOT_PATHS, user)
 
 	def test_a_good_redirect_wins_only_when_authorised(self):
