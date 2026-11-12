@@ -1,0 +1,94 @@
+{
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "module": "NXERP Platform",
+ "actions": [],
+ "links": [],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "owner": "Administrator",
+ "modified_by": "Administrator",
+ "creation": "2026-11-12 09:00:00.000000",
+ "modified": "2026-11-12 09:00:00.000000",
+ "name": "NXERP Access Request",
+ "autoname": "format:NXAR-{#####}",
+ "track_changes": 1,
+ "title_field": "user",
+ "field_order": [
+  "user",
+  "app_key",
+  "status",
+  "note",
+  "column_break_decision",
+  "decided_by",
+  "decided_on"
+ ],
+ "fields": [
+  {
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "label": "User",
+   "options": "User",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "app_key",
+   "fieldtype": "Data",
+   "label": "Application",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "set_only_once": 1,
+   "description": "The registry key of an installed application"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Pending\nApproved\nRejected\nCancelled",
+   "default": "Pending",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "note",
+   "fieldtype": "Small Text",
+   "label": "Note",
+   "length": 500
+  },
+  {
+   "fieldname": "column_break_decision",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "decided_by",
+   "fieldtype": "Link",
+   "label": "Decided by",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "decided_on",
+   "fieldtype": "Datetime",
+   "label": "Decided on",
+   "read_only": 1
+  }
+ ],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "report": 1,
+   "export": 1,
+   "share": 0,
+   "email": 0,
+   "print": 0
+  }
+ ]
+}

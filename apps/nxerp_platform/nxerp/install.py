@@ -30,6 +30,16 @@ def ensure_platform_settings():
 		frappe.db.set_single_value("Portal Settings", "default_portal_home", "/nxerp/go")
 
 
+def sync_signup_setting():
+	"""Self-signup is off until an operator turns it on: site config `nxerp_enable_signup` = 1 enables it (Website
+	Settings `disable_signup` = 0). The default (0 or unset) never changes a site's setting, so a site that was
+	enabled by hand keeps working and a fresh site stays closed. Idempotent; runs on every migrate."""
+	if not frappe.utils.cint(frappe.conf.get("nxerp_enable_signup")):
+		return
+	if frappe.utils.cint(frappe.db.get_single_value("Website Settings", "disable_signup")):
+		frappe.db.set_single_value("Website Settings", "disable_signup", 0)
+
+
 def ensure_navbar_items():
 	"""Sync the standard navbar items (the "All applications" row) now; Frappe otherwise does it only on migrate."""
 	from frappe.core.doctype.navbar_settings.navbar_settings import sync_standard_items
@@ -46,3 +56,4 @@ def after_install():
 def after_migrate():
 	ensure_access_roles()
 	ensure_platform_settings()
+	sync_signup_setting()

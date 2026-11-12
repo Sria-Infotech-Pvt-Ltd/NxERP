@@ -38,3 +38,19 @@ def log_denial(surface: str, app_key: str | None, user: str | None, **detail):
 		# intentional: a logging failure must never turn a denial into an error
 		pass
 	return record
+
+
+def log_event(event: str, app_key: str | None, user: str | None, **detail):
+	"""A grant-side event (request created, approved, rejected). Same rules as `log_denial`: a hashed user reference,
+	no email address, no note, no answers."""
+	record = {
+		"event": f"nxerp.access.{event}",
+		"app": app_key,
+		"user_ref": user_ref(user),
+		**{k: v for k, v in detail.items() if v is not None},
+	}
+	try:
+		_logger().info(json.dumps(record, sort_keys=True, default=str))
+	except Exception:  # nosec B110
+		pass
+	return record

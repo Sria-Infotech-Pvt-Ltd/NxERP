@@ -1,0 +1,70 @@
+{
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "module": "NXERP Platform",
+ "actions": [],
+ "links": [],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "owner": "Administrator",
+ "modified_by": "Administrator",
+ "creation": "2026-11-12 09:00:00.000000",
+ "modified": "2026-11-12 09:00:00.000000",
+ "name": "NXERP Onboarding",
+ "autoname": "Prompt",
+ "field_order": [
+  "user",
+  "app_key",
+  "step",
+  "completed_on",
+  "answers"
+ ],
+ "fields": [
+  {
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "label": "User",
+   "options": "User",
+   "reqd": 1,
+   "in_list_view": 1,
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "app_key",
+   "fieldtype": "Data",
+   "label": "Application",
+   "reqd": 1,
+   "in_list_view": 1,
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "step",
+   "fieldtype": "Data",
+   "label": "Current step",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "completed_on",
+   "fieldtype": "Datetime",
+   "label": "Completed on"
+  },
+  {
+   "fieldname": "answers",
+   "fieldtype": "JSON",
+   "label": "Answers",
+   "description": "Only the answers the first-run questions need. Never written to logs."
+  }
+ ],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 0,
+   "export": 0,
+   "share": 0,
+   "email": 0,
+   "print": 0
+  }
+ ]
+}
