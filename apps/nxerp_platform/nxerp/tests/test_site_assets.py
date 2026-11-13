@@ -16,12 +16,16 @@ from frappe.tests import IntegrationTestCase
 NXERP = Path(frappe.get_app_path("nxerp"))
 
 # files that belong to the public site (new in Phase 1)
-CSS_FILES = [NXERP / "public/css/nxerp-site.css"]
+CSS_FILES = [NXERP / "public/css/nxerp-site.css", NXERP / "public/css/nxerp-onboarding.css"]
 HTML_FILES = [
 	*sorted((NXERP / "templates/includes/nxdesk").glob("*.html")),
 	NXERP / "www/nxerp/home.html",
 	NXERP / "www/nxerp/products.html",
 	NXERP / "www/nxerp/product.html",
+	NXERP / "www/nxerp/signup.html",
+	NXERP / "www/nxerp/welcome.html",
+	NXERP / "www/nxerp/get_started.html",
+	NXERP / "www/nxerp/no-access.html",
 ]
 
 # Documented exceptions: (file name, literal). Empty on purpose.
@@ -78,7 +82,7 @@ class TestSiteAssets(IntegrationTestCase):
 	def test_the_files_exist(self):
 		for path in (*CSS_FILES, *HTML_FILES):
 			self.assertTrue(path.is_file(), path)
-		self.assertGreaterEqual(len(HTML_FILES), 7)
+		self.assertGreaterEqual(len(HTML_FILES), 11)
 
 	def test_no_colour_literals_in_the_public_sites_css_and_templates(self):
 		for path in (*CSS_FILES, *HTML_FILES):

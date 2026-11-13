@@ -80,6 +80,7 @@ The project rules live in the repository root: [CLAUDE.md](../CLAUDE.md) (non-ne
 | Document | Purpose |
 | --- | --- |
 | [runbooks/login-recovery.md](runbooks/login-recovery.md) | People cannot sign in or the login page is broken: the kill-switch, Administrator password reset, locked accounts, a break-glass System Manager |
+| [runbooks/onboarding.md](runbooks/onboarding.md) | Enable signup, approve or reject an access request, read a verification link on a dev stack, limits and privacy |
 | [runbooks/release.md](runbooks/release.md) | Cutting a release (the procedure behind [guides/release-process.md](guides/release-process.md)) |
 | [runbooks/deploy.md](runbooks/deploy.md) | Deploying, verifying and rolling back an environment |
 

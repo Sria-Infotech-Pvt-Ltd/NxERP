@@ -49,6 +49,9 @@ class TestScaffold(IntegrationTestCase):
 			[
 				{"from_route": "/products", "to_route": "nxerp/products"},
 				{"from_route": "/products/<key>", "to_route": "nxerp/product"},
+				{"from_route": "/signup", "to_route": "nxerp/signup"},
+				{"from_route": "/get-started", "to_route": "nxerp/get_started"},
+				{"from_route": "/welcome/<key>", "to_route": "nxerp/welcome"},
 			],
 		)
 		# nothing else reaches into requests or sessions

@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="{{ nx.lang | e }}">
+<head>
+	{% include "nxerp/templates/includes/nxdesk/shell_head.html" %}
+</head>
+<body>
+<div class="nx-shell nx-no-social">
+	{% include "nxerp/templates/includes/nxdesk/shell_hero.html" %}
+
+	<main class="nx-panel" id="main">
+		<h1 class="nx-sr-only">{{ _("Create your account") }}</h1>
+		{% include "nxerp/templates/includes/nxdesk/shell_top.html" %}
+
+		<div class="nx-card">
+			{% if not available %}
+			<div class="nx-state" id="nx-unavailable">
+				<div class="nx-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg></div>
+				<h2>{{ _("Signup is not available") }}</h2>
+				<p class="nx-sub">{{ _("New accounts are not being created right now. If you already have an account, sign in.") }}</p>
+				<div class="nx-stack">
+					<a class="btn btn-primary btn-login nx-linkbtn" href="{{ nx.login_href | e }}?app={{ product.key | e }}">{{ _("Sign in") }}</a>
+					<a class="btn btn-default" href="{{ nx.products_href | e }}">{{ _("Browse products") }}</a>
+				</div>
+			</div>
+			{% else %}
+			<section class="for-login for-signup" id="nx-signup">
+				<div class="page-card">
+					<div class="page-card-head">
+						<h4>{{ _("Create your account") }}</h4>
+						<p class="nx-sub">{{ _("Use your work email. We will send you a link to set your password.") }}</p>
+					</div>
+					<div class="page-card-body">
+						<form id="nx-signup-form" novalidate data-app="{{ product.key | e }}">
+							<p class="nx-form-error" id="nx-form-error" role="alert" aria-live="assertive"></p>
+							<div class="form-group">
+								<label class="text-base nx-label" for="nx-full-name">{{ _("Full name") }}</label>
+								<div class="nx-field">
+									<svg class="nx-fi" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c0-3.9 3.4-7 7.5-7s7.5 3.1 7.5 7"/></svg>
+									<input type="text" id="nx-full-name" name="full_name" class="form-control" autocomplete="name" placeholder="{{ _('Enter your full name') }}" maxlength="80" required aria-describedby="nx-full-name-error" />
+								</div>
+								<p class="nx-error" id="nx-full-name-error" aria-live="polite"></p>
+							</div>
+							<div class="form-group">
+								<label class="text-base nx-label" for="nx-email">{{ _("Email") }}</label>
+								<div class="nx-field">
+									<svg class="nx-fi" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m3.5 7 8.5 6 8.5-6"/></svg>
+									<input type="email" id="nx-email" name="email" class="form-control" autocomplete="email" placeholder="{{ _('Enter your email') }}" required aria-describedby="nx-email-error" />
+								</div>
+								<p class="nx-error" id="nx-email-error" aria-live="polite"></p>
+							</div>
+							<div class="page-card-actions">
+								<button class="btn btn-primary btn-login" type="submit" id="nx-create">{{ _("Create account") }}</button>
+							</div>
+						</form>
+						<p class="nx-fine">{{ _("Already have an account?") }} <a href="{{ nx.login_href | e }}?app={{ product.key | e }}">{{ _("Sign in") }}</a></p>
+					</div>
+				</div>
+			</section>
+
+			<div class="nx-state" id="nx-sent" hidden>
+				<div class="nx-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m3.5 7 8.5 6 8.5-6"/></svg></div>
+				<h2 tabindex="-1" id="nx-sent-title">{{ _("Check your email") }}</h2>
+				<p class="nx-sub">{{ _("If the address can be used, a message with the next step is on its way. Open the link in it to set your password.") }}</p>
+				<div class="nx-stack"><a class="btn btn-default" href="{{ nx.products_href | e }}">{{ _("Back to products") }}</a></div>
+			</div>
+			{% endif %}
+		</div>
+		<p class="nx-panel-foot">{{ _("One sign-in for all your applications.") }}</p>
+	</main>
+</div>
+{% include "nxerp/templates/includes/nxdesk/shell_scripts.html" %}
+{% if available %}
+<script>
+	(function () {
+		var form = document.getElementById("nx-signup-form");
+		if (!form) return;
+		var button = document.getElementById("nx-create");
+		var idle = button.textContent;
+		var fields = {
+			name: [document.getElementById("nx-full-name"), document.getElementById("nx-full-name-error")],
+			email: [document.getElementById("nx-email"), document.getElementById("nx-email-error")]
+		};
+		var formError = document.getElementById("nx-form-error");
+		function fail(key, text) {
+			var pair = fields[key];
+			pair[1].textContent = text;
+			pair[0].setAttribute("aria-invalid", "true");
+		}
+		function clear() {
+			formError.textContent = "";
+			Object.keys(fields).forEach(function (k) {
+				fields[k][1].textContent = "";
+				fields[k][0].removeAttribute("aria-invalid");
+			});
+		}
+		Object.keys(fields).forEach(function (k) {
+			fields[k][0].addEventListener("input", function () {
+				fields[k][1].textContent = "";
+				fields[k][0].removeAttribute("aria-invalid");
+			});
+		});
+		form.addEventListener("submit", function (event) {
+			event.preventDefault();
+			clear();
+			var name = fields.name[0].value.trim(), email = fields.email[0].value.trim();
+			var bad = false;
+			if (!name) { fail("name", {{ _("Enter your full name") | tojson }}); bad = true; }
+			if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { fail("email", {{ _("Enter a valid email address") | tojson }}); bad = true; }
+			if (bad) { (form.querySelector("[aria-invalid]") || button).focus(); return; }
+			button.classList.add("nx-busy");
+			button.textContent = {{ _("Verifying...") | tojson }};
+			button.disabled = true;
+			fetch("/api/method/nxerp.api.account.sign_up", {
+				method: "POST",
+				headers: { "Content-Type": "application/json", "Accept": "application/json" },
+				body: JSON.stringify({ email: email, full_name: name, app: form.dataset.app })
+			}).then(function (response) {
+				if (response.ok) {
+					document.getElementById("nx-signup").hidden = true;
+					var done = document.getElementById("nx-sent");
+					done.hidden = false;
+					document.getElementById("nx-sent-title").focus();
+					return;
+				}
+				return window.nxMessage(response, {{ _("Something went wrong. Please try again in a moment.") | tojson }}).then(function (text) {
+					formError.textContent = text;
+				});
+			}).catch(function () {
+				formError.textContent = {{ _("Something went wrong. Please try again in a moment.") | tojson }};
+			}).then(function () {
+				button.classList.remove("nx-busy");
+				button.disabled = false;
+				button.textContent = idle;
+			});
+		});
+	})();
+</script>
+{% endif %}
+</body>
+</html>

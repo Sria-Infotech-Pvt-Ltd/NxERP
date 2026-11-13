@@ -217,6 +217,38 @@ def email_link_login(enabled: bool = True):
 	frappe.clear_cache()
 
 
+def enable_signup(enabled: bool = True):
+	"""Site config `nxerp_enable_signup` (the operator's switch) and Frappe's own Website Settings flag, as the migrate hook sets them."""
+	_guard()
+	from nxerp.install import sync_signup_setting
+
+	update_site_config("nxerp_enable_signup", 1 if enabled else 0)
+	frappe.local.conf["nxerp_enable_signup"] = 1 if enabled else 0
+	if enabled:
+		sync_signup_setting()
+	else:
+		frappe.db.set_single_value("Website Settings", "disable_signup", 1)
+	frappe.db.commit()
+	frappe.clear_cache()
+
+
+def reset_rate_limits():
+	"""Forget Frappe's rate-limit counters (they live an hour in the cache), so repeated test runs from one IP are not refused."""
+	_guard()
+	frappe.cache.delete_keys("rl:nxerp.*")
+
+
+def delete_onboarding_data(user: str, keep_user: bool = False):
+	"""Remove a test user's requests and answers, and the user too unless `keep_user`."""
+	_guard()
+	for doctype in ("NXERP Access Request", "NXERP Onboarding"):
+		for name in frappe.get_all(doctype, filters={"user": user}, pluck="name"):
+			frappe.delete_doc(doctype, name, force=True, ignore_permissions=True)
+	frappe.db.commit()
+	if not keep_user:
+		delete_user(user)
+
+
 def delete_user(user: str):
 	"""Remove a user the tests created through the runbook commands (break-glass administrator)."""
 	_guard()

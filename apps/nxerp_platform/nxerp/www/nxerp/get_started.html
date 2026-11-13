@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="{{ nx.lang | e }}">
+<head>
+	{% include "nxerp/templates/includes/nxdesk/head.html" %}
+</head>
+<body class="nxp-body">
+	<a class="nxp-skip" href="#main">{{ _("Skip to content") }}</a>
+	{% include "nxerp/templates/includes/nxdesk/header.html" %}
+	<main class="nxp-main nxp-center" id="main">
+		<div class="nxp-card nxp-card--center">
+			<span class="nxp-mark">{% if product.logo %}<img src="{{ product.logo | e }}" alt="" />{% endif %}</span>
+			<h1 class="nxp-title">{{ _("Get started with {0}").format(product.title | e) }}</h1>
+			<p class="nxp-sub">{{ _("Create an account, answer a few questions, and ask for access.") }}</p>
+			<p class="nxp-actions nxp-actions--cta">
+				<a class="nxp-cta nxp-cta--primary" href="{{ product.signup_href | e }}">{{ _("Create account") }}</a>
+				<a class="nxp-button nxp-cta" href="{{ product.login_href | e }}">{{ _("I already have an account") }}</a>
+			</p>
+		</div>
+	</main>
+	{% include "nxerp/templates/includes/nxdesk/footer.html" %}
+	{% include "nxerp/templates/includes/nxdesk/scripts.html" %}
+</body>
+</html>

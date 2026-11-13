@@ -18,6 +18,7 @@
 	</script>
 	<link rel="stylesheet" href="/assets/nxerp/css/nxerp-theme.css" />
 	<link rel="stylesheet" href="/assets/nxerp/css/nxerp-platform.css?v=8" />
+	{% if request_href %}<link rel="stylesheet" href="/assets/nxerp/css/nxerp-site.css?v={{ site_css_version }}" />{% endif %}
 </head>
 <body class="nxp-body">
 	<a class="nxp-skip" href="#main">{{ _("Skip to content") }}</a>
@@ -31,6 +32,7 @@
 			{% if is_guest %}
 			<a class="nxp-button" href="/login">{{ _("Sign in") }}</a>
 			{% else %}
+			{% if request_href %}<a class="nxp-cta nxp-cta--primary" data-request-access href="{{ request_href | e }}">{{ _("Request access") }}</a>{% endif %}
 			<a class="nxp-button" href="/nxerp/go">{{ _("Back to my applications") }}</a>
 			{% if can_administer %}<a class="nxp-link" data-admin-hint href="/desk/user">{{ _("Manage user access") }}</a>{% endif %}
 			<a class="nxp-link" href="/logout">{{ _("Sign out") }}</a>

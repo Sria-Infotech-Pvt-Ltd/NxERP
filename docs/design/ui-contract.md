@@ -116,3 +116,19 @@ with before and after screenshots (`docs/evidence/ui/<phase>/`).
 Playwright screenshots of every new or changed screen at 360x800, 768x1024, 1280x800 and 1920x1080 in light and dark under `docs/evidence/ui/<phase>/`; compare each with the baseline launcher
 and login; fix drift in radius, spacing, type scale, shadow, border colour and icon style; at most three rounds per screen, then list what still looks off.
 `apps/nxerp_platform/browser-tests/site.test.mjs` is the template for a new screen's browser test.
+
+## What Phase 2 learned (signup, get-started, wizard, pending, no-access)
+
+- **Share the login's field and button rules by sharing its markup, not by copying CSS.** `nxerp-login.css` styles the framework's classes (`.page-card`, `.form-group`, `label.text-base`,
+  `.btn-primary`, `.btn-login`, `.btn-default`, `.nx-sub`, `.sign-up-message`) under `.nx-shell .nx-card`. A new split-shell form uses those classes and gets the login's field, focus ring, primary
+  button (with the busy spinner when the button also has `.nx-busy`) and outlined secondary button unchanged, so the two screens cannot drift and **`nxerp-login.css` was not edited**
+  (the login is pixel-identical to its baseline, `docs/evidence/ui/phase2/`). Only what the login does not have lives in `public/css/nxerp-onboarding.css`, scoped under `.nx-shell`:
+  field icons as inline SVG (`.nx-field > .nx-fi`, `currentColor`, so no data-URI literal colours), selects (`.nx-select`), inline errors (`.nx-error`, `aria-live`, `--nx-error` = red token), the progress bar
+  (`.nx-progress`, `.nx-seg`), selectable cards (`.nx-choice`, selected = amber outline and a soft amber fill from tokens), the action row (`.nx-actions`, ghost `.nx-ghost`), and the centred states
+  (`.nx-state`, `.nx-bubble`, `.nx-pill`, `.nx-summary`).
+- **A new split-shell page** includes `templates/includes/nxdesk/shell_head.html` (theme script, theme, login and onboarding CSS), `shell_hero.html` (product mark, tagline, features), `shell_top.html`
+  (theme toggle, language picker, the product mark that replaces the hidden hero on phones) and `shell_scripts.html`. The hero shows the product's mark in a paper tile, its tagline as the headline and its
+  features as checks; the wordmark is typographic (`branding.py`).
+- **Status in a pill, never colour alone:** "Pending", "Invitation only", "Ready to send" are words in a 999px tinted pill with a dot. Errors are text under the field (and a message block for the form), with `aria-invalid`.
+- **Jinja gotcha:** a dict key named `values` (or `items`, `keys`) is shadowed by the dict method in `state.values`; use another name (`prefill`). This silently preselected the first language in the list until a test caught it.
+- **Family A card:** `nxp-card nxp-card--center` is the glass card of the no-access page's layout; the no-access page loads `nxerp-site.css` **only** when it shows the "Request access" button, so its look without `?app=` is unchanged.

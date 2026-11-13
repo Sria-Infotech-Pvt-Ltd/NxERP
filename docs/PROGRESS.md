@@ -11,6 +11,28 @@ Resume point for the next session. Update this file in every PR that changes pha
 | 3: Unified login, launcher, routing | **Complete locally and browser-verified (55/55); not pushed, no PR** |
 | 4: Helpdesk parity, CI/CD, release readiness, acceptance | **Built locally; nothing ran on GitHub; see `docs/acceptance/acceptance-report.md`** (9 BLOCKED-NEEDS-OWNER, most others PARTIAL) |
 
+## NXDESK plan, Phase 2: accounts, get-started, onboarding (2026-11-12 / 13)
+
+Branch `feat/nxdesk-onboarding`, **branched from `feat/nxdesk-public-site` (Phase 1), because Phase 1 is not merged into `develop`**. Not pushed, no PR. Merge Phase 1 first, then this.
+
+**Built:** `/signup`, `/get-started`, `/welcome/<key>` (wizard and pending view), the no-access "Request access" button; DocTypes `NXERP Access Request` and `NXERP Onboarding`;
+`nxerp/onboarding.py` + `api/account.py`, `api/onboarding.py`, `api/access_request.py`; router honours `/welcome/<key>`; `install.sync_signup_setting` + patch `enable_signup_when_configured`;
+runbook `docs/runbooks/onboarding.md`; routes, code map and UI contract updated.
+
+**Facts found (Step 0):** Website Settings `disable_signup` was 1; Portal Settings `default_role` is **HD Customer**, which Frappe's `sign_up` adds to every signup (a Helpdesk portal role), so the wrapper removes it
+unless the product's policy is `open_portal`; Frappe's `sign_up` returns "Already Registered" for a known email (the wrapper hides that), creates a Website User, and `mute_emails` = 1 on the dev site drops mail
+(runbook section 4). Helpdesk `open_portal` needs a Contact and HD Customer record (Helpdesk internals), so **Helpdesk stays `request_access`**; `open_portal` is implemented generically (portal role only) and unit-tested with a patched registry.
+
+**Decisions:** approving also gives the `Desk User` role (staff access ignores Website Users, and self-signed accounts are Website Users); product roles stay the administrator's call.
+The login stylesheet is untouched: the new forms reuse its markup classes. Browser test `onboarding.test.mjs` was run against the dev site (not via `run.sh`).
+
+**Verified by execution (FACT):** `onboarding.test.mjs` 7/7 (signup closed by default; Products to Get started to Create account to verification link read from a captured email to set password to `/welcome/helpdesk`
+to wizard to request; exactly one Pending request and the gate still sends the user to `/nxerp/no-access`; the Request access button; an administrator approves through `decide`, deciding twice changes nothing, and the
+user opens `/helpdesk`; 320px overflow, labels and Tab focus on every new page; screenshots at four widths in light and dark in `docs/evidence/ui/phase2/`). Python: `test_onboarding` 28, `test_onboarding_pages` 17, routing 31, scaffold, site assets,
+registry and public site all OK; the full suite (259 tests) before the last two small test fixes showed the same 4 failures as the Phase 1 baseline plus one test of mine that was then fixed (a CSRF token only exists once a page issued one).
+Login and no-access (without `?app`) are pixel-identical to baseline (`phase2/baseline` vs `phase2/after`). Rate limit: 12 calls to `sign_up` gave `403` x10 then `429` x2.
+Not re-run after the final edits: the whole Python suite once more, the Phase 1 browser suite, `run.sh`. `submit` and `save_step` limits (10 and 60 per hour) are by decorator and were hit by accident, not tested on purpose.
+
 ## NXDESK plan, Phase 1: public site (2026-11-11 / 12)
 
 Branch `feat/nxdesk-public-site` (off `develop`). Not pushed, no PR. Owner decisions D1 to D5 are in ADR-008 and `docs/design/ui-contract.md`.

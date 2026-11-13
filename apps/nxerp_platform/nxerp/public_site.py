@@ -18,6 +18,8 @@ from nxerp import access, branding, registry
 HOME_ROUTE = "/nxerp/home"  # the page; guests also get it at "/"
 PRODUCTS_ROUTE = "/products"
 GET_STARTED_ROUTE = "/get-started"
+SIGNUP_ROUTE = "/signup"
+WELCOME_ROUTE = "/welcome/{key}"
 LOGIN_ROUTE = access.LOGIN_ROUTE
 ROUTER_ROUTE = "/nxerp/go"
 
@@ -73,8 +75,19 @@ def base_context(context, *, title: str, description: str, active: str = "", can
 		css_theme=_version("css", "nxerp-theme.css"),
 		css_platform=_version("css", "nxerp-platform.css"),
 		css_site=_version("css", "nxerp-site.css"),
+		css_login=_version("nxerp_login", "css", "nxerp-login.css"),
+		css_onboarding=_version("css", "nxerp-onboarding.css"),
+		lang_name=_language_name(frappe.local.lang or "en"),
 	)
 	return context
+
+
+def _language_name(code: str) -> str:
+	try:
+		name = frappe.db.get_value("Language", code, "language_name") or "English"
+	except Exception:
+		return "English"
+	return name.split(" (")[0]
 
 
 def present(entry, user: str | None = None) -> dict:
@@ -94,6 +107,8 @@ def present(entry, user: str | None = None) -> dict:
 		"open_href": destination,
 		"page_href": f"{PRODUCTS_ROUTE}/{entry.key}",
 		"get_started_href": f"{GET_STARTED_ROUTE}?product={entry.key}",
+		"signup_href": f"{SIGNUP_ROUTE}?app={entry.key}",
+		"welcome_href": WELCOME_ROUTE.format(key=entry.key),
 		"login_href": f"{LOGIN_ROUTE}?app={entry.key}",
 		"href": destination or f"{PRODUCTS_ROUTE}/{entry.key}",
 		"cta": _("Open application") if destination else _("Learn more"),
@@ -128,3 +143,8 @@ def products_by_category() -> list:
 def product(key) -> dict | None:
 	entry = registry.public_entry(key) if isinstance(key, str) else None
 	return present(entry) if entry else None
+
+
+def redirect(location: str):
+	frappe.local.flags.redirect_location = location
+	raise frappe.Redirect

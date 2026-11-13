@@ -84,6 +84,10 @@ get_website_user_home_page = "nxerp.public_site.website_user_home_page"
 website_route_rules = [
 	{"from_route": "/products", "to_route": "nxerp/products"},
 	{"from_route": "/products/<key>", "to_route": "nxerp/product"},
+	# onboarding (Phase 2): account creation, "Get started" and the first-run wizard
+	{"from_route": "/signup", "to_route": "nxerp/signup"},
+	{"from_route": "/get-started", "to_route": "nxerp/get_started"},
+	{"from_route": "/welcome/<key>", "to_route": "nxerp/welcome"},
 ]
 
 # who may change grants, and the last-administrator guard

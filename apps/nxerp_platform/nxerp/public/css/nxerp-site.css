@@ -152,3 +152,10 @@
 
 /* visually hidden, still read by assistive technology */
 .nxp-sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+/* ---- get started: a centred glass card (the no-access page's layout) ---- */
+.nxp-card--center { align-items: center; text-align: center; gap: 1rem; padding: clamp(1.5rem, 5vw, 2.5rem); }
+.nxp-card--center .nxp-title { margin: 0; font-size: clamp(1.6rem, 4.2vw, 2.2rem); }
+.nxp-card--center .nxp-sub { margin: 0; font-size: 1.05rem; line-height: 1.55; color: var(--ink-gray-6); }
+.nxp-card--center .nxp-actions { margin-top: .5rem; }
+.nxp-center .nxp-card--center p { font-size: inherit; }

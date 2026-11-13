@@ -144,7 +144,7 @@ def get_state(user: str, app_key: str) -> dict:
 		"current": current,
 		"status": status,
 		"route": entry.route if status == "granted" else None,
-		"values": values,
+		"prefill": values,
 	}
 
 

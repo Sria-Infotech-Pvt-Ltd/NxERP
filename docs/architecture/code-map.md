@@ -9,6 +9,7 @@ Paths are relative to the repository root.
 | Launcher (`/nxerp/apps`) and no-access page | `nxerp/www/nxerp/apps.*`, `no-access.html` + `no_access.py`, `nxerp/launcher.py` |
 | App registry (which apps exist, tiles, public copy) | `nxerp/registry.py` |
 | Public site (Home, Products, a product page) | `nxerp/public_site.py`, `nxerp/www/nxerp/home.*`, `products.*`, `product.*`, `nxerp/templates/includes/nxdesk/`, `nxerp/public/css/nxerp-site.css`, routes in `nxerp/hooks.py` |
+| Signup, first-run wizard, access requests | `nxerp/onboarding.py` (logic), `nxerp/api/account.py`, `api/onboarding.py`, `api/access_request.py`, DocTypes `nxerp/nxerp_platform/doctype/nxerp_access_request/` and `nxerp_onboarding/`, pages `www/nxerp/signup.*`, `get_started.*`, `welcome.*`, `public/css/nxerp-onboarding.css` |
 | Platform names, logo paths, support link | `nxerp/branding.py` (ADR-008) |
 | Access rules (who may enter which app) | `nxerp/access.py`; server-side gate `nxerp/enforcement.py` (hooks `auth_hooks`, `has_permission`, `after_request`) |
 | Grant API and last-admin guard | `nxerp/api/access.py`, `nxerp/guard.py`, `nxerp/migration.py`, `nxerp/audit.py` |

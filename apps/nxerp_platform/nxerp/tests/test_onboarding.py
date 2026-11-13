@@ -96,7 +96,7 @@ class TestOnboarding(IntegrationTestCase):
 		onboarding.save_step(self.alice, APP, "basics", BASICS)
 		state = onboarding.get_state(self.alice, APP)
 		self.assertEqual((state["done"], state["current"]), (["basics"], "about"))
-		self.assertEqual(state["values"]["time_zone"], "Asia/Kolkata")
+		self.assertEqual(state["prefill"]["time_zone"], "Asia/Kolkata")
 		self.assertEqual(
 			frappe.db.get_value("User", self.alice, "time_zone"),
 			"Asia/Kolkata",

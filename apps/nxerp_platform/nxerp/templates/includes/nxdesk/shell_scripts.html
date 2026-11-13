@@ -1,0 +1,24 @@
+{#- Theme toggle for the split-shell pages, and the small helpers the forms share. -#}
+<script>
+	(function () {
+		var root = document.documentElement;
+		var button = document.getElementById("nx-theme-toggle");
+		if (button) {
+			button.addEventListener("click", function () {
+				var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+				try { localStorage.setItem("theme", next); } catch (e) {}
+				root.setAttribute("data-theme", next);
+			});
+		}
+		// Frappe answers a failed call with _server_messages (a JSON list of JSON strings): show the first as plain text.
+		window.nxMessage = function (response, fallback) {
+			return response.json().then(function (body) {
+				try {
+					var list = JSON.parse(body._server_messages || "[]");
+					if (list.length) return JSON.parse(list[0]).message.replace(/<[^>]*>/g, "");
+				} catch (e) {}
+				return fallback;
+			}, function () { return fallback; });
+		};
+	})();
+</script>
