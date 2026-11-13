@@ -1,10 +1,11 @@
-{#- One product tile (Home and Products). Reads `p` (nxerp.public_site.present). The markup follows the launcher tile. -#}
-<a class="nxp-tile" href="{{ p.href | e }}" data-product="{{ p.key | e }}">
-	<span class="nxp-mark">{% if p.logo %}<img src="{{ p.logo | e }}" alt="" />{% endif %}</span>
+{#- One product tile (Home and Products). Reads `p` (nxerp.public_site.present / present_upcoming). The markup follows the launcher tile.
+    An announced product that is not installed (`p.upcoming`) is marked "Coming soon" and links to its information page only. -#}
+<a class="nxp-tile{% if p.upcoming %} nxp-tile--soon{% endif %}" href="{{ p.href | e }}" {% if p.upcoming %}data-upcoming{% else %}data-product{% endif %}="{{ p.key | e }}">
+	<span class="nxp-mark{% if p.upcoming %} nxp-mark--dark{% endif %}">{% if p.upcoming and p.mark %}<img src="{{ p.mark | e }}" alt="" />{% elif p.logo %}<img src="{{ p.logo | e }}" alt="" />{% endif %}</span>
 	<span class="nxp-tile-body">
-		<span class="nxp-tile-title">{{ p.title | e }}</span>
+		<span class="nxp-tile-title">{{ p.title | e }}{% if p.upcoming %}<span class="nxp-soon">{{ _("Coming soon") }}</span>{% endif %}</span>
 		{% if p.tagline %}<span class="nxp-tile-tagline">{{ p.tagline | e }}</span>{% endif %}
-		<span class="nxp-tile-cta">{{ p.cta | e }}</span>
+		<span class="nxp-tile-cta">{% if p.upcoming %}{{ _("Learn more") }}{% else %}{{ p.cta | e }}{% endif %}</span>
 	</span>
 	<svg class="nxp-arrow" viewBox="0 0 24 24" width="38" height="38" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
 </a>

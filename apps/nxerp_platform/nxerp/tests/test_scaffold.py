@@ -52,6 +52,18 @@ class TestScaffold(IntegrationTestCase):
 				{"from_route": "/signup", "to_route": "nxerp/signup"},
 				{"from_route": "/get-started", "to_route": "nxerp/get_started"},
 				{"from_route": "/welcome/<key>", "to_route": "nxerp/welcome"},
+				*(
+					{"from_route": f"/{slug}", "to_route": "nxerp/page", "defaults": {"slug": slug}}
+					for slug in (
+						"platform",
+						"security",
+						"solutions",
+						"roadmap",
+						"company",
+						"partners",
+						"get-in-touch",
+					)
+				),
 			],
 		)
 		# nothing else reaches into requests or sessions

@@ -11,6 +11,14 @@ Resume point for the next session. Update this file in every PR that changes pha
 | 3: Unified login, launcher, routing | **Complete locally and browser-verified (55/55); not pushed, no PR** |
 | 4: Helpdesk parity, CI/CD, release readiness, acceptance | **Built locally; nothing ran on GitHub; see `docs/acceptance/acceptance-report.md`** (9 BLOCKED-NEEDS-OWNER, most others PARTIAL) |
 
+## Public site design pass (2026-11-13)
+
+Same branch (`feat/nxdesk-onboarding`). Owner request: the entry page looked flat and needs more modules. Added: grouped header menus (Products, Platform, Solutions, Company; a menu panel on small screens), a richer footer,
+a deeper home page (capability chips, products, solutions by team, how it works, closing band), seven information pages (`/platform`, `/security`, `/solutions`, `/roadmap`, `/company`, `/partners`, `/get-in-touch`) driven by
+`nxerp/public_catalog.py`, and **AIRA HRMS** as an announced product ("Coming soon", logo supplied by the owner in `public/images/`; not installed, no sign-up). The structure of the reference site was used only as inspiration
+(grouped nav); all copy and design are our own, since that site's content is licensed CC-BY-NC-SA. DECISION (owner instruction): an announced product may be shown if clearly labelled; CLAUDE.md records the rule.
+Page copy makes no customer, award, certification or uptime claim (a test checks for such words).
+
 ## NXDESK plan, Phase 2: accounts, get-started, onboarding (2026-11-12 / 13)
 
 Branch `feat/nxdesk-onboarding`, **branched from `feat/nxdesk-public-site` (Phase 1), because Phase 1 is not merged into `develop`**. Not pushed, no PR. Merge Phase 1 first, then this.

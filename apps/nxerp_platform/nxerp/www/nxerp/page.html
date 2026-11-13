@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="{{ nx.lang | e }}">
+<head>
+	{% include "nxerp/templates/includes/nxdesk/head.html" %}
+</head>
+<body class="nxp-body">
+	<a class="nxp-skip" href="#main">{{ _("Skip to content") }}</a>
+	{% include "nxerp/templates/includes/nxdesk/header.html" %}
+	<main class="nxp-main nxp-site" id="main">
+		<div class="nxp-intro">
+			<p class="nxp-eyebrow">{{ page.eyebrow | e }}</p>
+			<h1 class="nxp-title">{{ page.title | e }}</h1>
+			<p class="nxp-sub">{{ page.lead | e }}</p>
+		</div>
+
+		{% if slug == "get-in-touch" %}
+		<section class="nxp-contact">
+			<div class="nxp-card nxp-card--center">
+				<span class="nxp-icon"><svg viewBox="0 0 24 24" aria-hidden="true">{{ icons.mail }}</svg></span>
+				{% if nx.support_url %}
+				<h2 class="nxp-h3">{{ _("Write to us") }}</h2>
+				<p>{{ _("Your message opens in a new window. Tell us which product or question it is about.") }}</p>
+				<p class="nxp-actions nxp-actions--cta"><a class="nxp-cta nxp-cta--primary" href="{{ nx.support_url | e }}" target="_blank" rel="noopener noreferrer">{{ _("Contact us") }}</a></p>
+				{% else %}
+				<h2 class="nxp-h3">{{ _("Contact details are not set up yet") }}</h2>
+				<p>{{ _("An administrator can add them in the site settings.") }}</p>
+				{% endif %}
+			</div>
+		</section>
+		{% elif page.blocks %}
+		<section>
+			<ul class="nxp-cards{% if page.blocks | length == 5 %} nxp-cards--5{% endif %}">
+				{% for b in page.blocks %}
+				<li style="--i: {{ loop.index0 }}">
+					{% if b.href %}<a class="nxp-card nxp-card--link" href="{{ b.href | e }}">{% else %}<div class="nxp-card">{% endif %}
+						<span class="nxp-icon"><svg viewBox="0 0 24 24" aria-hidden="true">{{ icons[b.icon] }}</svg></span>
+						<h3>{{ b.title | e }}{% if b.pill %}<span class="nxp-soon{% if b.pill == 'Available' %} nxp-soon--on{% endif %}">{{ b.pill | e }}</span>{% endif %}</h3>
+						<p>{{ b.body | e }}</p>
+						{% if b.href and b.cta %}<span class="nxp-card-cta">{{ b.cta | e }}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>{% endif %}
+					{% if b.href %}</a>{% else %}</div>{% endif %}
+				</li>
+				{% endfor %}
+			</ul>
+		</section>
+		{% endif %}
+
+		{% if page.cta %}
+		<section class="nxp-band">
+			<p class="nxp-actions nxp-actions--cta"><a class="nxp-cta nxp-cta--primary" href="{{ page.cta.href | e }}">{{ page.cta.label | e }}</a></p>
+		</section>
+		{% endif %}
+	</main>
+	{% include "nxerp/templates/includes/nxdesk/footer.html" %}
+	{% include "nxerp/templates/includes/nxdesk/scripts.html" %}
+</body>
+</html>

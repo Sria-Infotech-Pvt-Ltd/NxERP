@@ -36,6 +36,13 @@ contains a stack trace, a list of the apps a user lacks, or the name of a grant 
 | `/update-password?key=…` | Frappe (not overridden) | one-time key | holder of the emailed key | invalid or used key: Frappe's own message | n/a |
 | `/v1/login` | nobody | n/a | n/a | n/a | 404. Frappe has no such route; `/login` is canonical |
 
+## Information pages and the announced product (public, read-only)
+
+| URL | Owner | Notes |
+| --- | --- | --- |
+| `/platform`, `/security`, `/solutions`, `/roadmap`, `/company`, `/partners`, `/get-in-touch` | `nxerp` (`www/nxerp/page.*`, one route rule each with a `slug` default; content in `nxerp/public_catalog.py`) | static copy, guests and signed-in users alike; no data, no forms. `/contact` and `/about` are deliberately not used: Frappe ships pages with those names |
+| `/products/aira-hrms` | `nxerp` (`product.*`, from `public_catalog.UPCOMING`) | an announced product that is **not installed**: "Coming soon", no account flow. `/signup`, `/get-started` and `/welcome/` answer 404 for it. Once an app with that key is installed and registered the registry entry replaces the announcement |
+
 ## Landing rules (what `/nxerp/go` decides)
 
 `nxerp.routing.route(user, redirect_to)`, in this order:

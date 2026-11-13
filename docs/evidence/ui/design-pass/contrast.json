@@ -1,0 +1,8606 @@
+[
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "NXDESK",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 13.62,
+  "min": 3
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Products",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Platform",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Solutions",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Company",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Get started",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "NXDESK",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.23,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Your business applications, in o",
+  "size": 60.8,
+  "weight": "650",
+  "ratio": 12.38,
+  "min": 3
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Your business applications, in o",
+  "size": 60.8,
+  "weight": "650",
+  "ratio": 3.34,
+  "min": 3
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "One sign-in for the applications",
+  "size": 16.8,
+  "weight": "400",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Explore products",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Sign in",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 6.92,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "One sign-in",
+  "size": 14.08,
+  "weight": "600",
+  "ratio": 12.87,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Access by role",
+  "size": 14.08,
+  "weight": "600",
+  "ratio": 12.87,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Checked on the server",
+  "size": 14.08,
+  "weight": "600",
+  "ratio": 12.87,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Light and dark",
+  "size": 14.08,
+  "weight": "600",
+  "ratio": 12.87,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Products",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.78,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Applications on the platform",
+  "size": 30.4,
+  "weight": "650",
+  "ratio": 12.38,
+  "min": 3
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "What is installed today, and wha",
+  "size": 16.32,
+  "weight": "400",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "NXERP",
+  "size": 21.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 3
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Accounts, sales, stock and proje",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Learn more",
+  "size": 14.08,
+  "weight": "400",
+  "ratio": 6.94,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Sria Helpdesk",
+  "size": 21.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 3
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Support tickets and a shared kno",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Learn more",
+  "size": 14.08,
+  "weight": "400",
+  "ratio": 6.94,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "AIRA HRMS",
+  "size": 21.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 3
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Coming soon",
+  "size": 10.56,
+  "weight": "800",
+  "ratio": 6.72,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "AI-powered HR and workforce inte",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Learn more",
+  "size": 14.08,
+  "weight": "400",
+  "ratio": 6.94,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Solutions",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.78,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Start from the work your team do",
+  "size": 30.4,
+  "weight": "650",
+  "ratio": 12.38,
+  "min": 3
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Finance and accounting",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Accounts, invoicing and reportin",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Sales and purchasing",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Quotations, orders and suppliers",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Operations and stock",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Stock, manufacturing, projects a",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Customer support",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Tickets, a knowledge base and se",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "People and HR",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Coming soon",
+  "size": 10.56,
+  "weight": "800",
+  "ratio": 6.72,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Planned as AIRA HRMS. Not instal",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "The platform",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.78,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "How it works",
+  "size": 30.4,
+  "weight": "650",
+  "ratio": 12.38,
+  "min": 3
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "One sign-in",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Use the same account for every a",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Access by role",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "What you can open and do follows",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Your apps in one place",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Open every application you can u",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "See what is available",
+  "size": 30.4,
+  "weight": "650",
+  "ratio": 12.38,
+  "min": 3
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Look through the products, or wr",
+  "size": 16.32,
+  "weight": "400",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Explore products",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Get in touch",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 6.92,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Products",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "NXERP",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Sria Helpdesk",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "AIRA HRMS",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Platform",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Overview",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Access and security",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Roadmap",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Company",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "About",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Partners",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Get in touch",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "© 2026 NXDESK. One sign-in for a",
+  "size": 12.8,
+  "weight": "400",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "NXDESK",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 14.76,
+  "min": 3
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Platform",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Solutions",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Company",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Get started",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "NXDESK",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.27,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Your business applications, in o",
+  "size": 60.8,
+  "weight": "650",
+  "ratio": 16.37,
+  "min": 3
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Your business applications, in o",
+  "size": 60.8,
+  "weight": "650",
+  "ratio": 13.14,
+  "min": 3
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "One sign-in for the applications",
+  "size": 16.8,
+  "weight": "400",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Explore products",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Sign in",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 11.78,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "One sign-in",
+  "size": 14.08,
+  "weight": "600",
+  "ratio": 13.21,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Access by role",
+  "size": 14.08,
+  "weight": "600",
+  "ratio": 13.21,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Checked on the server",
+  "size": 14.08,
+  "weight": "600",
+  "ratio": 13.21,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Light and dark",
+  "size": 14.08,
+  "weight": "600",
+  "ratio": 13.21,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 8.14,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Applications on the platform",
+  "size": 30.4,
+  "weight": "650",
+  "ratio": 16.37,
+  "min": 3
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "What is installed today, and wha",
+  "size": 16.32,
+  "weight": "400",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "NXERP",
+  "size": 21.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 3
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Accounts, sales, stock and proje",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Learn more",
+  "size": 14.08,
+  "weight": "400",
+  "ratio": 6.69,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Sria Helpdesk",
+  "size": 21.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 3
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Support tickets and a shared kno",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Learn more",
+  "size": 14.08,
+  "weight": "400",
+  "ratio": 6.69,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "AIRA HRMS",
+  "size": 21.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 3
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Coming soon",
+  "size": 10.56,
+  "weight": "800",
+  "ratio": 5.69,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "AI-powered HR and workforce inte",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Learn more",
+  "size": 14.08,
+  "weight": "400",
+  "ratio": 6.69,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Solutions",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 8.14,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Start from the work your team do",
+  "size": 30.4,
+  "weight": "650",
+  "ratio": 16.37,
+  "min": 3
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Finance and accounting",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Accounts, invoicing and reportin",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Sales and purchasing",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Quotations, orders and suppliers",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Operations and stock",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Stock, manufacturing, projects a",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Customer support",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Tickets, a knowledge base and se",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "People and HR",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Coming soon",
+  "size": 10.56,
+  "weight": "800",
+  "ratio": 5.69,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Planned as AIRA HRMS. Not instal",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "The platform",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 8.14,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "How it works",
+  "size": 30.4,
+  "weight": "650",
+  "ratio": 16.37,
+  "min": 3
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "One sign-in",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Use the same account for every a",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Access by role",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "What you can open and do follows",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Your apps in one place",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Open every application you can u",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "See what is available",
+  "size": 30.4,
+  "weight": "650",
+  "ratio": 16.37,
+  "min": 3
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Look through the products, or wr",
+  "size": 16.32,
+  "weight": "400",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Explore products",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Get in touch",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 11.78,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "NXERP",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Sria Helpdesk",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "AIRA HRMS",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Platform",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Overview",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Access and security",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Roadmap",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Company",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "About",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Partners",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Get in touch",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "© 2026 NXDESK. One sign-in for a",
+  "size": 12.8,
+  "weight": "400",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "NXDESK",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 13.62,
+  "min": 3
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Products",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Platform",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Solutions",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Company",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Get started",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Products",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.23,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Products",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 12.38,
+  "min": 3
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Products",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 3.34,
+  "min": 3
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "The applications you can use wit",
+  "size": 16.8,
+  "weight": "400",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Business apps",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.23,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "NXERP",
+  "size": 21.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 3
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Accounts, sales, stock and proje",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Learn more",
+  "size": 14.08,
+  "weight": "400",
+  "ratio": 6.94,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "AIRA HRMS",
+  "size": 21.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 3
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Coming soon",
+  "size": 10.56,
+  "weight": "800",
+  "ratio": 6.72,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "AI-powered HR and workforce inte",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Learn more",
+  "size": 14.08,
+  "weight": "400",
+  "ratio": 6.94,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Support",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.23,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Sria Helpdesk",
+  "size": 21.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 3
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Support tickets and a shared kno",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Learn more",
+  "size": 14.08,
+  "weight": "400",
+  "ratio": 6.94,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Products",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "NXERP",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Sria Helpdesk",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "AIRA HRMS",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Platform",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Overview",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Access and security",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Roadmap",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Company",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "About",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Partners",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Get in touch",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "© 2026 NXDESK. One sign-in for a",
+  "size": 12.8,
+  "weight": "400",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "NXDESK",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 14.76,
+  "min": 3
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Platform",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Solutions",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Company",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Get started",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.27,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 16.37,
+  "min": 3
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 13.14,
+  "min": 3
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "The applications you can use wit",
+  "size": 16.8,
+  "weight": "400",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Business apps",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.27,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "NXERP",
+  "size": 21.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 3
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Accounts, sales, stock and proje",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Learn more",
+  "size": 14.08,
+  "weight": "400",
+  "ratio": 6.69,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "AIRA HRMS",
+  "size": 21.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 3
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Coming soon",
+  "size": 10.56,
+  "weight": "800",
+  "ratio": 5.69,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "AI-powered HR and workforce inte",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Learn more",
+  "size": 14.08,
+  "weight": "400",
+  "ratio": 6.69,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Support",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.27,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Sria Helpdesk",
+  "size": 21.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 3
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Support tickets and a shared kno",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Learn more",
+  "size": 14.08,
+  "weight": "400",
+  "ratio": 6.69,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "NXERP",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Sria Helpdesk",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "AIRA HRMS",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Platform",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Overview",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Access and security",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Roadmap",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Company",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "About",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Partners",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Get in touch",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "© 2026 NXDESK. One sign-in for a",
+  "size": 12.8,
+  "weight": "400",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "NXDESK",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 13.62,
+  "min": 3
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Products",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Platform",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Solutions",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Company",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Get started",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Support",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.23,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Sria Helpdesk",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 12.38,
+  "min": 3
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Sria Helpdesk",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 3.34,
+  "min": 3
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Support tickets and a shared kno",
+  "size": 21.6,
+  "weight": "600",
+  "ratio": 11.69,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Handle customer requests as tick",
+  "size": 16.8,
+  "weight": "400",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Get started",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Log in",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 6.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Contact",
+  "size": 16,
+  "weight": "400",
+  "ratio": 6.78,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "At a glance",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 3
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Tickets with teams and assignmen",
+  "size": 16,
+  "weight": "500",
+  "ratio": 12.73,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Knowledge base articles",
+  "size": 16,
+  "weight": "500",
+  "ratio": 12.73,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Service level agreements",
+  "size": 16,
+  "weight": "500",
+  "ratio": 12.73,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Customer portal for requests",
+  "size": 16,
+  "weight": "500",
+  "ratio": 12.73,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Get started in three steps",
+  "size": 30.4,
+  "weight": "650",
+  "ratio": 12.38,
+  "min": 3
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "1",
+  "size": 16,
+  "weight": "800",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Create an account",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Register with your email address",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "2",
+  "size": 16,
+  "weight": "800",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Answer a few questions",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Tell us who you are and what you",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "3",
+  "size": 16,
+  "weight": "800",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Get access",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "An administrator reviews your re",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Products",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "NXERP",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Sria Helpdesk",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "AIRA HRMS",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Platform",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Overview",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Access and security",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Roadmap",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Company",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "About",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Partners",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Get in touch",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "© 2026 NXDESK. One sign-in for a",
+  "size": 12.8,
+  "weight": "400",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "NXDESK",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 14.76,
+  "min": 3
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Platform",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Solutions",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Company",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Get started",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Support",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.27,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Sria Helpdesk",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 16.37,
+  "min": 3
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Sria Helpdesk",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 13.14,
+  "min": 3
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Support tickets and a shared kno",
+  "size": 21.6,
+  "weight": "600",
+  "ratio": 14.65,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Handle customer requests as tick",
+  "size": 16.8,
+  "weight": "400",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Get started",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Log in",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 11.78,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Contact",
+  "size": 16,
+  "weight": "400",
+  "ratio": 8.14,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "At a glance",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 3
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Tickets with teams and assignmen",
+  "size": 16,
+  "weight": "500",
+  "ratio": 13.37,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Knowledge base articles",
+  "size": 16,
+  "weight": "500",
+  "ratio": 13.37,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Service level agreements",
+  "size": 16,
+  "weight": "500",
+  "ratio": 13.37,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Customer portal for requests",
+  "size": 16,
+  "weight": "500",
+  "ratio": 13.37,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Get started in three steps",
+  "size": 30.4,
+  "weight": "650",
+  "ratio": 16.37,
+  "min": 3
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "1",
+  "size": 16,
+  "weight": "800",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Create an account",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Register with your email address",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "2",
+  "size": 16,
+  "weight": "800",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Answer a few questions",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Tell us who you are and what you",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "3",
+  "size": 16,
+  "weight": "800",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Get access",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "An administrator reviews your re",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "NXERP",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Sria Helpdesk",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "AIRA HRMS",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Platform",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Overview",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Access and security",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Roadmap",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Company",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "About",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Partners",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Get in touch",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "© 2026 NXDESK. One sign-in for a",
+  "size": 12.8,
+  "weight": "400",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "NXDESK",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 13.62,
+  "min": 3
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Products",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Platform",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Solutions",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Company",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Get started",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Business apps",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.23,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "NXERP",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 12.38,
+  "min": 3
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "NXERP",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 3.34,
+  "min": 3
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Accounts, sales, stock and proje",
+  "size": 21.6,
+  "weight": "600",
+  "ratio": 11.69,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Run accounting, selling, buying,",
+  "size": 16.8,
+  "weight": "400",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Get started",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Log in",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 6.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Contact",
+  "size": 16,
+  "weight": "400",
+  "ratio": 6.78,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "At a glance",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 3
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Accounts and invoicing",
+  "size": 16,
+  "weight": "500",
+  "ratio": 12.73,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Sales, buying and stock",
+  "size": 16,
+  "weight": "500",
+  "ratio": 12.73,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Manufacturing and projects",
+  "size": 16,
+  "weight": "500",
+  "ratio": 12.73,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Assets and maintenance",
+  "size": 16,
+  "weight": "500",
+  "ratio": 12.73,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Get started in three steps",
+  "size": 30.4,
+  "weight": "650",
+  "ratio": 12.38,
+  "min": 3
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "1",
+  "size": 16,
+  "weight": "800",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Create an account",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Register with your email address",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "2",
+  "size": 16,
+  "weight": "800",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Answer a few questions",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Tell us who you are and what you",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "3",
+  "size": 16,
+  "weight": "800",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Get access",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "An administrator reviews your re",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Products",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "NXERP",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Sria Helpdesk",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "AIRA HRMS",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Platform",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Overview",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Access and security",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Roadmap",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Company",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "About",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Partners",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Get in touch",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "© 2026 NXDESK. One sign-in for a",
+  "size": 12.8,
+  "weight": "400",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "NXDESK",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 14.76,
+  "min": 3
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Platform",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Solutions",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Company",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Get started",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Business apps",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.27,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "NXERP",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 16.37,
+  "min": 3
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "NXERP",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 13.14,
+  "min": 3
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Accounts, sales, stock and proje",
+  "size": 21.6,
+  "weight": "600",
+  "ratio": 14.65,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Run accounting, selling, buying,",
+  "size": 16.8,
+  "weight": "400",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Get started",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Log in",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 11.78,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Contact",
+  "size": 16,
+  "weight": "400",
+  "ratio": 8.14,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "At a glance",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 3
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Accounts and invoicing",
+  "size": 16,
+  "weight": "500",
+  "ratio": 13.37,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Sales, buying and stock",
+  "size": 16,
+  "weight": "500",
+  "ratio": 13.37,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Manufacturing and projects",
+  "size": 16,
+  "weight": "500",
+  "ratio": 13.37,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Assets and maintenance",
+  "size": 16,
+  "weight": "500",
+  "ratio": 13.37,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Get started in three steps",
+  "size": 30.4,
+  "weight": "650",
+  "ratio": 16.37,
+  "min": 3
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "1",
+  "size": 16,
+  "weight": "800",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Create an account",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Register with your email address",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "2",
+  "size": 16,
+  "weight": "800",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Answer a few questions",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Tell us who you are and what you",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "3",
+  "size": 16,
+  "weight": "800",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Get access",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "An administrator reviews your re",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "NXERP",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Sria Helpdesk",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "AIRA HRMS",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Platform",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Overview",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Access and security",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Roadmap",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Company",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "About",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Partners",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Get in touch",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "© 2026 NXDESK. One sign-in for a",
+  "size": 12.8,
+  "weight": "400",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "light",
+  "text": "NXDESK",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 13.62,
+  "min": 3
+ },
+ {
+  "page": "product-aira",
+  "scheme": "light",
+  "text": "Products",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "light",
+  "text": "Platform",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "light",
+  "text": "Solutions",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "light",
+  "text": "Company",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "light",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "light",
+  "text": "Get started",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "light",
+  "text": "Business apps",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.23,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "light",
+  "text": "AIRA HRMS",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 12.38,
+  "min": 3
+ },
+ {
+  "page": "product-aira",
+  "scheme": "light",
+  "text": "AIRA HRMS",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 3.34,
+  "min": 3
+ },
+ {
+  "page": "product-aira",
+  "scheme": "light",
+  "text": "Coming soon",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.23,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "light",
+  "text": "AI-powered HR and workforce inte",
+  "size": 21.6,
+  "weight": "600",
+  "ratio": 11.69,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "light",
+  "text": "AIRA, Adaptive Intelligence for ",
+  "size": 16.8,
+  "weight": "400",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "light",
+  "text": "Ask about it",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "light",
+  "text": "All products",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 6.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "light",
+  "text": "Planned scope",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 3
+ },
+ {
+  "page": "product-aira",
+  "scheme": "light",
+  "text": "People records and structure",
+  "size": 16,
+  "weight": "500",
+  "ratio": 12.73,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "light",
+  "text": "Attendance and leave",
+  "size": 16,
+  "weight": "500",
+  "ratio": 12.73,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "light",
+  "text": "Workforce reporting",
+  "size": 16,
+  "weight": "500",
+  "ratio": 12.73,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "light",
+  "text": "AI-assisted insights",
+  "size": 16,
+  "weight": "500",
+  "ratio": 12.73,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "light",
+  "text": "Not available yet",
+  "size": 30.4,
+  "weight": "650",
+  "ratio": 12.38,
+  "min": 3
+ },
+ {
+  "page": "product-aira",
+  "scheme": "light",
+  "text": "AIRA HRMS is announced and not i",
+  "size": 16.32,
+  "weight": "400",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "light",
+  "text": "Products",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "light",
+  "text": "NXERP",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "light",
+  "text": "Sria Helpdesk",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "light",
+  "text": "AIRA HRMS",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "light",
+  "text": "Platform",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "light",
+  "text": "Overview",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "light",
+  "text": "Access and security",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "light",
+  "text": "Roadmap",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "light",
+  "text": "Company",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "light",
+  "text": "About",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "light",
+  "text": "Partners",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "light",
+  "text": "Get in touch",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "light",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "light",
+  "text": "© 2026 NXDESK. One sign-in for a",
+  "size": 12.8,
+  "weight": "400",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "dark",
+  "text": "NXDESK",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 14.76,
+  "min": 3
+ },
+ {
+  "page": "product-aira",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "dark",
+  "text": "Platform",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "dark",
+  "text": "Solutions",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "dark",
+  "text": "Company",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "dark",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "dark",
+  "text": "Get started",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "dark",
+  "text": "Business apps",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.27,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "dark",
+  "text": "AIRA HRMS",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 16.37,
+  "min": 3
+ },
+ {
+  "page": "product-aira",
+  "scheme": "dark",
+  "text": "AIRA HRMS",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 13.14,
+  "min": 3
+ },
+ {
+  "page": "product-aira",
+  "scheme": "dark",
+  "text": "Coming soon",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.27,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "dark",
+  "text": "AI-powered HR and workforce inte",
+  "size": 21.6,
+  "weight": "600",
+  "ratio": 14.65,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "dark",
+  "text": "AIRA, Adaptive Intelligence for ",
+  "size": 16.8,
+  "weight": "400",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "dark",
+  "text": "Ask about it",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "dark",
+  "text": "All products",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 11.78,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "dark",
+  "text": "Planned scope",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 3
+ },
+ {
+  "page": "product-aira",
+  "scheme": "dark",
+  "text": "People records and structure",
+  "size": 16,
+  "weight": "500",
+  "ratio": 13.37,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "dark",
+  "text": "Attendance and leave",
+  "size": 16,
+  "weight": "500",
+  "ratio": 13.37,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "dark",
+  "text": "Workforce reporting",
+  "size": 16,
+  "weight": "500",
+  "ratio": 13.37,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "dark",
+  "text": "AI-assisted insights",
+  "size": 16,
+  "weight": "500",
+  "ratio": 13.37,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "dark",
+  "text": "Not available yet",
+  "size": 30.4,
+  "weight": "650",
+  "ratio": 16.37,
+  "min": 3
+ },
+ {
+  "page": "product-aira",
+  "scheme": "dark",
+  "text": "AIRA HRMS is announced and not i",
+  "size": 16.32,
+  "weight": "400",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "dark",
+  "text": "NXERP",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "dark",
+  "text": "Sria Helpdesk",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "dark",
+  "text": "AIRA HRMS",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "dark",
+  "text": "Platform",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "dark",
+  "text": "Overview",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "dark",
+  "text": "Access and security",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "dark",
+  "text": "Roadmap",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "dark",
+  "text": "Company",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "dark",
+  "text": "About",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "dark",
+  "text": "Partners",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "dark",
+  "text": "Get in touch",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "dark",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-aira",
+  "scheme": "dark",
+  "text": "© 2026 NXDESK. One sign-in for a",
+  "size": 12.8,
+  "weight": "400",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "light",
+  "text": "NXDESK",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 13.62,
+  "min": 3
+ },
+ {
+  "page": "platform",
+  "scheme": "light",
+  "text": "Products",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "light",
+  "text": "Platform",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "light",
+  "text": "Solutions",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "light",
+  "text": "Company",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "light",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "light",
+  "text": "Get started",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "light",
+  "text": "Platform",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.23,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "light",
+  "text": "One platform for the application",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 12.38,
+  "min": 3
+ },
+ {
+  "page": "platform",
+  "scheme": "light",
+  "text": "One platform for the application",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 3.34,
+  "min": 3
+ },
+ {
+  "page": "platform",
+  "scheme": "light",
+  "text": "NXDESK is the shared layer aroun",
+  "size": 16.8,
+  "weight": "400",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "light",
+  "text": "One sign-in",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "light",
+  "text": "A person has one account and one",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "light",
+  "text": "Access by role",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "light",
+  "text": "Administrators give roles. What ",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "light",
+  "text": "Your apps in one place",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "light",
+  "text": "After signing in, people go stra",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "light",
+  "text": "Applications stay themselves",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "light",
+  "text": "NXERP is built on ERPNext and Sr",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "light",
+  "text": "Light and dark",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "light",
+  "text": "Every public and sign-in screen ",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "light",
+  "text": "Room for more",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "light",
+  "text": "Adding an application means regi",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "light",
+  "text": "Explore products",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "light",
+  "text": "Products",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "light",
+  "text": "NXERP",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "light",
+  "text": "Sria Helpdesk",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "light",
+  "text": "AIRA HRMS",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "light",
+  "text": "Platform",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "light",
+  "text": "Overview",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "light",
+  "text": "Access and security",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "light",
+  "text": "Roadmap",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "light",
+  "text": "Company",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "light",
+  "text": "About",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "light",
+  "text": "Partners",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "light",
+  "text": "Get in touch",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "light",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "light",
+  "text": "© 2026 NXDESK. One sign-in for a",
+  "size": 12.8,
+  "weight": "400",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "dark",
+  "text": "NXDESK",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 14.76,
+  "min": 3
+ },
+ {
+  "page": "platform",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "dark",
+  "text": "Platform",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "dark",
+  "text": "Solutions",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "dark",
+  "text": "Company",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "dark",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "dark",
+  "text": "Get started",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "dark",
+  "text": "Platform",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.27,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "dark",
+  "text": "One platform for the application",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 16.37,
+  "min": 3
+ },
+ {
+  "page": "platform",
+  "scheme": "dark",
+  "text": "One platform for the application",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 13.14,
+  "min": 3
+ },
+ {
+  "page": "platform",
+  "scheme": "dark",
+  "text": "NXDESK is the shared layer aroun",
+  "size": 16.8,
+  "weight": "400",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "dark",
+  "text": "One sign-in",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "dark",
+  "text": "A person has one account and one",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "dark",
+  "text": "Access by role",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "dark",
+  "text": "Administrators give roles. What ",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "dark",
+  "text": "Your apps in one place",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "dark",
+  "text": "After signing in, people go stra",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "dark",
+  "text": "Applications stay themselves",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "dark",
+  "text": "NXERP is built on ERPNext and Sr",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "dark",
+  "text": "Light and dark",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "dark",
+  "text": "Every public and sign-in screen ",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "dark",
+  "text": "Room for more",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "dark",
+  "text": "Adding an application means regi",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "dark",
+  "text": "Explore products",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "dark",
+  "text": "NXERP",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "dark",
+  "text": "Sria Helpdesk",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "dark",
+  "text": "AIRA HRMS",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "dark",
+  "text": "Platform",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "dark",
+  "text": "Overview",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "dark",
+  "text": "Access and security",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "dark",
+  "text": "Roadmap",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "dark",
+  "text": "Company",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "dark",
+  "text": "About",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "dark",
+  "text": "Partners",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "dark",
+  "text": "Get in touch",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "dark",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "platform",
+  "scheme": "dark",
+  "text": "© 2026 NXDESK. One sign-in for a",
+  "size": 12.8,
+  "weight": "400",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "light",
+  "text": "NXDESK",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 13.62,
+  "min": 3
+ },
+ {
+  "page": "security",
+  "scheme": "light",
+  "text": "Products",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "light",
+  "text": "Platform",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "light",
+  "text": "Solutions",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "light",
+  "text": "Company",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "light",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "light",
+  "text": "Get started",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "light",
+  "text": "Access and security",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.23,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "light",
+  "text": "Access is decided on the server",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 12.38,
+  "min": 3
+ },
+ {
+  "page": "security",
+  "scheme": "light",
+  "text": "Access is decided on the server",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 3.34,
+  "min": 3
+ },
+ {
+  "page": "security",
+  "scheme": "light",
+  "text": "Hiding a link is not security. E",
+  "size": 16.8,
+  "weight": "400",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "light",
+  "text": "Role-based grants",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "light",
+  "text": "Access to an application is a ro",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "light",
+  "text": "Checked on every request",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "light",
+  "text": "Pages, data calls and files are ",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "light",
+  "text": "Customers stay in the portal",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "light",
+  "text": "A customer reaches only the cust",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "light",
+  "text": "Requests are reviewed",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "light",
+  "text": "Creating an account never grants",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "light",
+  "text": "A record without personal data",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "light",
+  "text": "Refused requests are logged with",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "light",
+  "text": "Safe sign-in redirects",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "light",
+  "text": "After signing in, a person is se",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "light",
+  "text": "How the platform works",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "light",
+  "text": "Products",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "light",
+  "text": "NXERP",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "light",
+  "text": "Sria Helpdesk",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "light",
+  "text": "AIRA HRMS",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "light",
+  "text": "Platform",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "light",
+  "text": "Overview",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "light",
+  "text": "Access and security",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "light",
+  "text": "Roadmap",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "light",
+  "text": "Company",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "light",
+  "text": "About",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "light",
+  "text": "Partners",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "light",
+  "text": "Get in touch",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "light",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "light",
+  "text": "© 2026 NXDESK. One sign-in for a",
+  "size": 12.8,
+  "weight": "400",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "dark",
+  "text": "NXDESK",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 14.76,
+  "min": 3
+ },
+ {
+  "page": "security",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "dark",
+  "text": "Platform",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "dark",
+  "text": "Solutions",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "dark",
+  "text": "Company",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "dark",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "dark",
+  "text": "Get started",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "dark",
+  "text": "Access and security",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.27,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "dark",
+  "text": "Access is decided on the server",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 16.37,
+  "min": 3
+ },
+ {
+  "page": "security",
+  "scheme": "dark",
+  "text": "Access is decided on the server",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 13.14,
+  "min": 3
+ },
+ {
+  "page": "security",
+  "scheme": "dark",
+  "text": "Hiding a link is not security. E",
+  "size": 16.8,
+  "weight": "400",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "dark",
+  "text": "Role-based grants",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "dark",
+  "text": "Access to an application is a ro",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "dark",
+  "text": "Checked on every request",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "dark",
+  "text": "Pages, data calls and files are ",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "dark",
+  "text": "Customers stay in the portal",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "dark",
+  "text": "A customer reaches only the cust",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "dark",
+  "text": "Requests are reviewed",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "dark",
+  "text": "Creating an account never grants",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "dark",
+  "text": "A record without personal data",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "dark",
+  "text": "Refused requests are logged with",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "dark",
+  "text": "Safe sign-in redirects",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "dark",
+  "text": "After signing in, a person is se",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "dark",
+  "text": "How the platform works",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "dark",
+  "text": "NXERP",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "dark",
+  "text": "Sria Helpdesk",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "dark",
+  "text": "AIRA HRMS",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "dark",
+  "text": "Platform",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "dark",
+  "text": "Overview",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "dark",
+  "text": "Access and security",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "dark",
+  "text": "Roadmap",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "dark",
+  "text": "Company",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "dark",
+  "text": "About",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "dark",
+  "text": "Partners",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "dark",
+  "text": "Get in touch",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "dark",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "security",
+  "scheme": "dark",
+  "text": "© 2026 NXDESK. One sign-in for a",
+  "size": 12.8,
+  "weight": "400",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "NXDESK",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 13.62,
+  "min": 3
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "Products",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "Platform",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "Solutions",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "Company",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "Get started",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "Solutions",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.23,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "Start from the work your team do",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 12.38,
+  "min": 3
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "Start from the work your team do",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 3.34,
+  "min": 3
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "Pick the area you care about. Ea",
+  "size": 16.8,
+  "weight": "400",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "Finance and accounting",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "Accounts, invoicing and reportin",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "NXERP",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.38,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "Sales and purchasing",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "Quotations, orders and suppliers",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "NXERP",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.38,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "Operations and stock",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "Stock, manufacturing, projects a",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "NXERP",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.38,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "Customer support",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "Tickets, a knowledge base and se",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "Sria Helpdesk",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.38,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "People and HR",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "Coming soon",
+  "size": 10.56,
+  "weight": "800",
+  "ratio": 6.72,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "Planned as AIRA HRMS. Not instal",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "AIRA HRMS",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.38,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "See all products",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "Products",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "NXERP",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "Sria Helpdesk",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "AIRA HRMS",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "Platform",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "Overview",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "Access and security",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "Roadmap",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "Company",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "About",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "Partners",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "Get in touch",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "light",
+  "text": "© 2026 NXDESK. One sign-in for a",
+  "size": 12.8,
+  "weight": "400",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "NXDESK",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 14.76,
+  "min": 3
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "Platform",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "Solutions",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "Company",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "Get started",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "Solutions",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.27,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "Start from the work your team do",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 16.37,
+  "min": 3
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "Start from the work your team do",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 13.14,
+  "min": 3
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "Pick the area you care about. Ea",
+  "size": 16.8,
+  "weight": "400",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "Finance and accounting",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "Accounts, invoicing and reportin",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "NXERP",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.43,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "Sales and purchasing",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "Quotations, orders and suppliers",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "NXERP",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.43,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "Operations and stock",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "Stock, manufacturing, projects a",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "NXERP",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.43,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "Customer support",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "Tickets, a knowledge base and se",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "Sria Helpdesk",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.43,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "People and HR",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "Coming soon",
+  "size": 10.56,
+  "weight": "800",
+  "ratio": 5.69,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "Planned as AIRA HRMS. Not instal",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "AIRA HRMS",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.43,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "See all products",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "NXERP",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "Sria Helpdesk",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "AIRA HRMS",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "Platform",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "Overview",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "Access and security",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "Roadmap",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "Company",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "About",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "Partners",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "Get in touch",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "solutions",
+  "scheme": "dark",
+  "text": "© 2026 NXDESK. One sign-in for a",
+  "size": 12.8,
+  "weight": "400",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "light",
+  "text": "NXDESK",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 13.62,
+  "min": 3
+ },
+ {
+  "page": "roadmap",
+  "scheme": "light",
+  "text": "Products",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "light",
+  "text": "Platform",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "light",
+  "text": "Solutions",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "light",
+  "text": "Company",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "light",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "light",
+  "text": "Get started",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "light",
+  "text": "Roadmap",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.23,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "light",
+  "text": "What is available and what comes",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 12.38,
+  "min": 3
+ },
+ {
+  "page": "roadmap",
+  "scheme": "light",
+  "text": "What is available and what comes",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 3.34,
+  "min": 3
+ },
+ {
+  "page": "roadmap",
+  "scheme": "light",
+  "text": "A plain list. Available means in",
+  "size": 16.8,
+  "weight": "400",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "light",
+  "text": "NXERP",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "light",
+  "text": "Available",
+  "size": 10.56,
+  "weight": "800",
+  "ratio": 9.5,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "light",
+  "text": "Accounting, selling, buying, sto",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "light",
+  "text": "Learn more",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.38,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "light",
+  "text": "Sria Helpdesk",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "light",
+  "text": "Available",
+  "size": 10.56,
+  "weight": "800",
+  "ratio": 9.5,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "light",
+  "text": "Support tickets, knowledge base ",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "light",
+  "text": "Learn more",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.38,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "light",
+  "text": "AIRA HRMS",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "light",
+  "text": "Coming soon",
+  "size": 10.56,
+  "weight": "800",
+  "ratio": 6.72,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "light",
+  "text": "HR and workforce product. Not in",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "light",
+  "text": "Learn more",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.38,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "light",
+  "text": "Get in touch",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "light",
+  "text": "Products",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "light",
+  "text": "NXERP",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "light",
+  "text": "Sria Helpdesk",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "light",
+  "text": "AIRA HRMS",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "light",
+  "text": "Platform",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "light",
+  "text": "Overview",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "light",
+  "text": "Access and security",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "light",
+  "text": "Roadmap",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "light",
+  "text": "Company",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "light",
+  "text": "About",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "light",
+  "text": "Partners",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "light",
+  "text": "Get in touch",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "light",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "light",
+  "text": "© 2026 NXDESK. One sign-in for a",
+  "size": 12.8,
+  "weight": "400",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "dark",
+  "text": "NXDESK",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 14.76,
+  "min": 3
+ },
+ {
+  "page": "roadmap",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "dark",
+  "text": "Platform",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "dark",
+  "text": "Solutions",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "dark",
+  "text": "Company",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "dark",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "dark",
+  "text": "Get started",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "dark",
+  "text": "Roadmap",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.27,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "dark",
+  "text": "What is available and what comes",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 16.37,
+  "min": 3
+ },
+ {
+  "page": "roadmap",
+  "scheme": "dark",
+  "text": "What is available and what comes",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 13.14,
+  "min": 3
+ },
+ {
+  "page": "roadmap",
+  "scheme": "dark",
+  "text": "A plain list. Available means in",
+  "size": 16.8,
+  "weight": "400",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "dark",
+  "text": "NXERP",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "dark",
+  "text": "Available",
+  "size": 10.56,
+  "weight": "800",
+  "ratio": 10.92,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "dark",
+  "text": "Accounting, selling, buying, sto",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "dark",
+  "text": "Learn more",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.43,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "dark",
+  "text": "Sria Helpdesk",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "dark",
+  "text": "Available",
+  "size": 10.56,
+  "weight": "800",
+  "ratio": 10.92,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "dark",
+  "text": "Support tickets, knowledge base ",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "dark",
+  "text": "Learn more",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.43,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "dark",
+  "text": "AIRA HRMS",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "dark",
+  "text": "Coming soon",
+  "size": 10.56,
+  "weight": "800",
+  "ratio": 5.69,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "dark",
+  "text": "HR and workforce product. Not in",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "dark",
+  "text": "Learn more",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.43,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "dark",
+  "text": "Get in touch",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "dark",
+  "text": "NXERP",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "dark",
+  "text": "Sria Helpdesk",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "dark",
+  "text": "AIRA HRMS",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "dark",
+  "text": "Platform",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "dark",
+  "text": "Overview",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "dark",
+  "text": "Access and security",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "dark",
+  "text": "Roadmap",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "dark",
+  "text": "Company",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "dark",
+  "text": "About",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "dark",
+  "text": "Partners",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "dark",
+  "text": "Get in touch",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "dark",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "roadmap",
+  "scheme": "dark",
+  "text": "© 2026 NXDESK. One sign-in for a",
+  "size": 12.8,
+  "weight": "400",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "light",
+  "text": "NXDESK",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 13.62,
+  "min": 3
+ },
+ {
+  "page": "company",
+  "scheme": "light",
+  "text": "Products",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "light",
+  "text": "Platform",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "light",
+  "text": "Solutions",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "light",
+  "text": "Company",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "light",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "light",
+  "text": "Get started",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "light",
+  "text": "Company",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.23,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "light",
+  "text": "Built by Sria Infotech",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 12.38,
+  "min": 3
+ },
+ {
+  "page": "company",
+  "scheme": "light",
+  "text": "Built by Sria Infotech",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 3.34,
+  "min": 3
+ },
+ {
+  "page": "company",
+  "scheme": "light",
+  "text": "NXDESK is the platform layer Sri",
+  "size": 16.8,
+  "weight": "400",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "light",
+  "text": "Who builds it",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "light",
+  "text": "Sria Infotech Pvt Ltd designs an",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "light",
+  "text": "Open foundations",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "light",
+  "text": "The applications are built on th",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "light",
+  "text": "Careful by default",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "light",
+  "text": "Access is explicit, changes are ",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "light",
+  "text": "Get in touch",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "light",
+  "text": "Products",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "light",
+  "text": "NXERP",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "light",
+  "text": "Sria Helpdesk",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "light",
+  "text": "AIRA HRMS",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "light",
+  "text": "Platform",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "light",
+  "text": "Overview",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "light",
+  "text": "Access and security",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "light",
+  "text": "Roadmap",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "light",
+  "text": "Company",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "light",
+  "text": "About",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "light",
+  "text": "Partners",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "light",
+  "text": "Get in touch",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "light",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "light",
+  "text": "© 2026 NXDESK. One sign-in for a",
+  "size": 12.8,
+  "weight": "400",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "dark",
+  "text": "NXDESK",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 14.76,
+  "min": 3
+ },
+ {
+  "page": "company",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "dark",
+  "text": "Platform",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "dark",
+  "text": "Solutions",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "dark",
+  "text": "Company",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "dark",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "dark",
+  "text": "Get started",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "dark",
+  "text": "Company",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.27,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "dark",
+  "text": "Built by Sria Infotech",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 16.37,
+  "min": 3
+ },
+ {
+  "page": "company",
+  "scheme": "dark",
+  "text": "Built by Sria Infotech",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 13.14,
+  "min": 3
+ },
+ {
+  "page": "company",
+  "scheme": "dark",
+  "text": "NXDESK is the platform layer Sri",
+  "size": 16.8,
+  "weight": "400",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "dark",
+  "text": "Who builds it",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "dark",
+  "text": "Sria Infotech Pvt Ltd designs an",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "dark",
+  "text": "Open foundations",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "dark",
+  "text": "The applications are built on th",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "dark",
+  "text": "Careful by default",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "dark",
+  "text": "Access is explicit, changes are ",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "dark",
+  "text": "Get in touch",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "dark",
+  "text": "NXERP",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "dark",
+  "text": "Sria Helpdesk",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "dark",
+  "text": "AIRA HRMS",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "dark",
+  "text": "Platform",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "dark",
+  "text": "Overview",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "dark",
+  "text": "Access and security",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "dark",
+  "text": "Roadmap",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "dark",
+  "text": "Company",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "dark",
+  "text": "About",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "dark",
+  "text": "Partners",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "dark",
+  "text": "Get in touch",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "dark",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "company",
+  "scheme": "dark",
+  "text": "© 2026 NXDESK. One sign-in for a",
+  "size": 12.8,
+  "weight": "400",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "light",
+  "text": "NXDESK",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 13.62,
+  "min": 3
+ },
+ {
+  "page": "partners",
+  "scheme": "light",
+  "text": "Products",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "light",
+  "text": "Platform",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "light",
+  "text": "Solutions",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "light",
+  "text": "Company",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "light",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "light",
+  "text": "Get started",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "light",
+  "text": "Partners",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.23,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "light",
+  "text": "Work with us",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 12.38,
+  "min": 3
+ },
+ {
+  "page": "partners",
+  "scheme": "light",
+  "text": "Work with us",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 3.34,
+  "min": 3
+ },
+ {
+  "page": "partners",
+  "scheme": "light",
+  "text": "If you implement, integrate or s",
+  "size": 16.8,
+  "weight": "400",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "light",
+  "text": "Implementation",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "light",
+  "text": "Help organisations set up and ad",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "light",
+  "text": "Integration",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "light",
+  "text": "Connect other systems to the app",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "light",
+  "text": "Support",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "light",
+  "text": "Look after the day-to-day for te",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "light",
+  "text": "Get in touch",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "light",
+  "text": "Products",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "light",
+  "text": "NXERP",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "light",
+  "text": "Sria Helpdesk",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "light",
+  "text": "AIRA HRMS",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "light",
+  "text": "Platform",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "light",
+  "text": "Overview",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "light",
+  "text": "Access and security",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "light",
+  "text": "Roadmap",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "light",
+  "text": "Company",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "light",
+  "text": "About",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "light",
+  "text": "Partners",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "light",
+  "text": "Get in touch",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "light",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "light",
+  "text": "© 2026 NXDESK. One sign-in for a",
+  "size": 12.8,
+  "weight": "400",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "dark",
+  "text": "NXDESK",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 14.76,
+  "min": 3
+ },
+ {
+  "page": "partners",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "dark",
+  "text": "Platform",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "dark",
+  "text": "Solutions",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "dark",
+  "text": "Company",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "dark",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "dark",
+  "text": "Get started",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "dark",
+  "text": "Partners",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.27,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "dark",
+  "text": "Work with us",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 16.37,
+  "min": 3
+ },
+ {
+  "page": "partners",
+  "scheme": "dark",
+  "text": "Work with us",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 13.14,
+  "min": 3
+ },
+ {
+  "page": "partners",
+  "scheme": "dark",
+  "text": "If you implement, integrate or s",
+  "size": 16.8,
+  "weight": "400",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "dark",
+  "text": "Implementation",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "dark",
+  "text": "Help organisations set up and ad",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "dark",
+  "text": "Integration",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "dark",
+  "text": "Connect other systems to the app",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "dark",
+  "text": "Support",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "dark",
+  "text": "Look after the day-to-day for te",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "dark",
+  "text": "Get in touch",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "dark",
+  "text": "NXERP",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "dark",
+  "text": "Sria Helpdesk",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "dark",
+  "text": "AIRA HRMS",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "dark",
+  "text": "Platform",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "dark",
+  "text": "Overview",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "dark",
+  "text": "Access and security",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "dark",
+  "text": "Roadmap",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "dark",
+  "text": "Company",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "dark",
+  "text": "About",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "dark",
+  "text": "Partners",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "dark",
+  "text": "Get in touch",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "dark",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "partners",
+  "scheme": "dark",
+  "text": "© 2026 NXDESK. One sign-in for a",
+  "size": 12.8,
+  "weight": "400",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "light",
+  "text": "NXDESK",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 13.62,
+  "min": 3
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "light",
+  "text": "Products",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "light",
+  "text": "Platform",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "light",
+  "text": "Solutions",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "light",
+  "text": "Company",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "light",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "light",
+  "text": "Get started",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "light",
+  "text": "Contact",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.23,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "light",
+  "text": "Get in touch",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 12.38,
+  "min": 3
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "light",
+  "text": "Get in touch",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 3.34,
+  "min": 3
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "light",
+  "text": "Questions about the platform, a ",
+  "size": 16.8,
+  "weight": "400",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "light",
+  "text": "Write to us",
+  "size": 20.8,
+  "weight": "650",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "light",
+  "text": "Your message opens in a new wind",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "light",
+  "text": "Contact us",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "light",
+  "text": "Products",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "light",
+  "text": "NXERP",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "light",
+  "text": "Sria Helpdesk",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "light",
+  "text": "AIRA HRMS",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "light",
+  "text": "Platform",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "light",
+  "text": "Overview",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "light",
+  "text": "Access and security",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "light",
+  "text": "Roadmap",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "light",
+  "text": "Company",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "light",
+  "text": "About",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "light",
+  "text": "Partners",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "light",
+  "text": "Get in touch",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "light",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "light",
+  "text": "© 2026 NXDESK. One sign-in for a",
+  "size": 12.8,
+  "weight": "400",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "dark",
+  "text": "NXDESK",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 14.76,
+  "min": 3
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "dark",
+  "text": "Platform",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "dark",
+  "text": "Solutions",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "dark",
+  "text": "Company",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "dark",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "dark",
+  "text": "Get started",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "dark",
+  "text": "Contact",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.27,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "dark",
+  "text": "Get in touch",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 16.37,
+  "min": 3
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "dark",
+  "text": "Get in touch",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 13.14,
+  "min": 3
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "dark",
+  "text": "Questions about the platform, a ",
+  "size": 16.8,
+  "weight": "400",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "dark",
+  "text": "Write to us",
+  "size": 20.8,
+  "weight": "650",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "dark",
+  "text": "Your message opens in a new wind",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "dark",
+  "text": "Contact us",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "dark",
+  "text": "NXERP",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "dark",
+  "text": "Sria Helpdesk",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "dark",
+  "text": "AIRA HRMS",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "dark",
+  "text": "Platform",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "dark",
+  "text": "Overview",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "dark",
+  "text": "Access and security",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "dark",
+  "text": "Roadmap",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "dark",
+  "text": "Company",
+  "size": 11.2,
+  "weight": "800",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "dark",
+  "text": "About",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "dark",
+  "text": "Partners",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "dark",
+  "text": "Get in touch",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "dark",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "get-in-touch",
+  "scheme": "dark",
+  "text": "© 2026 NXDESK. One sign-in for a",
+  "size": 12.8,
+  "weight": "400",
+  "ratio": 7.33,
+  "min": 4.5
+ }
+]

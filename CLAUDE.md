@@ -8,7 +8,7 @@ Rules for every contributor and every AI assistant working in this repository.
 - **Technical identifiers never change**: the Python app `nxerp`, the folder `apps/nxerp_platform`, the `/nxerp/*` routes, the roles `NXERP Access: ...`, and ERPNext's and Helpdesk's own packages and DocTypes. The person sees the display name, the code sees the identifier.
 - **ERPNext** keeps its technical identity: never treat Helpdesk as the ERP. **Helpdesk** is a separate support/ticket app inside the platform, never the ERP.
 - **Frappe Framework** = underlying technology, not shown to business users as an application.
-- Future apps (HRMS, Project Management, Budget Management, ...) are **not installed**. Make adding them cheap; never build, mock or display them as if they exist.
+- Future apps (HRMS, Project Management, Budget Management, ...) are **not installed**. Make adding them cheap; never build, mock or display them as if they exist. The one exception is an **announced** product the owner asked to show (today: AIRA HRMS): it lives only in `nxerp/public_catalog.py`, is always labelled "Coming soon", has no sign-up, sign-in or application link, and is replaced by its registry entry once installed.
 - A unified experience is not merged code: do not copy apps into one package or rename upstream packages.
 
 ## Repositories

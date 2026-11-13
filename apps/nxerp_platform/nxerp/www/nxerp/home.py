@@ -6,7 +6,7 @@ Read-only. Lists the installed products from the registry; creates nothing and g
 import frappe
 from frappe import _
 
-from nxerp import public_site
+from nxerp import public_catalog, public_site
 
 no_cache = True  # the header and the product buttons differ for a signed-in visitor
 
@@ -20,3 +20,5 @@ def get_context(context):
 		canonical=frappe.utils.get_url("/"),
 	)
 	context.products = public_site.products()
+	context.icons = public_catalog.ICONS
+	context.solutions = public_catalog.PAGES["solutions"]["blocks"]

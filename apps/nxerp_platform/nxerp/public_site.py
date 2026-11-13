@@ -13,7 +13,7 @@ import os
 import frappe
 from frappe import _
 
-from nxerp import access, branding, registry
+from nxerp import access, branding, public_catalog, registry
 
 HOME_ROUTE = "/nxerp/home"  # the page; guests also get it at "/"
 PRODUCTS_ROUTE = "/products"
@@ -63,6 +63,8 @@ def base_context(context, *, title: str, description: str, active: str = "", can
 		guest=guest,
 		full_name=full_name,
 		home_href="/" if guest else HOME_ROUTE,
+		nav=nav(),
+		footer_products=[{"title": p["title"], "href": p["page_href"]} for p in products()],
 		products_href=PRODUCTS_ROUTE,
 		login_href=LOGIN_ROUTE,
 		get_started_href=GET_STARTED_ROUTE,
@@ -126,14 +128,59 @@ def _held_destination(entry, user: str) -> str | None:
 	return None
 
 
+def present_upcoming(item) -> dict:
+	"""An announced product that is not installed: a page and a tile, never a sign-up, a sign-in or an application link."""
+	return {
+		"key": item.key,
+		"title": item.title,
+		"tagline": item.tagline,
+		"summary": item.summary,
+		"features": list(item.features),
+		"category": item.category,
+		"logo": item.logo,
+		"mark": item.mark,
+		"upcoming": True,
+		"held": False,
+		"open_href": None,
+		"page_href": f"{PRODUCTS_ROUTE}/{item.key}",
+		"href": f"{PRODUCTS_ROUTE}/{item.key}",
+		"cta": _("Coming soon"),
+	}
+
+
+def installed_keys() -> tuple:
+	return tuple(e.key for e in registry.installed_entries())
+
+
 def products() -> list:
-	"""The products the public site shows, in launcher order."""
+	"""The products the public site shows, in launcher order, then the announced ones (clearly marked)."""
 	user = frappe.session.user
-	return [present(entry, user) for entry in registry.public_entries()]
+	shown = [present(entry, user) for entry in registry.public_entries()]
+	shown += [present_upcoming(u) for u in public_catalog.upcoming(installed_keys())]
+	return shown
+
+
+def nav() -> list:
+	"""The header menus: Products from the registry (and the announced ones), the rest from `public_catalog`."""
+	items = [
+		{"title": p["title"], "desc": p["tagline"], "href": p["page_href"], "soon": bool(p.get("upcoming"))}
+		for p in products()
+	]
+	items.append(
+		{
+			"title": _("All products"),
+			"desc": _("Everything in one list"),
+			"href": PRODUCTS_ROUTE,
+			"soon": False,
+		}
+	)
+	menus = [{"label": _("Products"), "children": items}]
+	menus += [dict(m) for m in public_catalog.NAV_STATIC]
+	return menus
 
 
 def products_by_category() -> list:
-	"""[(category, [product, ...]), ...] in first-seen order."""
+	"""[(category, [product, ...]), ...] in first-seen order, announced products last in their category."""
 	groups: dict = {}
 	for product in products():
 		groups.setdefault(product["category"], []).append(product)
@@ -141,8 +188,14 @@ def products_by_category() -> list:
 
 
 def product(key) -> dict | None:
-	entry = registry.public_entry(key) if isinstance(key, str) else None
-	return present(entry) if entry else None
+	"""An installed product, or an announced one (marked `upcoming`). Anything else is None (a 404)."""
+	if not isinstance(key, str):
+		return None
+	entry = registry.public_entry(key)
+	if entry:
+		return present(entry)
+	item = public_catalog.upcoming_entry(key, installed_keys())
+	return present_upcoming(item) if item else None
 
 
 def redirect(location: str):

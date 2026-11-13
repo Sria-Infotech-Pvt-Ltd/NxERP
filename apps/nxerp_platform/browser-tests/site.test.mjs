@@ -26,6 +26,14 @@ const PAGES = [
 	{ name: "products", path: "/products" },
 	{ name: "product-helpdesk", path: "/products/helpdesk" },
 	{ name: "product-erpnext", path: "/products/erpnext" },
+	{ name: "product-aira", path: "/products/aira-hrms" },
+	{ name: "platform", path: "/platform" },
+	{ name: "security", path: "/security" },
+	{ name: "solutions", path: "/solutions" },
+	{ name: "roadmap", path: "/roadmap" },
+	{ name: "company", path: "/company" },
+	{ name: "partners", path: "/partners" },
+	{ name: "get-in-touch", path: "/get-in-touch" },
 ];
 
 let browser;
@@ -219,7 +227,8 @@ test("journey: Home, then Products, then a product page, then Sign in", async ()
 	assert.match(await page.locator("h1").innerText(), /business applications/i);
 	await page.getByRole("link", { name: "Explore products" }).first().click();
 	await page.waitForURL(/\/products$/);
-	assert.equal(await page.locator("a.nxp-tile").count(), 2, "exactly the two installed products");
+	assert.equal(await page.locator("a.nxp-tile[data-product]").count(), 2, "exactly the two installed products");
+	assert.equal(await page.locator("a.nxp-tile[data-upcoming]").count(), 1, "the announced product is marked and separate");
 	await page.locator('a.nxp-tile[data-product="helpdesk"]').click();
 	await page.waitForURL(/\/products\/helpdesk$/);
 	assert.match(await page.locator("h1").innerText(), /Sria Helpdesk/);

@@ -88,6 +88,14 @@ website_route_rules = [
 	{"from_route": "/signup", "to_route": "nxerp/signup"},
 	{"from_route": "/get-started", "to_route": "nxerp/get_started"},
 	{"from_route": "/welcome/<key>", "to_route": "nxerp/welcome"},
+	# information pages (static content in nxerp/public_catalog.py)
+	{"from_route": "/platform", "to_route": "nxerp/page", "defaults": {"slug": "platform"}},
+	{"from_route": "/security", "to_route": "nxerp/page", "defaults": {"slug": "security"}},
+	{"from_route": "/solutions", "to_route": "nxerp/page", "defaults": {"slug": "solutions"}},
+	{"from_route": "/roadmap", "to_route": "nxerp/page", "defaults": {"slug": "roadmap"}},
+	{"from_route": "/company", "to_route": "nxerp/page", "defaults": {"slug": "company"}},
+	{"from_route": "/partners", "to_route": "nxerp/page", "defaults": {"slug": "partners"}},
+	{"from_route": "/get-in-touch", "to_route": "nxerp/page", "defaults": {"slug": "get-in-touch"}},
 ]
 
 # who may change grants, and the last-administrator guard

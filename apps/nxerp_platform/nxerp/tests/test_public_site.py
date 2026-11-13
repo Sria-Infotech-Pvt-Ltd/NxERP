@@ -186,7 +186,7 @@ class TestPublicSite(IntegrationTestCase):
 		self.assertEqual(html.count("Open application"), 2)
 		html = self.page("/products", self.none).text
 		self.assertEqual(html.count("Open application"), 0)
-		self.assertEqual(html.count("Learn more"), 2)
+		self.assertEqual(html.count("Learn more"), 3, "two installed products and the announced one")
 
 	def test_a_customer_with_portal_access_opens_the_portal_not_the_app(self):
 		html = self.page("/products/helpdesk", self.customer).text

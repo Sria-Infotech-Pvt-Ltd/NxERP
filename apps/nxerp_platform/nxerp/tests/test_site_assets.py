@@ -25,6 +25,7 @@ HTML_FILES = [
 	NXERP / "www/nxerp/signup.html",
 	NXERP / "www/nxerp/welcome.html",
 	NXERP / "www/nxerp/get_started.html",
+	NXERP / "www/nxerp/page.html",
 	NXERP / "www/nxerp/no-access.html",
 ]
 
@@ -82,7 +83,7 @@ class TestSiteAssets(IntegrationTestCase):
 	def test_the_files_exist(self):
 		for path in (*CSS_FILES, *HTML_FILES):
 			self.assertTrue(path.is_file(), path)
-		self.assertGreaterEqual(len(HTML_FILES), 11)
+		self.assertGreaterEqual(len(HTML_FILES), 12)
 
 	def test_no_colour_literals_in_the_public_sites_css_and_templates(self):
 		for path in (*CSS_FILES, *HTML_FILES):
