@@ -1,48 +1,63 @@
 <template>
   <div class="shrink-0 border-t border-outline-gray-1 bg-surface-white">
-    <!-- Reply / Comment, laid out and styled like the Ticket page's composer bar. Click one to open it, again to collapse. -->
-    <div class="flex items-center gap-1.5 px-5 py-2.5">
-      <Tooltip
-        :text="task.permissions.write ? '' : __('You can reply only to tasks you can edit')"
-      >
-        <span class="inline-flex">
+    <!-- Reply / Comment bar, laid out like the Ticket page's. Nothing is open until one is clicked; clicking the
+         open one closes it, and Cancel (right end, only while open) closes it too. Neither loses unsent text. -->
+    <div class="flex justify-between gap-3 px-6 py-4 md:px-5 md:py-2.5">
+      <div class="flex items-center gap-1.5">
+        <Tooltip
+          :text="task.permissions.write ? '' : __('You can reply only to tasks you can edit')"
+        >
+          <span class="relative inline-flex">
+            <Button
+              variant="ghost"
+              :label="__('Reply')"
+              :disabled="!task.permissions.write"
+              :class="mode === 'reply' ? '!bg-surface-gray-4 hover:!bg-surface-gray-3' : ''"
+              :aria-pressed="mode === 'reply'"
+              :aria-label="hasReplyDraft ? __('Reply (unsent draft)') : undefined"
+              @click="toggle('reply')"
+            >
+              <template #prefix><EmailIcon class="h-4" /></template>
+            </Button>
+            <DraftDot v-if="hasReplyDraft" />
+          </span>
+        </Tooltip>
+        <span class="relative inline-flex">
           <Button
             variant="ghost"
-            :label="__('Reply')"
-            :disabled="!task.permissions.write"
-            :class="mode === 'reply' ? '!bg-surface-gray-4 hover:!bg-surface-gray-3' : ''"
-            :aria-pressed="mode === 'reply'"
-            @click="toggle('reply')"
+            :label="__('Comment')"
+            :class="mode === 'comment' ? '!bg-surface-gray-4 hover:!bg-surface-gray-3' : ''"
+            :aria-pressed="mode === 'comment'"
+            :aria-label="hasCommentDraft ? __('Comment (unsent draft)') : undefined"
+            @click="toggle('comment')"
           >
-            <template #prefix><EmailIcon class="h-4" /></template>
+            <template #prefix><CommentIcon class="h-4" /></template>
           </Button>
+          <DraftDot v-if="hasCommentDraft" />
         </span>
-      </Tooltip>
-      <Button
-        variant="ghost"
-        :label="__('Comment')"
-        :class="mode === 'comment' ? '!bg-surface-gray-4 hover:!bg-surface-gray-3' : ''"
-        :aria-pressed="mode === 'comment'"
-        @click="toggle('comment')"
-      >
-        <template #prefix><CommentIcon class="h-4" /></template>
+      </div>
+      <Button v-if="mode" variant="ghost" :label="__('Cancel')" @click="close">
+        <template #prefix><LucideX class="size-4" /></template>
       </Button>
     </div>
 
+    <!-- Mounted the first time it is opened, then only shown or hidden, so the unsent text and recipients stay. -->
     <TaskReplyComposer
-      v-if="mode === 'reply'"
+      v-if="mounted.reply"
+      v-show="mode === 'reply'"
       :key="task.name"
       :task="task"
-      @updated="(t) => emit('updated', t)"
-      @keydown.esc.capture.stop="mode = null"
+      @updated="onSent"
+      @keydown.esc.capture.stop="close"
     />
 
     <form
+      v-if="mounted.comment"
       v-show="mode === 'comment'"
       @submit.prevent="submit"
       @keydown.ctrl.enter.capture.stop.prevent="submit"
       @keydown.meta.enter.capture.stop.prevent="submit"
-      @keydown.esc.capture.stop="mode = null"
+      @keydown.esc.capture.stop="close"
     >
       <Editor
         v-model="draft"
@@ -111,20 +126,48 @@ import {
   Separator,
   Strike,
 } from "frappe-ui/editor";
-import { computed, ref } from "vue";
+import { computed, defineComponent, h, reactive, ref } from "vue";
+import LucideX from "~icons/lucide/x";
 import TaskReplyComposer from "./TaskReplyComposer.vue";
 import type { TaskDetail } from "./taskMeta";
 
 const props = defineProps<{ task: TaskDetail }>();
 const emit = defineEmits<{ updated: [task: TaskDetail] }>();
 
+// A dot on the button whose composer holds unsent text. Decorative (aria-hidden): the button's aria-label says it.
+const DraftDot = defineComponent({
+  name: "DraftDot",
+  setup: () => () =>
+    h("span", {
+      class:
+        "pointer-events-none absolute end-1 top-1 size-1.5 rounded-full bg-surface-accent-6",
+      "aria-hidden": "true",
+    }),
+});
+
 const { isMac } = useDevice();
-// Which composer is open; clicking the active toggle collapses it.
-const mode = ref<"reply" | "comment" | null>("comment");
-const toggle = (m: "reply" | "comment") => (mode.value = mode.value === m ? null : m);
+// Which composer is open. Starts closed on every page load, even when a saved draft exists.
+const mode = ref<"reply" | "comment" | null>(null);
+// Each composer is created on first use and then kept, so switching never loses what was typed.
+const mounted = reactive({ reply: false, comment: false });
+function toggle(m: "reply" | "comment") {
+  if (mode.value === m) return close();
+  mounted[m] = true;
+  mode.value = m;
+}
+// Cancel and Esc: hide the composer and keep the text (the per-task draft below).
+function close() {
+  mode.value = null;
+}
+
 const error = ref("");
 // Kept per task in this browser, so switching tabs does not lose what was typed (the Ticket composer does the same).
 const draft = useStorage<string>(`taskActivityComment:${props.task.name}`, "");
+// The reply composer stores its text under this key; reading it here (same-page storage sync) drives the dot
+// even before that composer has been opened.
+const replyDraft = useStorage<string>(`taskReply:${props.task.name}`, "");
+const hasCommentDraft = computed(() => !isContentEmpty(draft.value));
+const hasReplyDraft = computed(() => !isContentEmpty(replyDraft.value));
 
 const submitLabel = computed(() =>
   isMac ? __("Comment (⌘ + ⏎)") : __("Comment (Ctrl + ⏎)")
@@ -158,12 +201,19 @@ const toolbar = [
   ClearFormatting,
 ];
 
+// The reply composer clears its own draft once the server accepted it; the bar then closes.
+function onSent(result: TaskDetail) {
+  close();
+  emit("updated", result);
+}
+
 const commentResource = createResource({
   url: "helpdesk.api.task.add_comment",
   onSuccess(result: TaskDetail) {
     draft.value = "";
     error.value = "";
     toast.success(__("Comment added"));
+    close();
     emit("updated", result);
   },
   // The text is still in the editor (it is cleared only on success), so the comment can be sent again.
@@ -180,6 +230,7 @@ function submit() {
   commentResource.submit({ name: props.task.name, content: draft.value });
 }
 
+// Discard clears the text (Cancel only hides the composer).
 function discard() {
   draft.value = "";
   error.value = "";

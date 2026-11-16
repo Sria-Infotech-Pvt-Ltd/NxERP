@@ -39,11 +39,7 @@
                   {{ __("sent an email to {0}", [event.to || ""]) }}
                 </template>
               </span>
-              <Tooltip :text="formatDateTime(event.creation)">
-                <span class="whitespace-nowrap text-ink-gray-5">
-                  {{ timeAgo(event.creation) }}
-                </span>
-              </Tooltip>
+              <GmailDate :timestamp="event.creation" class="text-ink-gray-5" />
             </div>
 
             <ul v-if="event.kind === 'changes'" class="mt-0.5 space-y-0.5 text-p-sm text-ink-gray-7">
@@ -68,9 +64,10 @@
 
 <script setup lang="ts">
 import { __ } from "@/translation";
-import { Avatar, dayjs, Tooltip } from "frappe-ui";
+import { Avatar, dayjs } from "frappe-ui";
 import { computed, nextTick, onMounted, ref, watch } from "vue";
 import TaskActivityComposer from "./TaskActivityComposer.vue";
+import GmailDate from "@/components/GmailDate.vue";
 import type { TaskDetail, TaskUser as TaskUserData } from "./taskMeta";
 
 const props = defineProps<{ task: TaskDetail }>();
@@ -174,9 +171,6 @@ function describe(change: Change) {
   ]);
 }
 
-const timeAgo = (value: string) => dayjs(value).fromNow();
-const formatDateTime = (value: string) =>
-  dayjs(value).format("D MMM YYYY, h:mm A");
 
 // Newest at the bottom, next to the composer: open and update scrolled to the end.
 const scroller = ref<HTMLElement | null>(null);

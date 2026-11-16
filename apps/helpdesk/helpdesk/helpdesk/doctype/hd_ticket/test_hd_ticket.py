@@ -12,6 +12,7 @@ from frappe.desk.form.utils import add_comment as desk_add_comment
 from frappe.tests import IntegrationTestCase
 from frappe.tests.utils import change_settings
 from frappe.utils import add_to_date, get_datetime, getdate, now_datetime
+from frappe.utils.html_utils import sanitize_html
 
 from helpdesk.api.ticket import bulk_reply
 from helpdesk.consts import DEFAULT_SLA, DEFAULT_TICKET_TEMPLATE
@@ -257,6 +258,131 @@ class TestHDTicket(IntegrationTestCase):
     # Medium: 8 hour response, 24 hours resolution
     # High: 1 hour response, 4 hours resolution
     # Urgent: 30 minutes response, 2 hours resolution
+
+    # --- description stored unsanitized by an install (the sample "Welcome to Helpdesk" ticket) ---
+
+    STYLED_DESCRIPTION = (
+        "<div style=\"font-family: 'Segoe UI', sans-serif; font-size: 15px;\">"
+        "Sample <b>ticket</b></div>"
+    )
+
+    def install_time_ticket(self):
+        """A ticket saved while frappe.flags.in_install is set: Document._sanitize_content is skipped,
+        so its description is stored raw, exactly as the install hook stores the sample ticket."""
+        frappe.flags.in_install = True
+        try:
+            ticket = make_ticket(
+                subject="Install time", description=self.STYLED_DESCRIPTION
+            )
+        finally:
+            frappe.flags.in_install = False
+        return ticket
+
+    def visible_text(self, html):
+        from bs4 import BeautifulSoup
+
+        return BeautifulSoup(html, "html.parser").get_text()
+
+    def test_install_time_description_is_stored_unsanitized(self):
+        """The precondition the bug needs, and the failure it causes: any field change is refused."""
+        ticket = self.install_time_ticket()
+        stored = frappe.db.get_value("HD Ticket", ticket.name, "description")
+        self.assertEqual(stored, self.STYLED_DESCRIPTION)
+        self.assertNotEqual(stored, sanitize_html(stored, linkify=True))
+        with self.assertRaises(frappe.CannotChangeConstantError):
+            client_set_value(
+                "HD Ticket", ticket.name, "priority", other_priority(ticket.priority)
+            )
+
+    def test_patch_lets_an_install_time_ticket_change_priority_team_type_and_customer(self):
+        from helpdesk.patches.resanitize_ticket_descriptions import execute
+
+        ticket = self.install_time_ticket()
+        before = frappe.db.get_value("HD Ticket", ticket.name, ["description", "modified"], as_dict=True)
+
+        execute()
+
+        after = frappe.db.get_value("HD Ticket", ticket.name, ["description", "modified"], as_dict=True)
+        # stored in the form a save produces, same visible content, `modified` untouched
+        self.assertEqual(after.description, sanitize_html(after.description, linkify=True))
+        self.assertNotEqual(after.description, before.description)
+        self.assertEqual(
+            self.visible_text(after.description), self.visible_text(before.description)
+        )
+        self.assertEqual(after.modified, before.modified)
+
+        make_team("Resanitize Team")
+        customer = create_customer("Resanitize Customer").name
+        new_priority = other_priority(ticket.priority)
+        for fieldname, value in (
+            ("priority", new_priority),
+            ("agent_group", "Resanitize Team"),
+            ("ticket_type", "Bug"),
+            ("customer", customer),
+        ):
+            with self.subTest(field=fieldname):
+                client_set_value("HD Ticket", ticket.name, fieldname, value)
+                self.assertEqual(
+                    frappe.db.get_value("HD Ticket", ticket.name, fieldname), value
+                )
+        # the description survived all of those saves untouched
+        self.assertEqual(
+            frappe.db.get_value("HD Ticket", ticket.name, "description"), after.description
+        )
+
+    def test_patch_is_idempotent_and_leaves_clean_tickets_alone(self):
+        from helpdesk.patches.resanitize_ticket_descriptions import execute
+
+        dirty = self.install_time_ticket()
+        clean = make_ticket(subject="Clean", description=self.STYLED_DESCRIPTION)
+        clean_before = frappe.db.get_value("HD Ticket", clean.name, ["description", "modified"], as_dict=True)
+
+        execute()
+        once = frappe.db.get_value("HD Ticket", dirty.name, "description")
+        execute()
+
+        self.assertEqual(frappe.db.get_value("HD Ticket", dirty.name, "description"), once)
+        self.assertEqual(
+            frappe.db.get_value("HD Ticket", clean.name, ["description", "modified"], as_dict=True),
+            clean_before,
+        )
+
+    def test_description_stays_set_only_once(self):
+        """The protection is kept: after the patch, and on an ordinary ticket, Description cannot be changed."""
+        from helpdesk.patches.resanitize_ticket_descriptions import execute
+
+        installed = self.install_time_ticket()
+        ordinary = make_ticket(subject="Ordinary", description="<p>First</p>")
+        execute()
+        for ticket in (installed, ordinary):
+            with self.subTest(ticket=ticket.subject):
+                with self.assertRaises(frappe.CannotChangeConstantError):
+                    client_set_value("HD Ticket", ticket.name, "description", "<p>Changed</p>")
+                with self.assertRaises(frappe.CannotChangeConstantError):
+                    doc = frappe.get_doc("HD Ticket", ticket.name)
+                    doc.description = "<p>Changed</p>"
+                    doc.save()
+
+    def test_welcome_ticket_created_during_install_can_be_edited(self):
+        """The install hook now stores the sample ticket sanitized, so new sites do not get the bug."""
+        from helpdesk.setup.welcome_ticket import AUTHOR_NAME, create_contact, create_ticket
+
+        if not frappe.db.exists("Contact", AUTHOR_NAME):
+            create_contact()
+        frappe.db.delete("HD Ticket")
+        frappe.flags.in_install = True
+        try:
+            create_ticket()
+        finally:
+            frappe.flags.in_install = False
+
+        name = frappe.db.get_value("HD Ticket", {"subject": "Welcome to Helpdesk"}, "name")
+        self.assertTrue(name)
+        stored = frappe.db.get_value("HD Ticket", name, "description")
+        self.assertEqual(stored, sanitize_html(stored, linkify=True))
+        priority = frappe.db.get_value("HD Ticket", name, "priority")
+        client_set_value("HD Ticket", name, "priority", other_priority(priority))
+        client_set_value("HD Ticket", name, "ticket_type", "Bug")
 
     def test_response_resolution_working_day(self):
         ticket_creation = get_current_week_monday()

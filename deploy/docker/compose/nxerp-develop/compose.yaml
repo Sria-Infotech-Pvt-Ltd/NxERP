@@ -172,6 +172,15 @@ services:
       - backend
       - websocket
 
+  # Dev-only mail catcher: outgoing mail from this stack is stored here and never delivered.
+  # SMTP (1025) is reachable inside the Compose network only; the web UI is on http://localhost:8025.
+  # Never use on staging or production.
+  mailpit:
+    image: axllent/mailpit:v1.27.0
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8025:8025"
+
 volumes:
   db-data:
   sites:

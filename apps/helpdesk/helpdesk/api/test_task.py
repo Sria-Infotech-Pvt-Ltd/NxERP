@@ -22,8 +22,9 @@ from helpdesk.api.task import (
     reply_via_email,
     update_checklist,
     update_status,
+    update_task_fields,
 )
-from helpdesk.helpdesk.doctype.hd_task.hd_task import notify_overdue_tasks
+from helpdesk.helpdesk.doctype.hd_task.hd_task import STATUSES, notify_overdue_tasks
 from helpdesk.test_utils import (
     create_agent,
     create_agent_manager,
@@ -441,7 +442,7 @@ class TestHDTask(FrappeTestCase):
 
     def test_guest_cannot_reach_endpoints_over_http(self):
         endpoints = task_api_endpoints()
-        self.assertEqual(len(endpoints), 16)
+        self.assertEqual(len(endpoints), 17)
         frappe.set_user("Guest")
         for name in endpoints:
             with self.subTest(endpoint=name):
@@ -456,6 +457,7 @@ class TestHDTask(FrappeTestCase):
             "reply_via_email",
             "bulk_assign",
             "assign_task",
+            "update_task_fields",
             "bulk_update_status",
         ):
             with self.subTest(endpoint=name):
@@ -659,9 +661,266 @@ class TestHDTask(FrappeTestCase):
     def test_quick_filters_come_from_the_doctype_standard_filters(self):
         frappe.set_user(ASSIGNEE)
         names = [f["name"] for f in get_quick_filters("HD Task")]
-        self.assertEqual(
-            names, ["name", "subject", "status", "priority", "assigned_to", "project"]
+        self.assertEqual(names, ["name", "subject", "assigned_to"])
+
+    def test_assigned_to_quick_filter_offers_only_enabled_agents(self):
+        disabled = "task-disabled-agent@example.com"
+        create_agent(disabled)
+        frappe.db.set_value("User", disabled, "enabled", 0)
+        try:
+            frappe.set_user(ASSIGNEE)
+            by_name = {f["name"]: f for f in get_quick_filters("HD Task")}
+            assigned = by_name["assigned_to"]
+            self.assertEqual(assigned["type"], "Select")
+            values = [o["value"] for o in assigned["options"]]
+            self.assertEqual(values[0], "")  # the blank "no filter" choice
+            for agent in (ASSIGNEE, REVIEWER, OTHER):
+                self.assertIn(agent, values)
+            self.assertNotIn(PLAIN, values)
+            self.assertNotIn(disabled, values)
+            self.assertNotIn("Guest", values)
+        finally:
+            frappe.set_user("Administrator")
+            frappe.db.set_value("User", disabled, "enabled", 1)
+
+    def test_assigned_to_quick_filter_hands_no_users_to_non_agents(self):
+        frappe.set_user(PLAIN)
+        assigned = {f["name"]: f for f in get_quick_filters("HD Task")}["assigned_to"]
+        self.assertEqual(assigned["options"], [{"label": "", "value": ""}])
+
+    # --- freelancer shown in Assigned To ---
+
+    def test_list_rows_carry_the_freelancer_name(self):
+        frappe.set_user(ASSIGNEE)
+        freelancer = make_task_freelancer("List Freelancer")
+        make_task("by freelancer", assignee_type="Freelancer", freelancer=freelancer)
+        make_task("by employee", assigned_to=ASSIGNEE)
+        rows = {r["subject"]: r for r in get_list_data("HD Task", is_default=True)["data"]}
+        self.assertEqual(rows["by freelancer"]["assignee_type"], "Freelancer")
+        self.assertEqual(rows["by freelancer"]["freelancer_name"], "List Freelancer")
+        self.assertFalse(rows["by freelancer"].get("assigned_to"))
+        self.assertEqual(rows["by employee"]["assignee_type"], "Employee")
+        self.assertFalse(rows["by employee"].get("freelancer_name"))
+
+    def test_get_tasks_returns_the_freelancer_name(self):
+        frappe.set_user(ASSIGNEE)
+        freelancer = make_task_freelancer("Api Freelancer")
+        make_task("by freelancer", assignee_type="Freelancer", freelancer=freelancer)
+        rows = get_tasks(view="all")["data"]
+        self.assertEqual([r["freelancer_name"] for r in rows], ["Api Freelancer"])
+
+    # --- quick filters respect permissions ---
+
+    def filtered_subjects(self, *conditions):
+        return sorted(
+            r["subject"]
+            for r in get_list_data("HD Task", filters=list(conditions), is_default=True)["data"]
         )
+
+    def test_quick_filters_never_reach_another_agents_task(self):
+        mine = make_task("Alpha report", assigned_to=ASSIGNEE)
+        theirs = make_task("Alpha secret", assigned_to=OTHER)
+
+        frappe.set_user(ASSIGNEE)
+        # subject, ID and assignee filters narrow what the agent may see; they never widen it
+        self.assertEqual(
+            self.filtered_subjects(["subject", "LIKE", "%Alpha%"]), ["Alpha report"]
+        )
+        self.assertEqual(self.filtered_subjects(["name", "LIKE", f"%{mine.name}%"]), ["Alpha report"])
+        self.assertEqual(self.filtered_subjects(["name", "LIKE", f"%{theirs.name}%"]), [])
+        self.assertEqual(self.filtered_subjects(["assigned_to", "=", OTHER]), [])
+        self.assertEqual(self.filtered_subjects(["assigned_to", "=", ASSIGNEE]), ["Alpha report"])
+
+        frappe.set_user(MANAGER)
+        self.assertEqual(self.filtered_subjects(["assigned_to", "=", OTHER]), ["Alpha secret"])
+        self.assertEqual(
+            self.filtered_subjects(["subject", "LIKE", "%Alpha%"]),
+            ["Alpha report", "Alpha secret"],
+        )
+
+    # --- sidebar: allowed_statuses and field edits ---
+
+    def test_get_task_returns_the_site_today_and_allowed_statuses(self):
+        task = make_task("sidebar", assigned_to=ASSIGNEE)
+        frappe.set_user(ASSIGNEE)
+        result = get_task(task.name)
+        self.assertEqual(result["today"], today())
+        self.assertEqual(result["allowed_statuses"], ["In Progress", "Cancelled"])
+
+    def test_allowed_statuses_differ_for_assignee_reviewer_and_manager(self):
+        task = self.task_in_review()  # assignee ASSIGNEE, reviewer REVIEWER, status In Review
+
+        def allowed(user):
+            frappe.set_user(user)
+            return get_task(task.name)["allowed_statuses"]
+
+        # the assignee cannot approve or return their own task; only cancel it
+        self.assertEqual(allowed(ASSIGNEE), ["Cancelled"])
+        self.assertEqual(allowed(REVIEWER), ["In Progress", "Completed", "Cancelled"])
+        self.assertEqual(allowed(MANAGER), ["In Progress", "Completed", "Cancelled"])
+
+    def test_a_manager_who_is_the_assignee_cannot_approve_their_own_task(self):
+        task = make_task("mine", assigned_to=MANAGER, reviewer=REVIEWER)
+        for status in ("In Progress", "In Review"):
+            task.status = status
+            task.save()
+        frappe.set_user(MANAGER)
+        self.assertEqual(get_task(task.name)["allowed_statuses"], ["In Progress", "Cancelled"])
+        with self.assertRaises(frappe.PermissionError):
+            update_status(task.name, "Completed")
+
+    def test_allowed_statuses_are_empty_without_write_access(self):
+        task = make_task("read only for others", assigned_to=ASSIGNEE)
+        allowed_statuses_for = frappe.get_attr(
+            "helpdesk.helpdesk.doctype.hd_task.hd_task.allowed_statuses_for"
+        )
+        self.assertEqual(allowed_statuses_for(task, OTHER), [])
+
+    def test_allowed_statuses_match_what_the_server_accepts(self):
+        """The option list and HDTask.validate share their helpers; this proves they cannot drift:
+        for every user, every starting status and every target, a status is offered exactly when the
+        server accepts the change."""
+        task = make_task("rules", assigned_to=ASSIGNEE, reviewer=REVIEWER)
+        for user in (ASSIGNEE, REVIEWER, MANAGER):
+            for old in STATUSES:
+                for new in STATUSES:
+                    if new == old:
+                        continue
+                    frappe.set_user("Administrator")
+                    frappe.db.set_value(
+                        "HD Task",
+                        task.name,
+                        {
+                            "status": old,
+                            "blocked_reason": "waiting" if old == "Blocked" else None,
+                            "completed_on": None,
+                            "completed_by": None,
+                        },
+                    )
+                    frappe.set_user(user)
+                    offered = new in get_task(task.name)["allowed_statuses"]
+                    try:
+                        update_status(task.name, new, "a reason")
+                        accepted = True
+                    except (frappe.ValidationError, frappe.PermissionError):
+                        accepted = False
+                    frappe.clear_messages()
+                    self.assertEqual(
+                        offered,
+                        accepted,
+                        f"{user}: {old} -> {new} (offered {offered}, accepted {accepted})",
+                    )
+
+    def test_blocking_a_task_needs_a_reason(self):
+        task = make_task("block me", assigned_to=ASSIGNEE)
+        task.status = "In Progress"
+        task.save()
+        frappe.set_user(ASSIGNEE)
+        with self.assertRaises(frappe.ValidationError):
+            update_status(task.name, "Blocked")
+        with self.assertRaises(frappe.ValidationError):
+            update_status(task.name, "Blocked", "   ")
+        self.assertEqual(update_status(task.name, "Blocked", "waiting on design")["status"], "Blocked")
+
+    def test_returning_a_task_from_review_needs_a_comment(self):
+        task = self.task_in_review()
+        frappe.set_user(REVIEWER)
+        with self.assertRaises(frappe.ValidationError):
+            update_status(task.name, "In Progress")
+        self.assertEqual(update_status(task.name, "In Progress", "needs rework")["status"], "In Progress")
+
+    def test_update_task_fields_saves_and_validates(self):
+        project = make_task_project("Sidebar Project")
+        other = make_task_project("Sidebar Other Project")
+        milestone = make_task_milestone(project, "Sidebar Milestone")
+        task = make_task("edit me", assigned_to=ASSIGNEE)
+        frappe.set_user(ASSIGNEE)
+
+        result = update_task_fields(
+            task.name,
+            {
+                "priority": "High",
+                "reviewer": REVIEWER,
+                "project": project,
+                "milestone": milestone,
+                "start_date": "2026-11-01",
+                "due_date": "2026-11-05",
+            },
+        )
+        self.assertEqual(result["priority"], "High")
+        saved = frappe.db.get_value(
+            "HD Task",
+            task.name,
+            ["priority", "reviewer", "project", "milestone", "start_date", "due_date"],
+            as_dict=True,
+        )
+        self.assertEqual(
+            (saved.priority, saved.reviewer, saved.project, saved.milestone),
+            ("High", REVIEWER, project, milestone),
+        )
+        self.assertEqual((str(saved.start_date), str(saved.due_date)), ("2026-11-01", "2026-11-05"))
+
+        # a milestone of another project is refused, and nothing is saved
+        with self.assertRaises(task_api.InvalidTask):
+            update_task_fields(task.name, {"project": other})
+        self.assertEqual(frappe.db.get_value("HD Task", task.name, "project"), project)
+        # changing the project together with emptying the milestone is accepted
+        update_task_fields(task.name, {"project": other, "milestone": ""})
+        saved = frappe.db.get_value("HD Task", task.name, ["project", "milestone"], as_dict=True)
+        self.assertEqual((saved.project, saved.milestone), (other, None))
+        # the due date may not precede the start date
+        with self.assertRaises(task_api.InvalidTask):
+            update_task_fields(task.name, {"due_date": "2026-10-01"})
+        # an empty value clears the field
+        update_task_fields(task.name, {"reviewer": ""})
+        self.assertIsNone(frappe.db.get_value("HD Task", task.name, "reviewer"))
+
+    def test_update_task_fields_refuses_other_fields_and_empty_edits(self):
+        task = make_task("locked fields", assigned_to=ASSIGNEE)
+        frappe.set_user(ASSIGNEE)
+        for values in (
+            {"status": "Completed"},
+            {"assigned_to": OTHER},
+            {"owner": OTHER},
+            {"progress": 100},
+            {},
+        ):
+            with self.assertRaises(task_api.InvalidTask):
+                update_task_fields(task.name, values)
+        stored = frappe.db.get_value(
+            "HD Task", task.name, ["status", "assigned_to", "owner"], as_dict=True
+        )
+        self.assertEqual((stored.status, stored.assigned_to), ("Planned", ASSIGNEE))
+
+    def test_update_task_fields_refuses_a_disabled_reviewer(self):
+        task = make_task("disabled reviewer", assigned_to=ASSIGNEE)
+        gone = "task-gone-reviewer@example.com"
+        create_agent(gone)
+        frappe.db.set_value("User", gone, "enabled", 0)
+        try:
+            frappe.set_user(ASSIGNEE)
+            with self.assertRaises(task_api.InvalidTask):
+                update_task_fields(task.name, {"reviewer": gone})
+        finally:
+            frappe.set_user("Administrator")
+            frappe.db.set_value("User", gone, "enabled", 1)
+
+    def test_an_agent_cannot_edit_sidebar_fields_of_a_task_they_cannot_write(self):
+        task = make_task("not yours", assigned_to=ASSIGNEE)
+        frappe.set_user(OTHER)
+        with self.assertRaises(frappe.PermissionError):
+            update_task_fields(task.name, {"priority": "Urgent"})
+        self.assertEqual(frappe.db.get_value("HD Task", task.name, "priority"), "Medium")
+        # a plain user (no Agent role) is refused before anything is looked at
+        frappe.set_user(PLAIN)
+        with self.assertRaises(frappe.PermissionError):
+            update_task_fields(task.name, {"priority": "Urgent"})
+
+    def test_handing_the_review_away_reports_lost_access(self):
+        task = make_task("review handover", assigned_to=ASSIGNEE, reviewer=REVIEWER)
+        frappe.set_user(REVIEWER)
+        result = update_task_fields(task.name, {"reviewer": OTHER})
+        self.assertEqual(result, {"name": task.name, "access_lost": True})
 
     # --- bulk / comments ---
 
@@ -889,6 +1148,7 @@ class TestHDTask(FrappeTestCase):
             task_api.bulk_assign,
             task_api.assign_task,
             task_api.bulk_update_status,
+            task_api.update_task_fields,
         )
         allowed = frappe.allowed_http_methods_for_whitelisted_func
         for fn in reads:

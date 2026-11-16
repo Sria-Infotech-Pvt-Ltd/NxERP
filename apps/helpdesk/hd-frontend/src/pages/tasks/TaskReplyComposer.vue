@@ -93,7 +93,7 @@
               variant="solid"
               :label="sendLabel"
               :loading="sending"
-              :disabled="sending || isContentEmpty(draft) || !to.length"
+              :disabled="sending || isContentEmpty(draft)"
             />
           </div>
         </div>
@@ -125,7 +125,7 @@ import {
   Separator,
   Strike,
 } from "frappe-ui/editor";
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import type { TaskDetail } from "./taskMeta";
 
 const props = defineProps<{ task: TaskDetail }>();
@@ -142,6 +142,14 @@ const cc = ref<string[]>([]);
 const bcc = ref<string[]>([]);
 const showCc = ref(false);
 const showBcc = ref(false);
+
+// Adding a recipient clears the "no recipient" message.
+watch(
+  () => to.value.length,
+  (n) => {
+    if (n) error.value = "";
+  }
+);
 
 const sendLabel = computed(() =>
   isMac ? __("Send (⌘ + ⏎)") : __("Send (Ctrl + ⏎)")
@@ -185,7 +193,12 @@ const sending = computed(() => reply.loading);
 
 function submit() {
   // The keyboard shortcut reaches here without passing the disabled button.
-  if (sending.value || isContentEmpty(draft.value) || !to.value.length) return;
+  if (sending.value || isContentEmpty(draft.value)) return;
+  // Same message as the server's; the text stays in the editor.
+  if (!to.value.length) {
+    error.value = __("Add at least one recipient in To");
+    return;
+  }
   error.value = "";
   reply.submit({
     name: props.task.name,

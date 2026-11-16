@@ -116,6 +116,7 @@
         @updated="onAssigned"
         @saved="onSaved"
         @reload="task.reload()"
+        @status="runAction"
       />
     </div>
 

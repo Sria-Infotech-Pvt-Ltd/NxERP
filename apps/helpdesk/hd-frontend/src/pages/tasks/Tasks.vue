@@ -166,7 +166,6 @@ function closeTask() {
 const options = computed(() => ({
   doctype: "HD Task",
   skipDefaultViewFilters: true,
-  hideQuickFilters: true,
   onRowClick: openTask,
   columnConfig: {
     subject: {
@@ -203,7 +202,22 @@ const options = computed(() => ({
           : null,
     },
     assigned_to: {
-      custom: ({ item }) => {
+      custom: ({ item, row }) => {
+        // A freelancer task has no user in assigned_to: show the freelancer, like the task sidebar does.
+        if (row?.assignee_type === "Freelancer" && row.freelancer) {
+          return h("div", { class: "flex min-w-0 items-baseline gap-1.5" }, [
+            h(
+              "span",
+              { class: "truncate text-p-sm text-ink-gray-8" },
+              row.freelancer_name || row.freelancer
+            ),
+            h(
+              "span",
+              { class: "shrink-0 text-p-xs text-ink-gray-5" },
+              __("Freelancer")
+            ),
+          ]);
+        }
         if (!item) return null;
         const { full_name, user_image } = getUser(item);
         return h(TaskUser, { user: { name: item, full_name, user_image } });

@@ -17,11 +17,7 @@
           </Badge>
         </div>
         <div class="flex items-center gap-2">
-          <Tooltip :text="postedAt.format(TOOLTIP_DATE_FORMAT)">
-            <span class="whitespace-nowrap text-sm leading-6 text-ink-gray-5">
-              {{ postedAt.fromNow() }}
-            </span>
-          </Tooltip>
+          <TimelineTimeAgo :timestamp="activity.timestamp" class="text-sm" />
           <!-- -me-1.5 matches the tighter edge the framework gives a header with actions -->
           <div v-if="!editing" class="-me-1.5">
             <Dropdown
@@ -75,12 +71,12 @@ import {
   Dropdown,
   Tooltip,
   createResource,
-  dayjsLocal,
   toast,
 } from "frappe-ui";
 import { storeToRefs } from "pinia";
 import { computed, h, ref } from "vue";
 import TimelineReactions from "./TimelineReactions.vue";
+import TimelineTimeAgo from "./TimelineTimeAgo.vue";
 
 export interface CommentExtras {
   reactions: InstanceType<typeof TimelineReactions>["$props"]["reactions"];
@@ -89,8 +85,6 @@ export interface CommentExtras {
 
 // mirrors MAX_PINNED_COMMENTS in helpdesk/extends/comment.py, which enforces it
 const MAX_PINNED_COMMENTS = 5;
-// same as the framework's timeline, so every row's time reads alike
-const TOOLTIP_DATE_FORMAT = "ddd, MMM D, YYYY h:mm A";
 
 const props = defineProps<{
   activity: CommentActivity;
@@ -121,7 +115,6 @@ const isOwner = computed(() => {
 const isMergeMarker = computed(() =>
   /has been merged with ticket #\d+/.test(props.activity.data.content)
 );
-const postedAt = computed(() => dayjsLocal(props.activity.timestamp));
 const pinLimitReached = computed(
   () => !props.pinned && props.pinCount >= MAX_PINNED_COMMENTS
 );

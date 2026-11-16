@@ -72,6 +72,10 @@ export interface TaskDetail extends TaskRow {
     changes: { field: string; old: unknown; new: unknown }[];
   }[];
   permissions: { write: boolean; delete: boolean };
+  // Statuses the server would accept for this user right now (empty without write access).
+  allowed_statuses: TaskStatus[];
+  // "Today" in the site's time zone (YYYY-MM-DD), so day counts do not depend on the browser clock.
+  today: string;
 }
 
 export type TaskStatus =

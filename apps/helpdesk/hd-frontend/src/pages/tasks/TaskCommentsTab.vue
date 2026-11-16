@@ -4,7 +4,7 @@
       <li v-for="comment in task.comments" :key="comment.name">
         <div class="flex items-center gap-2 text-p-xs text-ink-gray-5">
           <TaskUser :user="comment.user" />
-          <span :title="comment.creation">{{ timeAgo(comment.creation) }}</span>
+          <GmailDate :timestamp="comment.creation" />
         </div>
         <!-- Sanitised server-side in get_comments. -->
         <div
@@ -51,9 +51,10 @@
 import { buildEditorExtensions } from "@/components/editor/config";
 import { __ } from "@/translation";
 import { isContentEmpty } from "@/utils";
-import { Button, createResource, dayjs, ErrorMessage } from "frappe-ui";
+import { Button, createResource, ErrorMessage } from "frappe-ui";
 import { Editor, EditorContent } from "frappe-ui/editor";
 import { ref } from "vue";
+import GmailDate from "@/components/GmailDate.vue";
 import TaskUser from "./TaskUser.vue";
 import type { TaskDetail } from "./taskMeta";
 
@@ -93,5 +94,4 @@ function post() {
   commentResource.submit({ name: props.task.name, content: newComment.value });
 }
 
-const timeAgo = (value: string) => dayjs(value).fromNow();
 </script>

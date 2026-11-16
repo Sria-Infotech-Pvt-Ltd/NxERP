@@ -7,6 +7,7 @@ from frappe.email.doctype.email_account.email_account import EmailAccount
 from frappe.utils import get_fullname, get_last_day_of_week, today, validate_email_address
 from frappe.utils.html_utils import sanitize_html
 
+from helpdesk.helpdesk.doctype.hd_task.hd_task import HDTask, allowed_statuses_for
 from helpdesk.integrations.external import hrms, pbt
 from helpdesk.integrations.external.client import ExternalAPIError
 from helpdesk.integrations.external.mapping import map_emails_to_users
@@ -44,6 +45,17 @@ LIST_FIELDS = [
     "creation",
 ]
 MAX_PAGE_SIZE = 100
+# The only fields the task page's sidebar may edit through update_task_fields. Status goes through
+# update_status, the assignee through assign_task, the checklist through update_checklist.
+EDITABLE_FIELDS = (
+    "priority",
+    "reviewer",
+    "project",
+    "pbt_project_id",
+    "milestone",
+    "start_date",
+    "due_date",
+)
 MAX_RECIPIENTS = 20
 
 
@@ -155,7 +167,7 @@ def get_tasks(
     )[0].count
 
     return {
-        "data": attach_user_details(rows),
+        "data": HDTask.add_freelancer_names(attach_user_details(rows)),
         "total": total,
         "page": page,
         "page_size": page_size,
@@ -292,6 +304,10 @@ def get_task(name: str) -> dict:
                 "write": doc.has_permission("write"),
                 "delete": doc.has_permission("delete"),
             },
+            # Only what the server would accept right now; HDTask.validate still decides.
+            "allowed_statuses": allowed_statuses_for(doc),
+            # "Today" in the site's time zone, so the page does not depend on the browser's clock.
+            "today": today(),
         }
     )
     attach_user_details([task])
@@ -668,6 +684,41 @@ def assign_task(
     result = {field: doc.get(field) for field in ASSIGNEE_FIELDS}
     result["assignee"] = user_details({doc.assigned_to}).get(doc.assigned_to)
     return result
+
+
+@frappe.whitelist(methods=["POST"])
+@agent_only
+def update_task_fields(name: str, values: dict | str) -> dict:
+    """Save sidebar edits: priority, reviewer, project (local `project` or `pbt_project_id`),
+    milestone and the two dates. Anything else is refused. Saved with doc.save(), so
+    HDTask.validate checks every rule (milestone belongs to the project, dates in order,
+    users enabled, PBT project re-read from PBT).
+    Returns the whole task, or {"access_lost": True} when the edit took away the caller's own access
+    (for example a reviewer handing the review to someone else)."""
+    changes = parse_json(values, {})
+    if not isinstance(changes, dict) or not changes:
+        frappe.throw(_("Nothing to change"), exc=InvalidTask)
+    unknown = sorted(set(changes) - set(EDITABLE_FIELDS))
+    if unknown:
+        frappe.throw(_("{0} cannot be changed here").format(", ".join(unknown)), exc=InvalidTask)
+
+    doc = load_for_update(name)
+    doc.check_permission("write")
+    for fieldname, value in changes.items():
+        doc.set(fieldname, value if value not in ("", None) else None)
+
+    try:
+        doc.save()
+    except frappe.PermissionError:
+        raise
+    except frappe.ValidationError as e:
+        if type(e) is not frappe.ValidationError:
+            raise
+        raise InvalidTask(str(e)) from e
+
+    if not frappe.has_permission(DOCTYPE, "read", doc=name):
+        return {"name": name, "access_lost": True}
+    return get_task(name)
 
 
 @frappe.whitelist(methods=["POST"])

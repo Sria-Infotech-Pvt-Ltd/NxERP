@@ -17,11 +17,7 @@
               <span class="font-medium text-ink-gray-8">
                 {{ email.user?.full_name || email.sender_full_name || email.sender }}
               </span>
-              <Tooltip :text="formatDateTime(email.creation)">
-                <span class="whitespace-nowrap text-ink-gray-5">
-                  {{ dayjs(email.creation).fromNow() }}
-                </span>
-              </Tooltip>
+              <GmailDate :timestamp="email.creation" class="text-ink-gray-5" />
             </div>
             <div class="text-ink-gray-6 break-words">
               {{ __("To") }}: {{ email.recipients }}
@@ -55,11 +51,10 @@
 <script setup lang="ts">
 import { EmailIcon } from "@/components/icons";
 import { __ } from "@/translation";
-import { Avatar, dayjs, Tooltip } from "frappe-ui";
+import { Avatar } from "frappe-ui";
+import GmailDate from "@/components/GmailDate.vue";
 import type { TaskDetail } from "./taskMeta";
 
 defineProps<{ task: TaskDetail }>();
 
-const formatDateTime = (value: string) =>
-  dayjs(value).format("D MMM YYYY, h:mm A");
 </script>

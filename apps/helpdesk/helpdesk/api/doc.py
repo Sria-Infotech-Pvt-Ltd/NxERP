@@ -119,6 +119,10 @@ def get_list_data(
         # the SLA columns can't tell fulfilled from due without these, and no saved view lists them
         for field in SLA_ROW_FIELDS:
             rows.append(field) if field not in rows else rows
+    if doctype == "HD Task":
+        # the Assigned To cell shows the freelancer for freelancer tasks, and no saved view lists these
+        for field in ("assignee_type", "freelancer"):
+            rows.append(field) if field not in rows else rows
     data = (
         frappe.get_list(
             doctype,
@@ -132,6 +136,9 @@ def get_list_data(
 
     if doctype == "TP Call Log":
         data = parse_call_logs(data)
+
+    if doctype == "HD Task":
+        data = _list.add_freelancer_names(data)
 
     fields = frappe.get_meta(doctype).fields
     fields = [field for field in fields if field.fieldtype not in no_value_fields]
@@ -442,11 +449,20 @@ def get_quick_filters(doctype: str, show_customer_portal_fields: bool = False):
         if field.fieldtype == "Link":
             options = field.options
 
+        fieldtype = field.fieldtype
+        if doctype == "HD Task" and field.fieldname == "assigned_to":
+            # a Link to User would offer everyone; this offers only enabled Agents
+            fieldtype = "Select"
+            options = [{"label": "", "value": ""}] + [
+                {"label": user.full_name or user.name, "value": user.name}
+                for user in get_controller(doctype).assignee_filter_options()
+            ]
+
         quick_filters.append(
             {
                 "label": _(field.label),
                 "name": field.fieldname,
-                "type": field.fieldtype,
+                "type": fieldtype,
                 "options": options,
             }
         )
