@@ -1,7 +1,7 @@
 <template>
   <div class="flex min-w-0 items-center gap-2">
     <template v-if="user">
-      <Avatar :label="user.full_name" :image="user.user_image" size="sm" />
+      <Avatar :label="user.full_name" v-bind="user.user_image ? { image: user.user_image } : {}" size="sm" />
       <span class="truncate text-p-sm text-ink-gray-8">{{
         user.full_name
       }}</span>
@@ -15,5 +15,5 @@ import { __ } from "@/translation";
 import { Avatar } from "frappe-ui";
 import type { TaskUser as TaskUserData } from "./taskMeta";
 
-defineProps<{ user?: TaskUserData | null }>();
+defineProps<{ user?: TaskUserData | null | undefined }>();
 </script>

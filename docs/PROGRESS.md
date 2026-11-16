@@ -54,7 +54,54 @@ registry presentation fields and copy limits; public Home (`/` for guests), `/pr
 **Open (not done on purpose):** `/get-started` is a 404 until Phase 2 (the "Get started" buttons and the three steps point at it); the launcher tiles still say ERPNext / Helpdesk; the login still carries NXERP logo images and copy; the favicon is the existing NXERP one (placeholder); a signed-in non-holder sees "Get started" (request-access is Phase 2).
 
 **Evidence:** `docs/evidence/ui/phase1/` (`baseline/`, `after/`, `screens/`, `contrast.json`, `baseline-tests.md`). Baseline tests had 4 pre-existing failures (see `baseline-tests.md`). After Phase 1: `bench run-tests --app nxerp` ran 210 + 17 tests with the same 4 failures and nothing new; `site.test.mjs` 10/10 on the dev site (not via `run.sh`); the other browser suites were not re-run. Launcher, no-access and login screenshots are pixel-identical to baseline (`after/` vs `baseline/`).
+## Add Task form: Department and Designation removed (2026-11-05)
 
+On `develop` (commit `98029e2`). The local `nxerp-develop` stack runs image `…-dirty.9` with this change (deployed
+2026-11-05, see below). Changed: `apps/helpdesk/hd-frontend/src/pages/tasks/NewTaskDialog.vue`, `apps/helpdesk/docs/tasks.md`.
+
+- Department and Designation removed from the form (the `HD Task` fields and existing records are unchanged; the form never
+  sent them). Select Employee is disabled ("Select project first") until a project is chosen; changing the project clears
+  the milestone and the employee. The employee list is still the full HRMS list; each option shows only the employee's
+  name (the HRMS department/designation caption was removed; the id is appended only when two names are the same).
+- DECISION (owner, 2026-11-05): no project/milestone-based employee filtering yet. FACT: no assignment data exists for it
+  (HD Task Project has only `project_name`, HD Task Milestone only `milestone_name`/`project`, PBT has no team, HRMS shape unverified).
+- Verified (FACT): `npm run build` of the Helpdesk frontend passes (exit 0, isolated throwaway container; only the usual
+  chunk-size warning); prettier reports one pre-existing line only; `save()` and the backend are unchanged.
+- Pending tests: task creation with an employee (needs reachable HRMS, PBT or a local HD Task Project; the develop site has
+  0 projects/tasks/employees); `helpdesk.api.test_task*` on a throwaway site.
+- Deployed `…-dirty.8` (Department/Designation removed) on 2026-11-05; no migration (all 109 schema files equal to dirty.5).
+  Browser check found the Employee/Freelancer switch and Select Employee rendering nothing — present since `08a0a92`, also in
+  dirty.5: the form used the pre-1.0 frappe-ui API (`TabButtons :buttons`, local `Autocomplete.vue` on Popover `#target`)
+  while the installed frappe-ui is `1.0.0-rc.1` (`:options`, Popover `#trigger`). Fixed in `NewTaskDialog.vue`:
+  `:options`, and frappe-ui's own `Combobox` (as in `TimezoneControl.vue`) with name-or-id search. `Autocomplete.vue` is now
+  unused (left in place). Image `…-dirty.9` (`341eac484905`) built; its frontend passed 36/36 browser checks against the live
+  site with dirty.9 assets substituted in the browser only and mocked lookup data (no DB writes, 0 tasks).
+- **Deployed `…-dirty.9` on 2026-11-05 06:45 UTC** (backup `20261105T064347Z` first; only the 5 app containers recreated;
+  MariaDB/Redis/nginx, volumes and `nxerp-taskdev` unchanged; no migration, schema equal to dirty.8). The same 36 browser
+  checks pass on the deployed site without substitution. Rollback: `IMAGE=…-dirty.8`, `docker compose up -d`.
+  Still untested: saving a task with an employee (needs reachable HRMS or real data).
+- Incident (fixed): a check build wrote into the live backend container's `helpdesk/public/desk/` and
+  `www/helpdesk/index.html` (the Vite config fixes its outDir); both were restored from the `dirty.5` image, checksums equal.
+  Do not run `vite build` against the container's app tree to test; use a full copy or a rebuild.
+
+## Local develop stack and Frappe 16 fixes (2026-11-04)
+
+Committed and pushed to `develop` on 2026-11-05 (the seven commits after `35a74d0`). New stack `deploy/docker/compose/develop/` (project `nxerp-develop`, port 8012, site
+`nxerp.localhost`, image from `deploy/docker/Dockerfile`). Verified by execution (FACT) in Chrome, by HTTP and in logs:
+
+- Image build fixed: bench 5.31 rewrites `sites/apps.txt` in directory order; `install_apps.sh` restores apps.json order.
+- Image defaults fixed: backend CMD is `application_with_statics()` (plain WSGI serves no `/assets`), HEALTHCHECK sends
+  the site name, entrypoint refreshes the image's generated `sites/` files, sets `webserver_host`/`webserver_port`
+  (socket auth callback) and drops the cached `assets_json` (stale map = 404 on every bundle after an image change).
+- nginx template: upstreams re-resolved via Docker DNS; `/files/` served from the read-only sites volume (missing
+  file 404, not Frappe's 500); dot-segment URIs refused (400). Helpdesk `socket.ts` uses the page origin, not port 9000.
+- Login on Frappe 16.53.0: submit button lost `btn-primary btn-login` (restored by the page script), card shrank below
+  its content on short viewports (`flex: none`), loading/error states follow `aria-busy` and the error banner,
+  "Forgot password?" sits under the button; "Keep me signed in" removed.
+- Tasks API: `get_tasks` / `get_task_counts` used string SQL in `fields` (Frappe 16 rejects it): version-aware `COUNT_NAME`.
+- NOT verified: `staging-like/` was never started (config validated, `nginx -t` passed); Helpdesk/Tasks Python test suites
+  were not run on this site; password reset email cannot be delivered (no outgoing Email Account); ERPNext setup wizard
+  not completed (needs real company data from the owner); PBT/HRMS keys not configured.
 ## Retire the bare `/desk` gateway (2026-11-02)
 
 Branch `feature/retire-bare-desk-gateway`. `/nxerp/apps` is the only gateway; ERPNext's tile now targets `/desk/home` and an exact
@@ -109,7 +156,7 @@ wizard really finishes. Fixed by setting it to `workspace` (what a finished wiza
 no longer touch the dev site (the browser suite uses its own fresh site). Not a platform-code bug, but a fresh site's setup-wizard UI was
 not driven end to end by the tests (they finish the wizard through its API).
 
-**Open decisions for the owner:** a User Invitation `redirect_to_path` is not validated by the platform; "Keep me signed in" is cosmetic;
+**Open decisions for the owner:** a User Invitation `redirect_to_path` is not validated by the platform; "Keep me signed in" was cosmetic (removed 2026-11-04);
 Helpdesk's menu still links to Frappe support/docs; the grant migration heuristic over-suggests (a "Website Manager" role also has
 ERPNext DocPerms), so review its dry-run output before applying.
 

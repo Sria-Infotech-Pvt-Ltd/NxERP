@@ -9,6 +9,26 @@ import {
   importFrappeUIPlugin,
 } from "./vite-helpers";
 
+// The agent ticket timeline's email, log and history rows draw their date with the framework's
+// ActivityTimeline/TimeAgo.vue ("3 days ago"). Nothing else imports that file, and the customer portal does not
+// use the framework timeline at all, so this one redirect gives the agent page Gmail-style dates without
+// editing the upstream package.
+function agentTimelineDates() {
+  const gmailTimeAgo = path.resolve(
+    __dirname,
+    "src/components/ticket-agent/timeline/TimelineTimeAgo.vue"
+  );
+  return {
+    name: "helpdesk-agent-timeline-dates",
+    enforce: "pre",
+    resolveId(source, importer) {
+      if (!importer || !source.endsWith("/TimeAgo.vue")) return null;
+      const from = importer.replace(/\\/g, "/");
+      return from.includes("/components/ActivityTimeline/") ? gmailTimeAgo : null;
+    },
+  };
+}
+
 export default defineConfig(async ({ mode }) => {
   const { useLocalFrappeUI, localFrappeUIAliases } = getLocalFrappeUIDevConfig({
     mode,
@@ -18,6 +38,7 @@ export default defineConfig(async ({ mode }) => {
   const frappeui = await importFrappeUIPlugin({ useLocalFrappeUI });
   const config = {
     plugins: [
+      agentTimelineDates(),
       frappeui({
         frappeProxy: true,
         lucideIcons: true,

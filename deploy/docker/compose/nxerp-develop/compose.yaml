@@ -1,0 +1,189 @@
+name: nxerp-develop
+
+# Isolated NXERP develop environment: image built from the develop branch (nxerp:develop-<sha>), own containers and own
+# named volumes (prefixed nxerp-develop_), host port 8012. Shares nothing with other Compose projects.
+# No secret lives in this file: values come from .env (git-ignored; template in .env.example).
+#
+#   docker compose up -d                                   # infra, configurator, backend, workers, proxy
+#   docker compose --profile init run --rm create-site     # one-shot: creates the site and installs every app (never --force)
+
+x-nxerp: &nxerp
+  image: ${IMAGE:?set IMAGE in .env}
+  restart: unless-stopped
+  environment:
+    NXERP_CONFIGURE: "0"
+  volumes:
+    - sites:/home/frappe/frappe-bench/sites
+    - logs:/home/frappe/frappe-bench/logs
+  depends_on:
+    configurator:
+      condition: service_completed_successfully
+
+services:
+  mariadb:
+    image: mariadb:11.8
+    restart: unless-stopped
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --skip-character-set-client-handshake
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?set DB_ROOT_PASSWORD in .env}
+      MARIADB_AUTO_UPGRADE: "1"
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  redis-cache:
+    image: redis:8.6-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-cache-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis-queue:
+    image: redis:8.6-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-queue-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # one-shot: writes sites/common_site_config.json from non-secret environment
+  configurator:
+    <<: *nxerp
+    restart: "no"
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      redis-cache:
+        condition: service_healthy
+      redis-queue:
+        condition: service_healthy
+    environment:
+      NXERP_CONFIGURE: "1"
+      NXERP_DB_HOST: mariadb
+      NXERP_REDIS_CACHE: redis://redis-cache:6379
+      NXERP_REDIS_QUEUE: redis://redis-queue:6379
+    command: ["true"]
+
+  # one-shot, profile "init": creates the site once (skips if it exists) and installs every app in sites/apps.txt
+  create-site:
+    <<: *nxerp
+    profiles: ["init"]
+    restart: "no"
+    environment:
+      NXERP_CONFIGURE: "0"
+      SITE_NAME: ${SITE_NAME:?set SITE_NAME in .env}
+      DB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?set ADMIN_PASSWORD in .env}
+    command:
+      - bash
+      - -c
+      - |
+        set -euo pipefail
+        if [ -d "sites/$$SITE_NAME" ]; then echo "site $$SITE_NAME already exists"; exit 0; fi
+        bench new-site "$$SITE_NAME" --mariadb-root-password "$$DB_ROOT_PASSWORD" \
+          --admin-password "$$ADMIN_PASSWORD" --no-mariadb-socket
+        for app in $$(grep -vx frappe sites/apps.txt); do bench --site "$$SITE_NAME" install-app "$$app"; done
+        bench use "$$SITE_NAME"
+
+  backend:
+    <<: *nxerp
+    # Server-side only: no other service receives the HRMS/PBT settings.
+    environment:
+      NXERP_CONFIGURE: "0"
+      HRMS_API_BASE_URL: ${HRMS_API_BASE_URL:-}
+      HRMS_API_KEY: ${HRMS_API_KEY:-}
+      PBT_API_BASE_URL: ${PBT_API_BASE_URL:-}
+      PBT_API_KEY: ${PBT_API_KEY:-}
+    # The image has no nginx, and plain gunicorn does not serve /assets or /files (only Frappe's dev server does), so use
+    # Frappe's own static-serving wrapper. Same flags as the image's default command. Dev-only; production puts nginx in front.
+    command:
+      - /home/frappe/frappe-bench/env/bin/gunicorn
+      - --chdir=/home/frappe/frappe-bench/sites
+      - --bind=0.0.0.0:8000
+      - --threads=4
+      - --workers=2
+      - --worker-class=gthread
+      - --worker-tmp-dir=/dev/shm
+      - --timeout=120
+      - --preload
+      - frappe.app:application_with_statics()
+    # The image's own healthcheck calls localhost without a site header (404 here), so name the site.
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS -H 'X-Frappe-Site-Name: ${SITE_NAME}' http://localhost:8000/api/method/ping || exit 1"]
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+    networks:
+      default:
+        aliases:
+          - ${SITE_NAME}
+
+  websocket:
+    <<: *nxerp
+    command: ["node", "/home/frappe/frappe-bench/apps/frappe/socketio.js"]
+    healthcheck:
+      disable: true
+
+  queue-short:
+    <<: *nxerp
+    command: ["bench", "worker", "--queue", "short,default"]
+    healthcheck:
+      disable: true
+
+  queue-long:
+    <<: *nxerp
+    command: ["bench", "worker", "--queue", "long,default,short"]
+    healthcheck:
+      disable: true
+
+  scheduler:
+    <<: *nxerp
+    command: ["bench", "schedule"]
+    healthcheck:
+      disable: true
+
+  frontend:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    environment:
+      NXERP_SITE: ${SITE_NAME}
+    volumes:
+      - ./nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
+    ports:
+      - "8002:8080"
+    depends_on:
+      - backend
+      - websocket
+
+  # Dev-only mail catcher: outgoing mail from this stack is stored here and never delivered.
+  # SMTP (1025) is reachable inside the Compose network only; the web UI is on http://localhost:8025.
+  # Never use on staging or production.
+  mailpit:
+    image: axllent/mailpit:v1.27.0
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8025:8025"
+
+volumes:
+  db-data:
+  sites:
+  logs:
+  redis-queue-data:
+  redis-cache-data:

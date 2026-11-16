@@ -55,7 +55,6 @@
    "fieldname": "status",
    "fieldtype": "Select",
    "in_list_view": 1,
-   "in_standard_filter": 1,
    "label": "Status",
    "options": "Planned\nIn Progress\nIn Review\nCompleted\nBlocked\nCancelled",
    "reqd": 1
@@ -65,7 +64,6 @@
    "fieldname": "priority",
    "fieldtype": "Select",
    "in_list_view": 1,
-   "in_standard_filter": 1,
    "label": "Priority",
    "options": "Low\nMedium\nHigh\nUrgent",
    "reqd": 1
@@ -92,7 +90,6 @@
   {
    "fieldname": "project",
    "fieldtype": "Link",
-   "in_standard_filter": 1,
    "label": "Project",
    "options": "HD Task Project"
   },
@@ -194,7 +191,7 @@
   {
    "fieldname": "department",
    "fieldtype": "Link",
-   "label": "Department",
+   "label": "Team",
    "options": "HD Team"
   },
   {

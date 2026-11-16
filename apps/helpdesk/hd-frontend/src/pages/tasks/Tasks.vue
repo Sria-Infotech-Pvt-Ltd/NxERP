@@ -56,7 +56,7 @@
       v-model="viewDialogConfig"
       @update="onViewModalUpdate"
     />
-    <NewTaskDialog v-model="showNew" @created="onCreated" />
+    <NewTaskDialog v-model="showNew" />
     <TaskBulkDialog
       v-model="bulkDialog.show"
       :mode="bulkDialog.mode"
@@ -88,6 +88,7 @@ import LucideUserX from "~icons/lucide/user-x";
 import NewTaskDialog from "./NewTaskDialog.vue";
 import TaskBulkDialog from "./TaskBulkDialog.vue";
 import TaskDetail from "./TaskDetail.vue";
+import { taskDraft } from "./taskDraft";
 import TaskUser from "./TaskUser.vue";
 import {
   dueLabel,
@@ -116,7 +117,8 @@ const {
 } = useView("HD Task");
 
 const listViewRef = ref(null);
-const showNew = ref(false);
+// Back from the description page reopens the form with what was entered.
+const showNew = ref(taskDraft.reopen);
 const bulkDialog = reactive({
   show: false,
   mode: "assign" as "assign" | "status",
@@ -152,9 +154,9 @@ function openBulk(mode: "assign" | "status", selections: Set<string>) {
 // The open task lives in the URL so Back, refresh and shared links keep the panel.
 const selectedTaskId = computed(() => route.query.task as string | undefined);
 
+// A row opens the full task page. The ?task= side panel below only serves old links.
 function openTask(name: string) {
-  if (name === selectedTaskId.value) return;
-  router.push({ name: route.name, query: { ...route.query, task: name } });
+  router.push({ name: "Task", params: { taskId: name } });
 }
 
 function closeTask() {
@@ -164,7 +166,6 @@ function closeTask() {
 const options = computed(() => ({
   doctype: "HD Task",
   skipDefaultViewFilters: true,
-  hideQuickFilters: true,
   onRowClick: openTask,
   columnConfig: {
     subject: {
@@ -201,7 +202,22 @@ const options = computed(() => ({
           : null,
     },
     assigned_to: {
-      custom: ({ item }) => {
+      custom: ({ item, row }) => {
+        // A freelancer task has no user in assigned_to: show the freelancer, like the task sidebar does.
+        if (row?.assignee_type === "Freelancer" && row.freelancer) {
+          return h("div", { class: "flex min-w-0 items-baseline gap-1.5" }, [
+            h(
+              "span",
+              { class: "truncate text-p-sm text-ink-gray-8" },
+              row.freelancer_name || row.freelancer
+            ),
+            h(
+              "span",
+              { class: "shrink-0 text-p-xs text-ink-gray-5" },
+              __("Freelancer")
+            ),
+          ]);
+        }
         if (!item) return null;
         const { full_name, user_image } = getUser(item);
         return h(TaskUser, { user: { name: item, full_name, user_image } });
@@ -244,11 +260,6 @@ const options = computed(() => ({
 function reset(reload = false) {
   listViewRef.value?.unselectAll();
   if (reload) listViewRef.value?.reload();
-}
-
-function onCreated(name: string) {
-  listViewRef.value?.reload();
-  openTask(name);
 }
 
 // Fixed views are plain filters on the URL, so they need no saved HD View records.

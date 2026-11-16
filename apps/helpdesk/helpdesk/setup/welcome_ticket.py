@@ -1,5 +1,6 @@
 import frappe
 from frappe.desk.form.assign_to import add as add_assign
+from frappe.utils.html_utils import sanitize_html
 
 AUTHOR_EMAIl = "john@example.com"
 AUTHOR_NAME = "John Doe"
@@ -76,7 +77,9 @@ def create_ticket():
 
     d = frappe.new_doc("HD Ticket")
     d.subject = "Welcome to Helpdesk"
-    d.description = rendered_content
+    # Document._sanitize_content skips installs, which is when this runs. HD Ticket.description is
+    # set-only-once, so a raw value would make every later save of this ticket fail; store it the way a save would.
+    d.description = sanitize_html(rendered_content, linkify=True)
     d.raised_by = AUTHOR_EMAIl
     d.contact = AUTHOR_NAME
     d.via_customer_portal = True

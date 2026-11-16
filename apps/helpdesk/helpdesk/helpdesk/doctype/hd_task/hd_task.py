@@ -18,6 +18,39 @@ ALLOWED_TRANSITIONS = {
 }
 CLOSED_STATUSES = ("Completed", "Cancelled")
 MANAGER_ROLES = {"System Manager", "Agent Manager"}
+STATUSES = ("Planned", "In Progress", "In Review", "Completed", "Blocked", "Cancelled")
+
+
+def is_valid_transition(old: str, new: str) -> bool:
+    """The workflow rule alone. Used by HDTask.validate and by get_task's allowed_statuses."""
+    return old != new and (new == "Cancelled" or (old, new) in ALLOWED_TRANSITIONS)
+
+
+def reviewer_action_error(old, new, assigned_to, reviewer, user) -> str | None:
+    """Why `user` may not approve or return a task that is in review, or None when they may.
+    The one place this rule lives: HDTask.validate raises it, get_task uses it to hide options."""
+    if old != "In Review" or new not in ("Completed", "In Progress"):
+        return None
+    if user == assigned_to and new == "Completed":
+        return _("You cannot approve your own task")
+    is_reviewer = bool(reviewer) and user == reviewer
+    if not (is_reviewer or MANAGER_ROLES & set(frappe.get_roles(user))):
+        return _("Only the reviewer or an Agent Manager can do this")
+    return None
+
+
+def allowed_statuses_for(doc, user: str | None = None) -> list[str]:
+    """Statuses `user` may move this task to right now. Empty without write access.
+    Mirrors HDTask.validate by calling the same helpers; the server still re-checks every change."""
+    user = user or frappe.session.user
+    if not frappe.has_permission("HD Task", "write", doc=doc, user=user):
+        return []
+    return [
+        status
+        for status in STATUSES
+        if is_valid_transition(doc.status, status)
+        and not reviewer_action_error(doc.status, status, doc.assigned_to, doc.reviewer, user)
+    ]
 
 
 class HDTask(Document):
@@ -145,7 +178,7 @@ class HDTask(Document):
         if old == new:
             return
 
-        if new != "Cancelled" and (old, new) not in ALLOWED_TRANSITIONS:
+        if not is_valid_transition(old, new):
             frappe.throw(
                 _("Status cannot change from {0} to {1}").format(old, new),
                 title=_("Invalid Status Change"),
@@ -160,16 +193,11 @@ class HDTask(Document):
 
     def validate_reviewer_action(self, new_status):
         """Approving or returning a task is limited to its reviewer or an Agent Manager."""
-        user = frappe.session.user
-        if user == self.assigned_to and new_status == "Completed":
-            frappe.throw(_("You cannot approve your own task"), frappe.PermissionError)
-
-        is_reviewer = bool(self.reviewer) and user == self.reviewer
-        if not (is_reviewer or MANAGER_ROLES & set(frappe.get_roles(user))):
-            frappe.throw(
-                _("Only the reviewer or an Agent Manager can do this"),
-                frappe.PermissionError,
-            )
+        error = reviewer_action_error(
+            "In Review", new_status, self.assigned_to, self.reviewer, frappe.session.user
+        )
+        if error:
+            frappe.throw(error, frappe.PermissionError)
 
     def validate_blocked_reason(self):
         if self.status != "Blocked":
@@ -326,6 +354,45 @@ class HDTask(Document):
             "creation",
         ]
         return {"columns": columns, "rows": rows}
+
+    @staticmethod
+    def assignee_filter_options():
+        """Choices for the list's Assigned To quick filter: enabled users who hold the Agent role.
+        Nothing for anyone who cannot list tasks, so the user list is not handed out."""
+        user = frappe.session.user
+        roles = set(frappe.get_roles(user))
+        if not (user == "Administrator" or MANAGER_ROLES & roles or "Agent" in roles):
+            return []
+        agents = frappe.get_all(
+            "Has Role", filters={"role": "Agent", "parenttype": "User"}, pluck="parent"
+        )
+        if not agents:
+            return []
+        return frappe.get_all(
+            "User",
+            filters={"name": ["in", agents], "enabled": 1, "user_type": "System User"},
+            fields=["name", "full_name"],
+            order_by="full_name asc",
+        )
+
+    @staticmethod
+    def add_freelancer_names(rows):
+        """Give list rows the freelancer's display name, which the generic list query cannot join."""
+        ids = {row.get("freelancer") for row in rows if row.get("freelancer")}
+        if not ids:
+            return rows
+        names = dict(
+            frappe.get_all(
+                "HD Task Freelancer",
+                filters={"name": ["in", list(ids)]},
+                fields=["name", "freelancer_name"],
+                as_list=True,
+            )
+        )
+        for row in rows:
+            if row.get("freelancer"):
+                row["freelancer_name"] = names.get(row["freelancer"]) or row["freelancer"]
+        return rows
 
 
 def permission_query(user):

@@ -58,4 +58,5 @@ Kept in Helpdesk on purpose: the NXERP mark and wordmark images used by the SPA'
 - Frappe computes `boot.apps_data` (used for its own default path) from the un-overridden app list after the
   hooks run. It lists only apps the user may use by Frappe's rules, so nothing leaks, but names and logos there
   are Frappe's; the visible switcher and menus use the corrected data.
-- "Keep me signed in" on the login page is a stored preference only; it does not lengthen the session.
+- "Keep me signed in" was removed from the login page (2026-11-04): it was a stored preference only and never
+  lengthened the session, so it misled users. A real option needs a session-length decision first.

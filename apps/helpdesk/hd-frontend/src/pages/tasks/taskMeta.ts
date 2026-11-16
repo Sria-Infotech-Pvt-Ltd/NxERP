@@ -43,6 +43,7 @@ export interface ChecklistItem {
 export interface TaskDetail extends TaskRow {
   description?: string;
   blocked_reason?: string | null;
+  completed_on?: string | null;
   checklist: ChecklistItem[];
   attachments: { name: string; file_name: string; file_url: string }[];
   comments: {
@@ -51,12 +52,30 @@ export interface TaskDetail extends TaskRow {
     creation: string;
     user?: TaskUser | null;
   }[];
+  emails: {
+    name: string;
+    subject: string;
+    content: string;
+    sender: string;
+    sender_full_name?: string | null;
+    recipients: string;
+    cc?: string | null;
+    bcc?: string | null;
+    creation: string;
+    user?: TaskUser | null;
+  }[];
+  // Default "To" addresses for a reply: the assignee and the reviewer.
+  reply_recipients: string[];
   activity: {
     creation: string;
     user?: TaskUser | null;
     changes: { field: string; old: unknown; new: unknown }[];
   }[];
   permissions: { write: boolean; delete: boolean };
+  // Statuses the server would accept for this user right now (empty without write access).
+  allowed_statuses: TaskStatus[];
+  // "Today" in the site's time zone (YYYY-MM-DD), so day counts do not depend on the browser clock.
+  today: string;
 }
 
 export type TaskStatus =
@@ -90,12 +109,15 @@ export const WORKFLOW_STEPS: TaskStatus[] = [
   "Completed",
 ];
 
-export const statusTheme: Record<TaskStatus, string> = {
+// The themes frappe-ui's Badge accepts; anything else (such as "orange") renders unstyled.
+export type BadgeTheme = "gray" | "blue" | "green" | "amber" | "red" | "violet";
+
+export const statusTheme: Record<TaskStatus, BadgeTheme> = {
   Planned: "gray",
   "In Progress": "blue",
   "In Review": "violet",
   Completed: "green",
-  Blocked: "orange",
+  Blocked: "amber",
   Cancelled: "gray",
 };
 
@@ -132,7 +154,7 @@ export function viewFilters(view: TaskView): [string, string, unknown][] {
 
 export const priorityBadge: Record<
   TaskPriority,
-  { theme: string; variant: "subtle" | "solid" }
+  { theme: BadgeTheme; variant: "subtle" | "solid" }
 > = {
   Low: { theme: "green", variant: "subtle" },
   Medium: { theme: "amber", variant: "subtle" },

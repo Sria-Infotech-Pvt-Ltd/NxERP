@@ -117,4 +117,13 @@ def normalize_project(raw) -> dict | None:
         "start_date": raw.get("start_date"),
         "end_date": raw.get("end_date"),
         "project_manager_name": raw.get("project_manager_name"),
+        "description": clean_description(raw.get("description")),
     }
+
+
+def clean_description(value) -> str | None:
+    """UNVERIFIED: `description` is the assumed key; it has not been checked against a live PBT
+    response. Anything but non-empty text becomes None, so a missing key just leaves the field blank."""
+    if not isinstance(value, str) or not value.strip():
+        return None
+    return value

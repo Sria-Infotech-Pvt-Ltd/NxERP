@@ -112,6 +112,11 @@ const portalRoutes = [
     component: () => import("@/pages/tasks/Tasks.vue"),
   },
   {
+    path: "/tasks/new",
+    name: "TaskNew",
+    component: () => import("@/pages/tasks/TaskNew.vue"),
+  },
+  {
     path: "/tasks/:taskId",
     name: "Task",
     component: () => import("@/pages/tasks/TaskPage.vue"),

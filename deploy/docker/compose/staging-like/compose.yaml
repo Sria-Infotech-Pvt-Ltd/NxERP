@@ -9,6 +9,7 @@ name: nxerp-staging-like
 #   docker compose --env-file deploy/env/staging-like/.env -f deploy/docker/compose/staging-like/compose.yaml --profile init run --rm create-site
 #
 # STATUS: `docker compose config` validated; the stack itself has NOT been started (needs the image from deploy/docker/build.sh).
+# The same image, nginx template and service layout run as deploy/docker/compose/develop/ (verified there, 2026-11-04).
 
 x-nxerp: &nxerp
   image: ${NXERP_IMAGE:-ghcr.io/sria-infotech-pvt-ltd/nxerp}:${NXERP_IMAGE_TAG:?set NXERP_IMAGE_TAG, e.g. 0.1.0-ab12cd34ef56}
@@ -51,13 +52,16 @@ services:
     volumes:
       - redis-queue-data:/data
 
-  # one-shot: writes sites/common_site_config.json from environment (no secrets in it)
+  # one-shot: refreshes the image's generated sites/ files (assets, apps.txt) into the volume, drops the cached asset
+  # map in redis-cache, and writes sites/common_site_config.json from environment (no secrets in it)
   configurator:
     <<: *nxerp
     restart: "no"
     depends_on:
       mariadb:
         condition: service_healthy
+      redis-cache:
+        condition: service_started
     environment:
       NXERP_CONFIGURE: "1"
       NXERP_DB_HOST: mariadb
@@ -129,6 +133,8 @@ services:
       NXERP_SITE: ${NXERP_SITE:?set NXERP_SITE}
     volumes:
       - ./nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
+      # read-only: nginx serves <site>/public/files from it (see the template)
+      - sites:/home/frappe/frappe-bench/sites:ro
     ports:
       - "${NXERP_HTTP_PORT:-8080}:8080"
     depends_on:

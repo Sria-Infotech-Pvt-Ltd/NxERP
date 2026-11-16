@@ -36,7 +36,7 @@
           >
             <div class="flex items-center">
               <slot name="bottom-left" />
-              <EditorFixedMenu :items="ticketToolbar" />
+              <EditorFixedMenu :items="toolbar" />
             </div>
             <div class="flex items-center gap-2">
               <Button
@@ -70,6 +70,8 @@ import {
   EditorBubbleMenu,
   EditorContent,
   EditorFixedMenu,
+  InsertImage,
+  InsertVideo,
 } from "frappe-ui/editor";
 import { computed, ref } from "vue";
 import {
@@ -81,6 +83,8 @@ import {
 interface P {
   modelValue: string;
   autofocus?: boolean;
+  // Drops the image and video buttons, for a document that does not exist yet to attach them to.
+  hideUploads?: boolean;
   uploadFunction?: (file: any, options?: any) => Promise<any>;
 }
 
@@ -91,6 +95,7 @@ interface E {
 
 const props = withDefaults(defineProps<P>(), {
   autofocus: false,
+  hideUploads: false,
 });
 
 const emit = defineEmits<E>();
@@ -104,6 +109,11 @@ const content = computed({
 });
 
 const extensions = buildEditorExtensions();
+const toolbar = computed(() =>
+  props.hideUploads
+    ? ticketToolbar.filter((i) => i !== InsertImage && i !== InsertVideo)
+    : ticketToolbar
+);
 
 const editor = computed(() => inner.value?.editor);
 
