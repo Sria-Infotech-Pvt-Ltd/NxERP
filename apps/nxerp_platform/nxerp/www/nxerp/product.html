@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="{{ nx.lang | e }}">
+<head>
+	{% include "nxerp/templates/includes/nxdesk/head.html" %}
+</head>
+<body class="nxp-body">
+	<a class="nxp-skip" href="#main">{{ _("Skip to content") }}</a>
+	{% include "nxerp/templates/includes/nxdesk/header.html" %}
+	<main class="nxp-main nxp-site" id="main">
+		<div class="nxp-split">
+			<div class="nxp-split-copy">
+				<p class="nxp-eyebrow">{{ product.category | e }}</p>
+				<h1 class="nxp-title">{{ product.title | e }}</h1>
+				{% if product.upcoming %}<p class="nxp-soon-row"><span class="nxp-soon nxp-soon--lg">{{ _("Coming soon") }}</span></p>{% endif %}
+				{% if product.tagline %}<p class="nxp-lead">{{ product.tagline | e }}</p>{% endif %}
+				{% if product.summary %}<p class="nxp-sub">{{ product.summary | e }}</p>{% endif %}
+				<p class="nxp-actions nxp-actions--cta nxp-actions--start">
+					{% if product.upcoming %}
+					{% if nx.support_url %}<a class="nxp-cta nxp-cta--primary" href="{{ nx.support_url | e }}" target="_blank" rel="noopener noreferrer">{{ _("Ask about it") }}</a>{% else %}<a class="nxp-cta nxp-cta--primary" href="/get-in-touch">{{ _("Get in touch") }}</a>{% endif %}
+					<a class="nxp-button nxp-cta" href="{{ nx.products_href | e }}">{{ _("All products") }}</a>
+					{% elif product.held %}
+					<a class="nxp-cta nxp-cta--primary" href="{{ product.open_href | e }}">{{ _("Open application") }}</a>
+					{% elif nx.guest %}
+					<a class="nxp-cta nxp-cta--primary" href="{{ product.get_started_href | e }}">{{ _("Get started") }}</a>
+					<a class="nxp-button nxp-cta" href="{{ product.login_href | e }}">{{ _("Log in") }}</a>
+					{% else %}
+					<a class="nxp-cta nxp-cta--primary" href="{{ product.get_started_href | e }}">{{ _("Get started") }}</a>
+					{% endif %}
+					{% if not product.upcoming and nx.support_url %}<a class="nxp-link" href="{{ nx.support_url | e }}" target="_blank" rel="noopener noreferrer">{{ _("Contact") }}</a>{% endif %}
+				</p>
+			</div>
+			<aside class="nxp-panel" aria-labelledby="glance">
+				<div class="nxp-panel-head">
+					<span class="nxp-mark{% if product.upcoming %} nxp-mark--dark{% endif %}">{% if product.upcoming and product.mark %}<img src="{{ product.mark | e }}" alt="" />{% elif product.logo %}<img src="{{ product.logo | e }}" alt="" />{% endif %}</span>
+					<h2 id="glance">{% if product.upcoming %}{{ _("Planned scope") }}{% else %}{{ _("At a glance") }}{% endif %}</h2>
+				</div>
+				<ul class="nxp-checks">
+					{% for feature in product.features %}
+					<li><span class="nxp-check"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span><span>{{ feature | e }}</span></li>
+					{% endfor %}
+				</ul>
+			</aside>
+		</div>
+
+		{% if product.upcoming %}
+		<section class="nxp-band nxp-notice" aria-labelledby="soon-h">
+			<h2 class="nxp-h2" id="soon-h">{{ _("Not available yet") }}</h2>
+			<p class="nxp-section-sub">{{ _("{0} is announced and not installed on this site. Once it is installed, it appears in the launcher for the people your administrator gives access to. There is nothing to sign up for today.").format(product.title) | e }}</p>
+		</section>
+		{% else %}
+		<section aria-labelledby="steps">
+			<div class="nxp-section-head"><h2 class="nxp-h2" id="steps">{{ _("Get started in three steps") }}</h2></div>
+			<ol class="nxp-steps">
+				<li style="--i: 0">
+					<div class="nxp-card">
+						<span class="nxp-step-no" aria-hidden="true">1</span>
+						<h3>{{ _("Create an account") }}</h3>
+						<p>{{ _("Register with your email address.") }}</p>
+					</div>
+				</li>
+				<li style="--i: 1">
+					<div class="nxp-card">
+						<span class="nxp-step-no" aria-hidden="true">2</span>
+						<h3>{{ _("Answer a few questions") }}</h3>
+						<p>{{ _("Tell us who you are and what you need the application for.") }}</p>
+					</div>
+				</li>
+				<li style="--i: 2">
+					<div class="nxp-card">
+						<span class="nxp-step-no" aria-hidden="true">3</span>
+						<h3>{{ _("Get access") }}</h3>
+						<p>{{ _("An administrator reviews your request and opens the application for you.") }}</p>
+					</div>
+				</li>
+			</ol>
+		</section>
+		{% endif %}
+	</main>
+	{% include "nxerp/templates/includes/nxdesk/footer.html" %}
+	{% include "nxerp/templates/includes/nxdesk/scripts.html" %}
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="{{ nx.lang | e }}">
+<head>
+	{% include "nxerp/templates/includes/nxdesk/head.html" %}
+</head>
+<body class="nxp-body">
+	<a class="nxp-skip" href="#main">{{ _("Skip to content") }}</a>
+	{% include "nxerp/templates/includes/nxdesk/header.html" %}
+	<main class="nxp-main nxp-site" id="main">
+		<section class="nxp-hero">
+			<p class="nxp-eyebrow">{{ nx.name | e }}</p>
+			<h1 class="nxp-title">{{ _("Your business applications, in one place") }}</h1>
+			<p class="nxp-sub">{{ _("One sign-in for the applications your team uses, with access that follows each person's role.") }}</p>
+			<p class="nxp-actions nxp-actions--cta">
+				{% if nx.guest %}
+				<a class="nxp-cta nxp-cta--primary" href="{{ nx.products_href | e }}">{{ _("Explore products") }}</a>
+				<a class="nxp-button nxp-cta" href="{{ nx.login_href | e }}">{{ _("Sign in") }}</a>
+				{% else %}
+				<a class="nxp-cta nxp-cta--primary" href="{{ nx.open_apps_href | e }}">{{ _("Open your apps") }}</a>
+				<a class="nxp-button nxp-cta" href="{{ nx.products_href | e }}">{{ _("Explore products") }}</a>
+				{% endif %}
+			</p>
+			<ul class="nxp-chips" aria-label="{{ _('Highlights') }}">
+				<li><svg viewBox="0 0 24 24" aria-hidden="true">{{ icons.key }}</svg>{{ _("One sign-in") }}</li>
+				<li><svg viewBox="0 0 24 24" aria-hidden="true">{{ icons.shield }}</svg>{{ _("Access by role") }}</li>
+				<li><svg viewBox="0 0 24 24" aria-hidden="true">{{ icons.lock }}</svg>{{ _("Checked on the server") }}</li>
+				<li><svg viewBox="0 0 24 24" aria-hidden="true">{{ icons.sun }}</svg>{{ _("Light and dark") }}</li>
+			</ul>
+		</section>
+
+		<section aria-labelledby="home-products">
+			<div class="nxp-section-head">
+				<p class="nxp-kicker">{{ _("Products") }}</p>
+				<h2 class="nxp-h2" id="home-products">{{ _("Applications on the platform") }}</h2>
+				<p class="nxp-section-sub">{{ _("What is installed today, and what is announced for next.") }}</p>
+			</div>
+			<ul class="nxp-grid nxp-grid--3">
+				{% for p in products %}
+				<li style="--i: {{ loop.index0 }}">{% include "nxerp/templates/includes/nxdesk/tile.html" %}</li>
+				{% endfor %}
+			</ul>
+		</section>
+
+		<section aria-labelledby="home-solutions">
+			<div class="nxp-section-head">
+				<p class="nxp-kicker">{{ _("Solutions") }}</p>
+				<h2 class="nxp-h2" id="home-solutions">{{ _("Start from the work your team does") }}</h2>
+			</div>
+			<ul class="nxp-cards nxp-cards--5">
+				{% for b in solutions %}
+				<li style="--i: {{ loop.index0 }}">
+					<a class="nxp-card nxp-card--link" href="{{ b.href | e }}">
+						<span class="nxp-icon"><svg viewBox="0 0 24 24" aria-hidden="true">{{ icons[b.icon] }}</svg></span>
+						<h3>{{ b.title | e }}{% if b.pill %}<span class="nxp-soon">{{ b.pill | e }}</span>{% endif %}</h3>
+						<p>{{ b.body | e }}</p>
+					</a>
+				</li>
+				{% endfor %}
+			</ul>
+		</section>
+
+		<section aria-labelledby="home-how">
+			<div class="nxp-section-head">
+				<p class="nxp-kicker">{{ _("The platform") }}</p>
+				<h2 class="nxp-h2" id="home-how">{{ _("How it works") }}</h2>
+			</div>
+			<ul class="nxp-steps">
+				<li style="--i: 0">
+					<div class="nxp-card">
+						<span class="nxp-icon"><svg viewBox="0 0 24 24" aria-hidden="true">{{ icons.key }}</svg></span>
+						<h3>{{ _("One sign-in") }}</h3>
+						<p>{{ _("Use the same account for every application you are given.") }}</p>
+					</div>
+				</li>
+				<li style="--i: 1">
+					<div class="nxp-card">
+						<span class="nxp-icon"><svg viewBox="0 0 24 24" aria-hidden="true">{{ icons.shield }}</svg></span>
+						<h3>{{ _("Access by role") }}</h3>
+						<p>{{ _("What you can open and do follows the role your administrator gives you.") }}</p>
+					</div>
+				</li>
+				<li style="--i: 2">
+					<div class="nxp-card">
+						<span class="nxp-icon"><svg viewBox="0 0 24 24" aria-hidden="true">{{ icons.grid }}</svg></span>
+						<h3>{{ _("Your apps in one place") }}</h3>
+						<p>{{ _("Open every application you can use from a single page.") }}</p>
+					</div>
+				</li>
+			</ul>
+		</section>
+
+		<section class="nxp-band" aria-labelledby="home-band">
+			<h2 class="nxp-h2" id="home-band">{{ _("See what is available") }}</h2>
+			<p class="nxp-section-sub">{{ _("Look through the products, or write to us about what your team needs.") }}</p>
+			<p class="nxp-actions nxp-actions--cta">
+				<a class="nxp-cta nxp-cta--primary" href="{{ nx.products_href | e }}">{{ _("Explore products") }}</a>
+				<a class="nxp-button nxp-cta" href="/get-in-touch">{{ _("Get in touch") }}</a>
+			</p>
+		</section>
+	</main>
+	{% include "nxerp/templates/includes/nxdesk/footer.html" %}
+	{% include "nxerp/templates/includes/nxdesk/scripts.html" %}
+</body>
+</html>

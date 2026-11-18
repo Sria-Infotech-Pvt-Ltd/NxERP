@@ -1,0 +1,12 @@
+apps: helpdesk=8f77254e9f nxerp=1253473953 frappe=e8d41dd006 erpnext=ade850bbd6
+### theme_check :: cd apps/helpdesk/desk && NXERP_PUBLIC=/workspace/nxerp/public/css yarn theme:check
+### theme_check rc=1 secs=2
+### theme_audit :: cd apps/helpdesk/desk && yarn theme:audit
+### theme_audit rc=0 secs=1
+### frontend_build :: cd /home/frappe/frappe-bench && bench build --app helpdesk
+### frontend_build rc=0 secs=76
+### tests_nxerp :: cd /home/frappe/frappe-bench && bench --site nxerp.localhost run-tests --app nxerp
+### tests_nxerp rc=0 secs=368
+### tests_helpdesk :: cd /home/frappe/frappe-bench && bench --site nxerp.localhost run-tests --app helpdesk
+### tests_helpdesk rc=0 secs=275
+ALL DONE

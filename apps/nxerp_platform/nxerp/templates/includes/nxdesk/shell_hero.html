@@ -1,0 +1,23 @@
+{#- The charcoal hero beside the card: the product's mark, tagline and features. Reads `nx` and `product`. -#}
+<aside class="nx-hero">
+	<div class="nx-art" aria-hidden="true"></div>
+	<div class="nx-hero-inner">
+		<header class="nx-brand">
+			<a class="nx-wordmark" href="{{ nx.home_href | e }}" aria-label="{{ nx.name | e }}, {{ _('home') }}"><span class="nx-wordmark-mark" aria-hidden="true"></span><span>{{ nx.name | e }}</span></a>
+		</header>
+		<div class="nx-hero-main">
+			<span class="nx-mark">{% if product.logo %}<img src="{{ product.logo | e }}" alt="" />{% endif %}</span>
+			<h2 class="nx-headline">{{ product.tagline | e }}</h2>
+			{% if product.summary %}<p class="nx-lede">{{ product.summary | e }}</p>{% endif %}
+			<ul class="nx-features nx-features--checks">
+				{% for feature in product.features %}
+				<li>
+					<span class="nx-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span>
+					<div><strong>{{ feature | e }}</strong></div>
+				</li>
+				{% endfor %}
+			</ul>
+		</div>
+		<p class="nx-copy">&copy; {{ nx.year }} {{ nx.name | e }}</p>
+	</div>
+</aside>

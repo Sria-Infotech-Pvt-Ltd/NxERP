@@ -1,0 +1,277 @@
+"""Fixtures for the Playwright suite in /e2e: clearly fake users for every journey and the role of a
+test-only third app. Never part of a shipped site; the suite runs on its own fresh site (apps/nxerp_platform/browser-tests/site.sh).
+
+Run inside the bench container (apps/nxerp_platform/browser-tests/run.sh does this for you):
+
+	NXERP_E2E_PASSWORD=... bench --site nxerp-e2e.localhost execute nxerp.tests.e2e_fixtures.setup
+	bench --site nxerp-e2e.localhost execute nxerp.tests.e2e_fixtures.teardown
+
+Refuses to run unless developer_mode and allow_tests are both on, so it cannot touch a real site.
+The password comes from the environment and is never printed or stored.
+"""
+
+import os
+
+import frappe
+from frappe.installer import update_site_config
+
+from nxerp.tests.utils import ERP_ACCESS, PLAIN_DESK_ROLE, delete_users, make_user, purge_test_users
+
+DOMAIN = "example.test"
+TEST_APP_ROLE = "NXERP Access: Test Projects"
+TEST_APP = {
+	"key": "test-projects",
+	"title": "Test Projects",
+	"route": "/nxerp/test-app",
+	"access_role": TEST_APP_ROLE,
+	"order": 30,
+}
+
+# persona -> (roles, extra make_user arguments)
+PERSONAS = {
+	"agent": (["Agent"], {}),  # Case 2: one app
+	"erp": (["Sales User", ERP_ACCESS], {}),  # one app: ERPNext
+	"both": (["Agent Manager", ERP_ACCESS], {}),  # two apps
+	"manager": (["Agent Manager", TEST_APP_ROLE], {}),  # Case 3: Helpdesk plus the test-only app
+	"none": ([PLAIN_DESK_ROLE], {}),  # signed in, no application
+	"sysmgr": (
+		["System Manager"],
+		{},
+	),  # an administrator with no app grant: the friendly page plus the admin hint
+	"customer": (["HD Customer"], {"user_type": "Website User"}),
+	"disabled": (["Agent"], {"enabled": 0}),
+	"reset": (["Agent"], {}),  # password-reset flow
+	"otp": (["Agent"], {}),  # two-factor flow
+	"lockout": (["Agent"], {}),  # lockout flow
+	"expiry": (["Agent"], {}),  # session expiry flow
+}
+
+
+def email(key: str) -> str:
+	return f"nxt-e2e-{key}@{DOMAIN}"
+
+
+def _guard():
+	if not (frappe.conf.get("developer_mode") and frappe.conf.get("allow_tests")):
+		frappe.throw("E2E fixtures need developer_mode and allow_tests; refusing to run on this site.")
+
+
+def setup():
+	_guard()
+	password = os.environ.get("NXERP_E2E_PASSWORD")
+	if not password:
+		frappe.throw("Set NXERP_E2E_PASSWORD for the fake users.")
+
+	frappe.set_user("Administrator")
+	purge_test_users()
+
+	if not frappe.db.exists("Role", TEST_APP_ROLE):
+		frappe.get_doc({"doctype": "Role", "role_name": TEST_APP_ROLE, "desk_access": 1}).insert(
+			ignore_permissions=True
+		)
+
+	for key, (roles, kwargs) in PERSONAS.items():
+		make_user(email(key), roles, password=password, first_name=f"E2E {key.title()}", **kwargs)
+
+	# Frappe limits password-reset requests per hour; repeated test runs would hit it
+	settings = frappe.get_doc("System Settings")
+	settings.password_reset_limit = 1000
+	settings.rate_limit_email_link_login = 1000
+	settings.login_with_email_link = 0
+	settings.enable_two_factor_auth = 0
+	settings.save(ignore_permissions=True)
+	frappe.db.commit()
+	frappe.clear_cache()
+
+	print("e2e fixtures ready:", ", ".join(email(k) for k in PERSONAS))
+
+
+def teardown():
+	_guard()
+	frappe.set_user("Administrator")
+	update_site_config("nxerp_test_apps", [])
+	update_site_config("nxerp_stock_login", 0)
+	frappe.flags.in_patch = True  # the last-administrator guard must not stop cleaning up fixtures
+	try:
+		delete_users([email(k) for k in (*PERSONAS, "owner")])
+	finally:
+		frappe.flags.in_patch = False
+	if frappe.db.exists("Role", TEST_APP_ROLE):
+		frappe.delete_doc("Role", TEST_APP_ROLE, force=True, ignore_permissions=True)
+
+	frappe.db.commit()
+	frappe.clear_cache()
+	print("e2e fixtures removed")
+
+
+# --- helpers the browser tests call between steps ---------------------------------------------------------
+
+
+def expire_sessions(user: str):
+	"""Server-side session expiry: the user's sessions vanish exactly as they do when Frappe expires them."""
+	_guard()
+	from frappe.sessions import clear_sessions
+
+	clear_sessions(user, force=True)
+	frappe.db.commit()
+
+
+def two_factor(enabled: bool = True):
+	"""Turn Frappe's two-factor authentication (OTP by email) on or off for the site."""
+	_guard()
+	settings = frappe.get_doc("System Settings")
+	settings.enable_two_factor_auth = 1 if enabled else 0
+	settings.two_factor_method = "Email"
+	settings.save(ignore_permissions=True)
+	frappe.db.commit()
+	frappe.clear_cache()
+
+
+def use_mail_sink(port: int = 2525):
+	"""Point outgoing mail at a local capture server (apps/nxerp_platform/browser-tests/lib/mailsink.mjs); nothing leaves the machine."""
+	_guard()
+	name = "NXERP E2E Sink"
+	if frappe.db.exists("Email Account", name):
+		frappe.delete_doc("Email Account", name, force=True, ignore_permissions=True)
+	frappe.db.sql("update `tabEmail Account` set default_outgoing = 0")
+	frappe.get_doc(
+		{
+			"doctype": "Email Account",
+			"email_account_name": name,
+			"email_id": "noreply-e2e@example.test",
+			"enable_outgoing": 1,
+			"default_outgoing": 1,
+			"smtp_server": "127.0.0.1",
+			"smtp_port": port,
+			"use_tls": 0,
+			"use_ssl": 0,
+			"no_smtp_authentication": 1,
+			"always_use_account_email_id_as_sender": 1,
+		}
+	).insert(ignore_permissions=True)
+	frappe.db.commit()
+
+
+def drop_mail_sink():
+	_guard()
+	name = "NXERP E2E Sink"
+	if frappe.db.exists("Email Account", name):
+		frappe.delete_doc("Email Account", name, force=True, ignore_permissions=True)
+	frappe.db.sql("delete from `tabEmail Queue` where sender = 'noreply-e2e@example.test'")
+	frappe.db.commit()
+
+
+def flush_mail():
+	"""Send whatever is queued now (a worker would do this every minute)."""
+	_guard()
+	from frappe.email.queue import flush
+
+	flush()
+	frappe.db.commit()
+	print("queued after flush:", frappe.db.count("Email Queue", {"status": "Not Sent"}))
+
+
+def setup_state():
+	"""Prints SETUP=1 once the setup wizard has finished on this site (it runs in a background job)."""
+	_guard()
+	print(f"SETUP={1 if frappe.is_setup_complete() else 0}")
+
+
+def complete_setup():
+	"""Finish the setup wizard on a pristine fresh site, with the arguments first-run.test.mjs submits through the UI.
+
+	A CI shard runs one suite on its own from the pristine snapshot; every suite except first-run assumes the wizard is done.
+	Does nothing when it already is. Frappe runs the stages synchronously here (no worker needed).
+	"""
+	_guard()
+	if frappe.is_setup_complete():
+		print("SETUP=1")
+		return
+	from frappe.desk.page.setup_wizard.setup_wizard import setup_complete
+
+	setup_complete(
+		{
+			"language": "en",
+			"country": "India",
+			"timezone": "Asia/Kolkata",
+			"currency": "INR",
+			"company_name": "E2E Test Company",
+			"company_abbr": "ETC",
+			"chart_of_accounts": "Standard",
+			"fy_start_date": "2026-04-01",
+			"fy_end_date": "2027-03-31",
+			"full_name": "E2E Owner",
+		}
+	)
+	frappe.db.commit()
+	print(f"SETUP={1 if frappe.is_setup_complete() else 0}")
+
+
+def email_link_login(enabled: bool = True):
+	"""Frappe's "Login With Email Link" system setting (off by default)."""
+	_guard()
+	settings = frappe.get_doc("System Settings")
+	settings.login_with_email_link = 1 if enabled else 0
+	settings.save(ignore_permissions=True)
+	frappe.db.commit()
+	frappe.clear_cache()
+
+
+def enable_signup(enabled: bool = True):
+	"""Site config `nxerp_enable_signup` (the operator's switch) and Frappe's own Website Settings flag, as the migrate hook sets them."""
+	_guard()
+	from nxerp.install import sync_signup_setting
+
+	update_site_config("nxerp_enable_signup", 1 if enabled else 0)
+	frappe.local.conf["nxerp_enable_signup"] = 1 if enabled else 0
+	if enabled:
+		sync_signup_setting()
+	else:
+		frappe.db.set_single_value("Website Settings", "disable_signup", 1)
+	frappe.db.commit()
+	frappe.clear_cache()
+
+
+def reset_rate_limits():
+	"""Forget Frappe's rate-limit counters (they live an hour in the cache), so repeated test runs from one IP are not refused."""
+	_guard()
+	frappe.cache.delete_keys("rl:nxerp.*")
+
+
+def delete_onboarding_data(user: str, keep_user: bool = False):
+	"""Remove a test user's requests and answers, and the user too unless `keep_user`."""
+	_guard()
+	for doctype in ("NXERP Access Request", "NXERP Onboarding"):
+		for name in frappe.get_all(doctype, filters={"user": user}, pluck="name"):
+			frappe.delete_doc(doctype, name, force=True, ignore_permissions=True)
+	frappe.db.commit()
+	if not keep_user:
+		delete_user(user)
+
+
+def delete_user(user: str):
+	"""Remove a user the tests created through the runbook commands (break-glass administrator)."""
+	_guard()
+	if user.endswith("@example.test") and frappe.db.exists("User", user):
+		frappe.flags.in_patch = True  # the last-administrator guard must not stop cleaning up fixtures
+		try:
+			frappe.delete_doc("User", user, force=True, ignore_permissions=True)
+		finally:
+			frappe.flags.in_patch = False
+		frappe.db.commit()
+
+
+if __name__ == "__main__":
+	# python -m nxerp.tests.e2e_fixtures <function> '<json kwargs>'   (run from the bench's sites directory)
+	# Unlike `bench execute`, a failure here is an error with a traceback instead of a swallowed exception.
+	import json
+	import sys
+
+	frappe.init(site=os.environ.get("E2E_SITE", "nxerp-e2e.localhost"))
+	frappe.connect()
+	frappe.set_user("Administrator")
+	try:
+		globals()[sys.argv[1]](**(json.loads(sys.argv[2]) if len(sys.argv) > 2 else {}))
+		frappe.db.commit()
+	finally:
+		frappe.destroy()

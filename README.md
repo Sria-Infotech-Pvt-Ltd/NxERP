@@ -1,2 +1,75 @@
-# NxERP
-NxErp
+# NXDESK
+
+NXDESK is Sria Infotech's umbrella platform on the [Frappe Framework](https://github.com/frappe/frappe): one login, one launcher and one identity over the products below. This repository (GitHub name `NxERP`) holds the platform app, whose technical name stays `nxerp`.
+
+```
+NXDESK  (umbrella platform)
+  |-- NXERP            ERP product (ERPNext inside)
+  |-- Sria Helpdesk    support product (Helpdesk inside)
+  `-- future products  planned or proposed, not installed: docs/ecosystem/application-registry.md
+```
+
+| Name | What it is |
+| --- | --- |
+| **NXDESK** | The umbrella platform and brand: one login, one launcher, one identity ([ADR-008](docs/adr/ADR-008-nxdesk-platform-identity.md)) |
+| **NXERP** | The display name of the ERP product. The application inside it is **ERPNext**, which keeps its own technical identity |
+| **Sria Helpdesk** | The display name of the support / ticket product. The application inside it is **Helpdesk**, a separate app that is never the ERP |
+| **Frappe Framework** | The underlying technology; not presented to business users as an application |
+| **`nxerp` (this app)** | The platform app that lets the other apps feel like one product. Its technical name does not change |
+
+Future apps (HRMS, CRM, Project Management, Budget Management, ...) are **not installed** and are not shown anywhere. They are tracked, as planning only, in the [ecosystem registry](docs/ecosystem/application-registry.md).
+
+> **Status: Phase 4 (release readiness), not released.** The `nxerp` app holds the registry, the access layer, the shared login, the router and the launcher. Nothing is pushed and CI has not run on GitHub. See [docs/PROGRESS.md](docs/PROGRESS.md), [docs/acceptance/acceptance-report.md](docs/acceptance/acceptance-report.md) and the [docs index](docs/README.md).
+
+## One workspace, two repositories
+
+Everything lives side by side in one folder; Helpdesk is one module of NXERP and keeps its own git history (ADR-001):
+
+```
+frapper sria/
+  nxerp-platform/   this repo: platform app + deploy + docs   (company repo Sria-Infotech-Pvt-Ltd/NxERP)
+  helpdesk/         Helpdesk module (company fork of frappe/helpdesk, incl. the NXERP login and palette)
+```
+
+`./deploy/bootstrap/up.sh` mounts both: it installs the platform app from this folder and Helpdesk from `../helpdesk` (the branch currently checked out there), plus pinned ERPNext, so one stack runs the whole product.
+
+## What this repository holds
+
+```
+apps/nxerp_platform/   the platform Frappe app (package `nxerp`)
+deploy/       pinned versions, apps.json, dev stack and bootstrap (no secrets)
+docs/         audit, research, ADRs, architecture, progress
+.github/      CI, PR and issue templates
+```
+
+Frappe and ERPNext are **never vendored or copied here**; they are upstream tags pinned in `deploy/`. Helpdesk is a company fork with a documented minimal diff (see [ADR-001](docs/adr/ADR-001-repository-topology.md)).
+
+## Responsibilities of the `nxerp` app (once built, Phase 2+)
+
+- Resolve which apps a user may use (access follows the user's actual grants, never "what is installed")
+- Own the shared shell: launcher, post-login routing, no-access page, platform branding
+- Provide the one extension point other apps register with, so adding an app is cheap
+
+## Non-responsibilities
+
+- It does **not** contain ERPNext or Helpdesk code, and does not rename or fork them
+- It does **not** replace Frappe authentication, sessions, roles or DocType permissions
+- It does **not** import from other apps, and other apps must not import from it
+- It is **not** the security boundary by hiding icons: enforcement is on the server
+- It does **not** ship dev data (the seed script lives under `apps/nxerp_platform/nxerp/tests/` and refuses to run outside developer mode)
+
+## Quick start (dev)
+
+Requires Docker with Compose v2 (Windows: run from Git Bash or WSL).
+
+```bash
+./deploy/bootstrap/up.sh -d                       # builds a bench and a site; first run is slow
+docker compose -p nxerp-dev logs -f bench   # wait for "ready:"
+# then open http://nxerp.localhost:8100 (ERPNext Desk at /app, Helpdesk at /helpdesk)
+```
+
+Details, ports and how to seed fake users: [deploy/README.md](deploy/README.md).
+
+## Contributing
+
+Read [CLAUDE.md](CLAUDE.md) (project rules) and [CONTRIBUTING.md](CONTRIBUTING.md) (branches, commits, reviews).

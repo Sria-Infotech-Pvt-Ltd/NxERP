@@ -1,0 +1,23 @@
+{#- The public footer: three link columns and a note. Reads `nx`. -#}
+<footer class="nxp-footer nxp-footer--rich">
+	<div class="nxp-foot-cols">
+		<div>
+			<p class="nxp-foot-head">{{ _("Products") }}</p>
+			{% for p in nx.footer_products %}<a class="nxp-foot-link" href="{{ p.href | e }}">{{ p.title | e }}</a>{% endfor %}
+		</div>
+		<div>
+			<p class="nxp-foot-head">{{ _("Platform") }}</p>
+			<a class="nxp-foot-link" href="/platform">{{ _("Overview") }}</a>
+			<a class="nxp-foot-link" href="/security">{{ _("Access and security") }}</a>
+			<a class="nxp-foot-link" href="/roadmap">{{ _("Roadmap") }}</a>
+		</div>
+		<div>
+			<p class="nxp-foot-head">{{ _("Company") }}</p>
+			<a class="nxp-foot-link" href="/company">{{ _("About") }}</a>
+			<a class="nxp-foot-link" href="/partners">{{ _("Partners") }}</a>
+			<a class="nxp-foot-link" href="/get-in-touch">{{ _("Get in touch") }}</a>
+			{% if nx.guest %}<a class="nxp-foot-link" href="{{ nx.login_href | e }}">{{ _("Sign in") }}</a>{% else %}<a class="nxp-foot-link" href="{{ nx.open_apps_href | e }}">{{ _("Open your apps") }}</a>{% endif %}
+		</div>
+	</div>
+	<p class="nxp-foot-note">&copy; {{ nx.year }} {{ nx.name | e }}. {{ _("One sign-in for all your applications.") }}</p>
+</footer>

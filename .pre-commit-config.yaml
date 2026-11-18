@@ -1,0 +1,67 @@
+exclude: 'node_modules|\.git/|^apps/helpdesk/'  # Helpdesk keeps its own tooling (apps/helpdesk/.pre-commit-config.yaml); gitleaks and CI still scan it
+default_stages: [pre-commit]
+fail_fast: false
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+        files: "nxerp.*"
+        exclude: ".*json$|.*txt$|.*csv|.*md|.*svg"
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ["--maxkb=500"]
+      - id: check-ast
+      - id: check-json
+      - id: check-toml
+      - id: check-yaml
+      - id: debug-statements
+      - id: detect-private-key
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.10
+    hooks:
+      - id: ruff
+        name: "Run ruff import sorter"
+        args: ["--select=I", "--fix", "--config", "apps/nxerp_platform/pyproject.toml", "--config", 'src=["apps/nxerp_platform"]']
+
+      - id: ruff
+        name: "Run ruff linter"
+        args: ["--config", "apps/nxerp_platform/pyproject.toml", "--config", 'src=["apps/nxerp_platform"]']
+
+      - id: ruff-format
+        name: "Run ruff formatter"
+        args: ["--config", "apps/nxerp_platform/pyproject.toml", "--config", 'src=["apps/nxerp_platform"]']
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.28.0
+    hooks:
+      - id: gitleaks
+
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.9.4
+    hooks:
+      - id: bandit
+        args: ["-q", "-s", "B101,B105,B106,B311"]
+        files: ^apps/nxerp_platform/nxerp/
+
+  - repo: https://github.com/koalaman/shellcheck-precommit
+    rev: v0.10.0
+    hooks:
+      - id: shellcheck
+        args: ["--severity=warning"]
+
+  - repo: local
+    hooks:
+      - id: nxerp-architecture
+        name: NXERP architecture rules (ADR-005)
+        entry: python -I scripts/check_architecture.py
+        language: python
+        pass_filenames: false
+        files: ^apps/nxerp_platform/nxerp/
+
+ci:
+  autoupdate_schedule: weekly
+  skip: []
+  submodules: false

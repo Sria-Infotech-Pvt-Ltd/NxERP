@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="{{ frappe.lang or 'en' }}">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="robots" content="noindex" />
+	<title>{{ title }} | NXERP</title>
+	<link rel="icon" href="/assets/nxerp/nxerp_login/images/nxerp-favicon.png" />
+	<script>
+		(function () {
+			try {
+				var t = localStorage.getItem("theme");
+				if (t !== "light" && t !== "dark" && t !== "system") t = "system";
+				var dark = t === "dark" || (t === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
+				document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+			} catch (e) {}
+		})();
+	</script>
+	<link rel="stylesheet" href="/assets/nxerp/css/nxerp-theme.css" />
+	<link rel="stylesheet" href="/assets/nxerp/css/nxerp-platform.css?v=8" />
+	{% if request_href %}<link rel="stylesheet" href="/assets/nxerp/css/nxerp-site.css?v={{ site_css_version }}" />{% endif %}
+</head>
+<body class="nxp-body">
+	<a class="nxp-skip" href="#main">{{ _("Skip to content") }}</a>
+	<header class="nxp-header">
+		<img class="nxp-logo" src="/assets/nxerp/nxerp_login/images/nxerp-wordmark.png" data-light="/assets/nxerp/nxerp_login/images/nxerp-wordmark-light.png" alt="NXERP" />
+	</header>
+	<main class="nxp-main nxp-center" id="main">
+		<h1 class="nxp-title">{{ _("No access") }}</h1>
+		<p class="nxp-sub">{{ _("Your account does not have access to this application. Please contact your administrator if you need it.") }}</p>
+		<p class="nxp-actions">
+			{% if is_guest %}
+			<a class="nxp-button" href="/login">{{ _("Sign in") }}</a>
+			{% else %}
+			{% if request_href %}<a class="nxp-cta nxp-cta--primary" data-request-access href="{{ request_href | e }}">{{ _("Request access") }}</a>{% endif %}
+			<a class="nxp-button" href="/nxerp/go">{{ _("Back to my applications") }}</a>
+			{% if can_administer %}<a class="nxp-link" data-admin-hint href="/desk/user">{{ _("Manage user access") }}</a>{% endif %}
+			<a class="nxp-link" href="/logout">{{ _("Sign out") }}</a>
+			{% endif %}
+		</p>
+	</main>
+	<script>
+		(function () {
+			var dark = document.documentElement.getAttribute("data-theme") === "dark";
+			var logo = document.querySelector(".nxp-logo");
+			if (dark && logo && logo.dataset.light) logo.src = logo.dataset.light;
+		})();
+	</script>
+</body>
+</html>

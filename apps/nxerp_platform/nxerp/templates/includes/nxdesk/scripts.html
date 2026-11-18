@@ -1,0 +1,74 @@
+{#- Theme toggle, logo swap for image wordmarks, header menus, and the pointer spotlight on tiles. No dependencies. -#}
+<script>
+	(function () {
+		var root = document.documentElement;
+		var button = document.getElementById("nxp-theme-toggle");
+		var logos = document.querySelectorAll(".nxp-wordmark-img");
+		logos.forEach(function (img) { img.dataset.lightSrc = img.getAttribute("src"); });
+		function apply(theme) {
+			root.setAttribute("data-theme", theme);
+			logos.forEach(function (img) {
+				img.setAttribute("src", theme === "dark" ? img.dataset.darkSrc : img.dataset.lightSrc);
+			});
+		}
+		apply(root.getAttribute("data-theme") || "light");
+		if (button) {
+			button.addEventListener("click", function () {
+				var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+				try { localStorage.setItem("theme", next); } catch (e) {}
+				apply(next);
+			});
+		}
+
+		// grouped menus (wide screens) and the menu panel (small screens)
+		var menus = Array.prototype.slice.call(document.querySelectorAll(".nxp-menu"));
+		function closeMenus(except) {
+			menus.forEach(function (m) {
+				if (m === except) return;
+				m.querySelector(".nxp-menu-btn").setAttribute("aria-expanded", "false");
+				m.querySelector(".nxp-menu-panel").hidden = true;
+			});
+		}
+		menus.forEach(function (m) {
+			var b = m.querySelector(".nxp-menu-btn"), panel = m.querySelector(".nxp-menu-panel");
+			b.addEventListener("click", function (e) {
+				e.stopPropagation();
+				var open = b.getAttribute("aria-expanded") !== "true";
+				closeMenus(open ? m : null);
+				b.setAttribute("aria-expanded", open ? "true" : "false");
+				panel.hidden = !open;
+			});
+		});
+		var burger = document.getElementById("nxp-burger"), mobile = document.getElementById("nxp-mobile");
+		if (burger && mobile) {
+			burger.addEventListener("click", function (e) {
+				e.stopPropagation();
+				var open = burger.getAttribute("aria-expanded") !== "true";
+				burger.setAttribute("aria-expanded", open ? "true" : "false");
+				mobile.hidden = !open;
+			});
+		}
+		document.addEventListener("click", function (e) {
+			if (!e.target.closest(".nxp-menu")) closeMenus(null);
+		});
+		document.addEventListener("keydown", function (e) {
+			if (e.key !== "Escape") return;
+			var opened = menus.filter(function (m) { return m.querySelector(".nxp-menu-btn").getAttribute("aria-expanded") === "true"; })[0];
+			closeMenus(null);
+			if (opened) opened.querySelector(".nxp-menu-btn").focus();
+			if (burger && burger.getAttribute("aria-expanded") === "true") {
+				burger.setAttribute("aria-expanded", "false");
+				mobile.hidden = true;
+				burger.focus();
+			}
+		});
+
+		document.querySelectorAll(".nxp-tile").forEach(function (t) {
+			t.addEventListener("pointermove", function (e) {
+				var r = t.getBoundingClientRect();
+				t.style.setProperty("--mx", e.clientX - r.left + "px");
+				t.style.setProperty("--my", e.clientY - r.top + "px");
+			});
+		});
+	})();
+</script>

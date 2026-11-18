@@ -1,0 +1,209 @@
+{
+  "$comment": "Source of truth. Anchors come from octet.design course-landing-color-palette-1732775208. Everything else is derived in OKLCH by build/lib/ramps.mjs.",
+  "anchors": {
+    "paper": "#fcfcfb",
+    "sand": "#dbd7c7",
+    "taupe": "#b3aa9e",
+    "amber": "#faa114",
+    "umber": "#786e67",
+    "charcoal": "#262a2b"
+  },
+  "neutral": {
+    "white": {
+      "mix": [
+        "paper",
+        "sand",
+        0.4
+      ]
+    },
+    "paper": {
+      "anchor": "paper"
+    }
+  },
+  "ramps": {
+    "gray": {
+      "light": {
+        "50": {
+          "mix": [
+            "paper",
+            "sand",
+            0.8
+          ]
+        },
+        "100": {
+          "anchor": "sand"
+        },
+        "200": {
+          "mix": [
+            "sand",
+            "taupe",
+            0.3
+          ]
+        },
+        "300": {
+          "mix": [
+            "sand",
+            "taupe",
+            0.55
+          ]
+        },
+        "400": {
+          "anchor": "taupe"
+        },
+        "500": {
+          "anchor": "umber"
+        },
+        "600": {
+          "mix": [
+            "charcoal",
+            "umber",
+            0.64
+          ]
+        },
+        "700": {
+          "mix": [
+            "charcoal",
+            "umber",
+            0.43
+          ]
+        },
+        "800": {
+          "mix": [
+            "charcoal",
+            "umber",
+            0.25
+          ]
+        },
+        "900": {
+          "mix": [
+            "charcoal",
+            "umber",
+            0.06
+          ]
+        },
+        "950": {
+          "anchor": "charcoal"
+        }
+      },
+      "dark": {
+        "50": {
+          "anchor": "paper"
+        },
+        "100": {
+          "mix": [
+            "taupe",
+            "paper",
+            0.85
+          ]
+        },
+        "200": {
+          "mix": [
+            "taupe",
+            "paper",
+            0.62
+          ]
+        },
+        "300": {
+          "mix": [
+            "taupe",
+            "paper",
+            0.35
+          ]
+        },
+        "400": {
+          "anchor": "taupe"
+        },
+        "450": {
+          "mix": [
+            "charcoal",
+            "umber",
+            0.6
+          ]
+        },
+        "500": {
+          "mix": [
+            "charcoal",
+            "umber",
+            0.46
+          ]
+        },
+        "600": {
+          "mix": [
+            "charcoal",
+            "umber",
+            0.3
+          ]
+        },
+        "700": {
+          "mix": [
+            "charcoal",
+            "umber",
+            0.16
+          ]
+        },
+        "800": {
+          "mix": [
+            "charcoal",
+            "umber",
+            0.08
+          ]
+        },
+        "900": {
+          "anchor": "charcoal"
+        },
+        "950": {
+          "shift": [
+            "charcoal",
+            -0.05
+          ]
+        }
+      }
+    },
+    "accent": {
+      "from": "amber",
+      "anchorShade": "400",
+      "stops": {
+        "50": {
+          "L": 0.975,
+          "chroma": 0.12
+        },
+        "100": {
+          "L": 0.955,
+          "chroma": 0.22
+        },
+        "200": {
+          "L": 0.92,
+          "chroma": 0.45
+        },
+        "300": {
+          "L": 0.865,
+          "chroma": 0.78
+        },
+        "500": {
+          "L": 0.7,
+          "chroma": 1
+        },
+        "600": {
+          "L": 0.61,
+          "chroma": 0.97
+        },
+        "700": {
+          "L": 0.52,
+          "chroma": 0.9
+        },
+        "800": {
+          "L": 0.44,
+          "chroma": 0.8
+        },
+        "900": {
+          "L": 0.36,
+          "chroma": 0.66
+        },
+        "950": {
+          "L": 0.27,
+          "chroma": 0.5
+        }
+      }
+    }
+  }
+}

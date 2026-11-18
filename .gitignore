@@ -1,0 +1,42 @@
+# Secrets and local environment: never commit
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.sqlite
+*.sql.gz
+deploy/bootstrap/.env
+deploy/bootstrap/.no-helpdesk/
+
+# Byte-compiled / Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Node
+node_modules/
+*.log
+
+# Frappe / bench artefacts
+sites/
+*.pyc
+apps/nxerp_platform/nxerp/public/dist/
+apps/nxerp_platform/nxerp/public/node_modules/
+
+# Editors / OS
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+Thumbs.db
+
+# Local build outputs (SBOMs, backups)
+dist/
+backups/

@@ -1,0 +1,1964 @@
+[
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "NXDESK",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 13.62,
+  "min": 3
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Products",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Get started",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "NXDESK",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.23,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Your business applications, in o",
+  "size": 60.8,
+  "weight": "650",
+  "ratio": 12.38,
+  "min": 3
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Your business applications, in o",
+  "size": 60.8,
+  "weight": "650",
+  "ratio": 3.34,
+  "min": 3
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "One sign-in for the applications",
+  "size": 16.8,
+  "weight": "400",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Explore products",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Sign in",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 6.92,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "NXERP",
+  "size": 21.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 3
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Accounts, sales, stock and proje",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Learn more",
+  "size": 14.08,
+  "weight": "400",
+  "ratio": 6.94,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Sria Helpdesk",
+  "size": 21.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 3
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Support tickets and a shared kno",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Learn more",
+  "size": 14.08,
+  "weight": "400",
+  "ratio": 6.94,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "How it works",
+  "size": 30.4,
+  "weight": "650",
+  "ratio": 12.38,
+  "min": 3
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "One sign-in",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Use the same account for every a",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Access by role",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "What you can open and do follows",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Your apps in one place",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Open every application you can u",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Products",
+  "size": 12.8,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Sign in",
+  "size": 12.8,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "Contact",
+  "size": 12.8,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "light",
+  "text": "© 2026 NXDESK. One sign-in for a",
+  "size": 12.8,
+  "weight": "400",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "NXDESK",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 14.76,
+  "min": 3
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Get started",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "NXDESK",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.27,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Your business applications, in o",
+  "size": 60.8,
+  "weight": "650",
+  "ratio": 16.37,
+  "min": 3
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Your business applications, in o",
+  "size": 60.8,
+  "weight": "650",
+  "ratio": 13.14,
+  "min": 3
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "One sign-in for the applications",
+  "size": 16.8,
+  "weight": "400",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Explore products",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Sign in",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 11.78,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "NXERP",
+  "size": 21.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 3
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Accounts, sales, stock and proje",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Learn more",
+  "size": 14.08,
+  "weight": "400",
+  "ratio": 6.69,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Sria Helpdesk",
+  "size": 21.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 3
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Support tickets and a shared kno",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Learn more",
+  "size": 14.08,
+  "weight": "400",
+  "ratio": 6.69,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "How it works",
+  "size": 30.4,
+  "weight": "650",
+  "ratio": 16.37,
+  "min": 3
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "One sign-in",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Use the same account for every a",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Access by role",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "What you can open and do follows",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Your apps in one place",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Open every application you can u",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 12.8,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Sign in",
+  "size": 12.8,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "Contact",
+  "size": 12.8,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "home",
+  "scheme": "dark",
+  "text": "© 2026 NXDESK. One sign-in for a",
+  "size": 12.8,
+  "weight": "400",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "NXDESK",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 13.62,
+  "min": 3
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Products",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 13.62,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Get started",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Products",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.23,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Products",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 12.38,
+  "min": 3
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Products",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 3.34,
+  "min": 3
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "The applications you can use wit",
+  "size": 16.8,
+  "weight": "400",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Business apps",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.23,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "NXERP",
+  "size": 21.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 3
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Accounts, sales, stock and proje",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Learn more",
+  "size": 14.08,
+  "weight": "400",
+  "ratio": 6.94,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Support",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.23,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Sria Helpdesk",
+  "size": 21.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 3
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Support tickets and a shared kno",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Learn more",
+  "size": 14.08,
+  "weight": "400",
+  "ratio": 6.94,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Products",
+  "size": 12.8,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Sign in",
+  "size": 12.8,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "Contact",
+  "size": 12.8,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "light",
+  "text": "© 2026 NXDESK. One sign-in for a",
+  "size": 12.8,
+  "weight": "400",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "NXDESK",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 14.76,
+  "min": 3
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 14.76,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Get started",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.27,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 16.37,
+  "min": 3
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 13.14,
+  "min": 3
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "The applications you can use wit",
+  "size": 16.8,
+  "weight": "400",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Business apps",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.27,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "NXERP",
+  "size": 21.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 3
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Accounts, sales, stock and proje",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Learn more",
+  "size": 14.08,
+  "weight": "400",
+  "ratio": 6.69,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Support",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.27,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Sria Helpdesk",
+  "size": 21.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 3
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Support tickets and a shared kno",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Learn more",
+  "size": 14.08,
+  "weight": "400",
+  "ratio": 6.69,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 12.8,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Sign in",
+  "size": 12.8,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "Contact",
+  "size": 12.8,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "products",
+  "scheme": "dark",
+  "text": "© 2026 NXDESK. One sign-in for a",
+  "size": 12.8,
+  "weight": "400",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "NXDESK",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 13.62,
+  "min": 3
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Products",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 13.62,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Get started",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Support",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.23,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Sria Helpdesk",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 12.38,
+  "min": 3
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Sria Helpdesk",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 3.34,
+  "min": 3
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Support tickets and a shared kno",
+  "size": 21.6,
+  "weight": "600",
+  "ratio": 11.69,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Handle customer requests as tick",
+  "size": 16.8,
+  "weight": "400",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Get started",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Log in",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 6.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Contact",
+  "size": 16,
+  "weight": "400",
+  "ratio": 6.78,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "At a glance",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 3
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Tickets with teams and assignmen",
+  "size": 16,
+  "weight": "500",
+  "ratio": 12.73,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Knowledge base articles",
+  "size": 16,
+  "weight": "500",
+  "ratio": 12.73,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Service level agreements",
+  "size": 16,
+  "weight": "500",
+  "ratio": 12.73,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Customer portal for requests",
+  "size": 16,
+  "weight": "500",
+  "ratio": 12.73,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Get started in three steps",
+  "size": 30.4,
+  "weight": "650",
+  "ratio": 12.38,
+  "min": 3
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "1",
+  "size": 16,
+  "weight": "800",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Create an account",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Register with your email address",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "2",
+  "size": 16,
+  "weight": "800",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Answer a few questions",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Tell us who you are and what you",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "3",
+  "size": 16,
+  "weight": "800",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Get access",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "An administrator reviews your re",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Products",
+  "size": 12.8,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Sign in",
+  "size": 12.8,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "Contact",
+  "size": 12.8,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "light",
+  "text": "© 2026 NXDESK. One sign-in for a",
+  "size": 12.8,
+  "weight": "400",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "NXDESK",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 14.76,
+  "min": 3
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 14.76,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Get started",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Support",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.27,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Sria Helpdesk",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 16.37,
+  "min": 3
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Sria Helpdesk",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 13.14,
+  "min": 3
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Support tickets and a shared kno",
+  "size": 21.6,
+  "weight": "600",
+  "ratio": 14.65,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Handle customer requests as tick",
+  "size": 16.8,
+  "weight": "400",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Get started",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Log in",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 11.78,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Contact",
+  "size": 16,
+  "weight": "400",
+  "ratio": 8.14,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "At a glance",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 3
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Tickets with teams and assignmen",
+  "size": 16,
+  "weight": "500",
+  "ratio": 13.37,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Knowledge base articles",
+  "size": 16,
+  "weight": "500",
+  "ratio": 13.37,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Service level agreements",
+  "size": 16,
+  "weight": "500",
+  "ratio": 13.37,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Customer portal for requests",
+  "size": 16,
+  "weight": "500",
+  "ratio": 13.37,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Get started in three steps",
+  "size": 30.4,
+  "weight": "650",
+  "ratio": 16.37,
+  "min": 3
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "1",
+  "size": 16,
+  "weight": "800",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Create an account",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Register with your email address",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "2",
+  "size": 16,
+  "weight": "800",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Answer a few questions",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Tell us who you are and what you",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "3",
+  "size": 16,
+  "weight": "800",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Get access",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "An administrator reviews your re",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 12.8,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Sign in",
+  "size": 12.8,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "Contact",
+  "size": 12.8,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-helpdesk",
+  "scheme": "dark",
+  "text": "© 2026 NXDESK. One sign-in for a",
+  "size": 12.8,
+  "weight": "400",
+  "ratio": 7.33,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "NXDESK",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 13.62,
+  "min": 3
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Products",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 13.62,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.83,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Get started",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Business apps",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.23,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "NXERP",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 12.38,
+  "min": 3
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "NXERP",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 3.34,
+  "min": 3
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Accounts, sales, stock and proje",
+  "size": 21.6,
+  "weight": "600",
+  "ratio": 11.69,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Run accounting, selling, buying,",
+  "size": 16.8,
+  "weight": "400",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Get started",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Log in",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 6.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Contact",
+  "size": 16,
+  "weight": "400",
+  "ratio": 6.78,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "At a glance",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 3
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Accounts and invoicing",
+  "size": 16,
+  "weight": "500",
+  "ratio": 12.73,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Sales, buying and stock",
+  "size": 16,
+  "weight": "500",
+  "ratio": 12.73,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Manufacturing and projects",
+  "size": 16,
+  "weight": "500",
+  "ratio": 12.73,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Assets and maintenance",
+  "size": 16,
+  "weight": "500",
+  "ratio": 12.73,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Get started in three steps",
+  "size": 30.4,
+  "weight": "650",
+  "ratio": 12.38,
+  "min": 3
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "1",
+  "size": 16,
+  "weight": "800",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Create an account",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Register with your email address",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "2",
+  "size": 16,
+  "weight": "800",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Answer a few questions",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Tell us who you are and what you",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "3",
+  "size": 16,
+  "weight": "800",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Get access",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 13.48,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "An administrator reviews your re",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 8.73,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Products",
+  "size": 12.8,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Sign in",
+  "size": 12.8,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "Contact",
+  "size": 12.8,
+  "weight": "600",
+  "ratio": 8.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "light",
+  "text": "© 2026 NXDESK. One sign-in for a",
+  "size": 12.8,
+  "weight": "400",
+  "ratio": 6.38,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "NXDESK",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 14.76,
+  "min": 3
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 14.76,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Sign in",
+  "size": 14.4,
+  "weight": "600",
+  "ratio": 8.94,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Get started",
+  "size": 14.08,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Business apps",
+  "size": 11.52,
+  "weight": "800",
+  "ratio": 6.27,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "NXERP",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 16.37,
+  "min": 3
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "NXERP",
+  "size": 49.6,
+  "weight": "650",
+  "ratio": 13.14,
+  "min": 3
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Accounts, sales, stock and proje",
+  "size": 21.6,
+  "weight": "600",
+  "ratio": 14.65,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Run accounting, selling, buying,",
+  "size": 16.8,
+  "weight": "400",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Get started",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Log in",
+  "size": 15.2,
+  "weight": "700",
+  "ratio": 11.78,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Contact",
+  "size": 16,
+  "weight": "400",
+  "ratio": 8.14,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "At a glance",
+  "size": 19.2,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 3
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Accounts and invoicing",
+  "size": 16,
+  "weight": "500",
+  "ratio": 13.37,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Sales, buying and stock",
+  "size": 16,
+  "weight": "500",
+  "ratio": 13.37,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Manufacturing and projects",
+  "size": 16,
+  "weight": "500",
+  "ratio": 13.37,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Assets and maintenance",
+  "size": 16,
+  "weight": "500",
+  "ratio": 13.37,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Get started in three steps",
+  "size": 30.4,
+  "weight": "650",
+  "ratio": 16.37,
+  "min": 3
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "1",
+  "size": 16,
+  "weight": "800",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Create an account",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Register with your email address",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "2",
+  "size": 16,
+  "weight": "800",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Answer a few questions",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Tell us who you are and what you",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "3",
+  "size": 16,
+  "weight": "800",
+  "ratio": 7.02,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Get access",
+  "size": 17.6,
+  "weight": "700",
+  "ratio": 14.94,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "An administrator reviews your re",
+  "size": 15.2,
+  "weight": "400",
+  "ratio": 9.05,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Products",
+  "size": 12.8,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Sign in",
+  "size": 12.8,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "Contact",
+  "size": 12.8,
+  "weight": "600",
+  "ratio": 9.92,
+  "min": 4.5
+ },
+ {
+  "page": "product-erpnext",
+  "scheme": "dark",
+  "text": "© 2026 NXDESK. One sign-in for a",
+  "size": 12.8,
+  "weight": "400",
+  "ratio": 7.33,
+  "min": 4.5
+ }
+]

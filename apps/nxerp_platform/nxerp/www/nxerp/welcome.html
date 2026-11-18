@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="{{ nx.lang | e }}">
+<head>
+	{% include "nxerp/templates/includes/nxdesk/shell_head.html" %}
+</head>
+<body>
+<div class="nx-shell nx-no-social" data-csrf="{{ csrf_token | e }}" data-app="{{ product.key | e }}">
+	{% include "nxerp/templates/includes/nxdesk/shell_hero.html" %}
+
+	<main class="nx-panel" id="main">
+		<h1 class="nx-sr-only">{{ _("Welcome to {0}").format(product.title) | e }}</h1>
+		{% include "nxerp/templates/includes/nxdesk/shell_top.html" %}
+
+		<div class="nx-card nx-left">
+			{# ---------------------------------------------------------------- wizard #}
+			<div id="nx-wizard"{% if state.status != "wizard" %} hidden{% endif %}>
+				<ol class="nx-progress" aria-hidden="true">
+					{% for step in state.steps %}<li class="nx-seg" data-seg="{{ step | e }}"></li>{% endfor %}
+				</ol>
+				<p class="nx-step-label" id="nx-step-label" aria-live="polite"></p>
+
+				{% if "basics" in state.steps %}
+				<form class="nx-step" data-step="basics" novalidate hidden>
+					<div class="page-card"><div class="page-card-head">
+						<h4 tabindex="-1">{{ _("Language and time zone") }}</h4>
+						<p class="nx-sub">{{ _("Dates and times will follow these.") }}</p>
+					</div>
+					<div class="page-card-body">
+						<p class="nx-form-error" role="alert" aria-live="assertive"></p>
+						<div class="form-group">
+							<label class="text-base nx-label" for="nx-language">{{ _("Language") }}</label>
+							<div class="nx-field nx-field--select">
+								<svg class="nx-fi" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.5 4 5.6 4 9s-1.4 6.5-4 9c-2.6-2.5-4-5.6-4-9s1.4-6.5 4-9Z"/></svg>
+								<select class="nx-select" id="nx-language" name="language">
+									{% for o in options.languages %}<option value="{{ o.value | e }}"{% if o.value == state.prefill.language %} selected{% endif %}>{{ o.label | e }}</option>{% endfor %}
+								</select>
+								<svg class="nx-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="text-base nx-label" for="nx-time-zone">{{ _("Time zone") }}</label>
+							<div class="nx-field nx-field--select">
+								<svg class="nx-fi" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+								<select class="nx-select" id="nx-time-zone" name="time_zone">
+									{% for z in options.time_zones %}<option value="{{ z | e }}"{% if z == state.prefill.time_zone %} selected{% endif %}>{{ z | e }}</option>{% endfor %}
+								</select>
+								<svg class="nx-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+							</div>
+						</div>
+						<div class="nx-actions">
+							<button class="btn btn-primary btn-login" type="submit" data-action="continue">{{ _("Continue") }}</button>
+						</div>
+					</div></div>
+				</form>
+				{% endif %}
+
+				{% if "about" in state.steps %}
+				<form class="nx-step" data-step="about" novalidate hidden>
+					<div class="page-card"><div class="page-card-head">
+						<h4 tabindex="-1">{{ _("About your work") }}</h4>
+						<p class="nx-sub">{{ _("Optional. It helps an administrator decide.") }}</p>
+					</div>
+					<div class="page-card-body">
+						<p class="nx-form-error" role="alert" aria-live="assertive"></p>
+						<fieldset class="nx-group">
+							<legend>{{ _("What kind of work do you do?") }}</legend>
+							<div class="nx-choices">
+								{% for o in options.kind_of_work %}<label class="nx-choice"><input type="radio" name="kind_of_work" value="{{ o.value | e }}"{% if o.value == state.prefill.kind_of_work %} checked{% endif %} /><span>{{ o.label | e }}</span></label>{% endfor %}
+							</div>
+						</fieldset>
+						<fieldset class="nx-group">
+							<legend>{{ _("How big is your team?") }}</legend>
+							<div class="nx-choices">
+								{% for o in options.team_size %}<label class="nx-choice"><input type="radio" name="team_size" value="{{ o.value | e }}"{% if o.value == state.prefill.team_size %} checked{% endif %} /><span>{{ o.label | e }}</span></label>{% endfor %}
+							</div>
+						</fieldset>
+						<div class="nx-actions">
+							<button class="nx-ghost" type="button" data-action="back">{{ _("Back") }}</button>
+							<button class="btn btn-primary btn-login" type="submit" data-action="continue">{{ _("Continue") }}</button>
+						</div>
+						<button class="nx-skip-link" type="button" data-action="skip">{{ _("Skip") }}</button>
+					</div></div>
+				</form>
+				{% endif %}
+
+				<form class="nx-step" data-step="request" novalidate hidden>
+					<div class="page-card"><div class="page-card-head">
+						<h4 tabindex="-1">{% if state.policy == "request_access" %}{{ _("Review and send") }}{% else %}{{ _("Review and finish") }}{% endif %}</h4>
+						<p class="nx-sub">{{ _("Check your answers, then continue.") }}</p>
+					</div>
+					<div class="page-card-body">
+						<p class="nx-form-error" role="alert" aria-live="assertive"></p>
+						<div class="nx-summary">
+							<span class="nx-pill">{{ _("Ready to send") if state.policy == "request_access" else _("Ready to finish") }}</span>
+							<p>
+								{% if state.policy == "request_access" %}{{ _("Your request goes to an administrator, who decides. You will get an email. Until then you cannot open {0}.").format(product.title) | e }}
+								{% elif state.policy == "open_portal" %}{{ _("You will get access to the customer portal of {0} straight away.").format(product.title) | e }}
+								{% else %}{{ _("{0} is available by invitation. Finishing saves your answers; an administrator can then invite you.").format(product.title) | e }}{% endif %}
+							</p>
+							<dl id="nx-answers"></dl>
+						</div>
+						<div class="nx-actions">
+							<button class="nx-ghost" type="button" data-action="back">{{ _("Back") }}</button>
+							<button class="btn btn-primary btn-login" type="submit" data-action="submit">{% if state.policy == "request_access" %}{{ _("Send request") }}{% else %}{{ _("Finish") }}{% endif %}</button>
+						</div>
+					</div></div>
+				</form>
+			</div>
+
+			{# ------------------------------------------------------ pending and invitation #}
+			<div class="nx-state" id="nx-pending"{% if state.status != "pending" %} hidden{% endif %}>
+				<div class="nx-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 3-9.5 9.5M21 3l-6.5 18-3-8.5L3 9.5 21 3Z"/></svg></div>
+				<h2 tabindex="-1">{{ _("Request sent") }}</h2>
+				<p class="nx-sub">{{ _("An administrator will review it. You will get an email.") }}</p>
+				<span class="nx-pill">{{ _("Pending") }}</span>
+				<div class="nx-stack">
+					<a class="btn btn-default" href="{{ nx.products_href | e }}">{{ _("Browse products") }}</a>
+				</div>
+				<p class="nx-fine"><a href="/logout">{{ _("Sign out") }}</a></p>
+			</div>
+			<div class="nx-state" id="nx-invitation"{% if state.status != "invitation" %} hidden{% endif %}>
+				<div class="nx-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m3.5 7 8.5 6 8.5-6"/></svg></div>
+				<h2 tabindex="-1">{{ _("Access is by invitation") }}</h2>
+				<p class="nx-sub">{{ _("Your answers are saved. An administrator can invite you to {0}.").format(product.title) | e }}</p>
+				<span class="nx-pill">{{ _("Invitation only") }}</span>
+				<div class="nx-stack">
+					<a class="btn btn-default" href="{{ nx.products_href | e }}">{{ _("Browse products") }}</a>
+				</div>
+				<p class="nx-fine"><a href="/logout">{{ _("Sign out") }}</a></p>
+			</div>
+		</div>
+		<p class="nx-panel-foot">{{ _("One sign-in for all your applications.") }}</p>
+	</main>
+</div>
+<script type="application/json" id="nx-state">{{ {"state": state, "options": options} | tojson }}</script>
+{% include "nxerp/templates/includes/nxdesk/shell_scripts.html" %}
+<script>
+	(function () {
+		var shell = document.querySelector(".nx-shell");
+		var data = JSON.parse(document.getElementById("nx-state").textContent);
+		var state = data.state, options = data.options;
+		var csrf = shell.dataset.csrf, app = shell.dataset.app;
+		var wizard = document.getElementById("nx-wizard");
+		var label = document.getElementById("nx-step-label");
+		var panels = {};
+		wizard.querySelectorAll(".nx-step").forEach(function (f) { panels[f.dataset.step] = f; });
+		var T = {
+			step: {{ _("Step {0} of {1}") | tojson }},
+			generic: {{ _("Something went wrong. Please try again in a moment.") | tojson }},
+			labels: { language: {{ _("Language") | tojson }}, time_zone: {{ _("Time zone") | tojson }}, kind_of_work: {{ _("Kind of work") | tojson }}, team_size: {{ _("Team size") | tojson }} }
+		};
+
+		function api(method, body) {
+			return fetch("/api/method/nxerp.api.onboarding." + method, {
+				method: "POST",
+				headers: { "Content-Type": "application/json", "Accept": "application/json", "X-Frappe-CSRF-Token": csrf },
+				body: JSON.stringify(body)
+			}).then(function (response) {
+				if (response.ok) return response.json().then(function (b) { return b.message; });
+				return window.nxMessage(response, T.generic).then(function (text) { throw new Error(text); });
+			});
+		}
+		function labelFor(field, value) {
+			var list = { language: options.languages, kind_of_work: options.kind_of_work, team_size: options.team_size }[field];
+			var hit = list && list.filter(function (o) { return o.value === value; })[0];
+			return hit ? hit.label : value;
+		}
+		function fillAnswers() {
+			var dl = document.getElementById("nx-answers");
+			dl.textContent = "";
+			["language", "time_zone", "kind_of_work", "team_size"].forEach(function (f) {
+				var v = state.prefill[f];
+				if (!v) return;
+				var dt = document.createElement("dt"), dd = document.createElement("dd");
+				dt.textContent = T.labels[f]; dd.textContent = labelFor(f, v);
+				dl.appendChild(dt); dl.appendChild(dd);
+			});
+		}
+		function show(step) {
+			var index = state.steps.indexOf(step);
+			Object.keys(panels).forEach(function (k) { panels[k].hidden = k !== step; });
+			wizard.querySelectorAll(".nx-seg").forEach(function (seg, i) {
+				seg.classList.toggle("is-done", i < index);
+				seg.classList.toggle("is-current", i === index);
+			});
+			label.textContent = T.step.replace("{0}", index + 1).replace("{1}", state.steps.length);
+			if (step === "request") fillAnswers();
+			var heading = panels[step].querySelector("h4");
+			if (heading) heading.focus({ preventScroll: true });
+		}
+		function showView(id) {
+			["nx-wizard", "nx-pending", "nx-invitation"].forEach(function (v) { document.getElementById(v).hidden = v !== id; });
+			var head = document.querySelector("#" + id + " h2"); if (head) head.focus();
+		}
+		function collect(form) {
+			var out = {};
+			form.querySelectorAll("select").forEach(function (s) { out[s.name] = s.value; });
+			form.querySelectorAll("input[type=radio]:checked").forEach(function (r) { out[r.name] = r.value; });
+			return out;
+		}
+		function busy(button, on) {
+			button.disabled = on; button.classList.toggle("nx-busy", on);
+		}
+		function route(next) {
+			state = next;
+			if (next.status === "pending") return showView("nx-pending");
+			if (next.status === "invitation") return showView("nx-invitation");
+			if (next.status === "granted") { window.location.href = "/nxerp/go?redirect-to=" + encodeURIComponent(next.route); return; }
+			show(next.current);
+		}
+		function run(form, button, call) {
+			var error = form.querySelector(".nx-form-error");
+			error.textContent = "";
+			busy(button, true);
+			call().then(route).catch(function (e) { error.textContent = e.message || T.generic; }).then(function () { busy(button, false); });
+		}
+
+		Object.keys(panels).forEach(function (step) {
+			var form = panels[step];
+			var steps = state.steps;
+			form.addEventListener("submit", function (event) {
+				event.preventDefault();
+				var button = form.querySelector("[type=submit]");
+				if (step === "request") return run(form, button, function () { return api("submit", { app: app }); });
+				run(form, button, function () {
+					return api("save_step", { app: app, step: step, data: collect(form) }).then(function (next) {
+						// move on to the step after this one, even when an earlier optional step is still open
+						next.current = steps[steps.indexOf(step) + 1] || "request";
+						return next;
+					});
+				});
+			});
+			form.querySelectorAll("[data-action=back]").forEach(function (b) {
+				b.addEventListener("click", function () { show(steps[Math.max(0, steps.indexOf(step) - 1)]); });
+			});
+			form.querySelectorAll("[data-action=skip]").forEach(function (b) {
+				b.addEventListener("click", function () {
+					run(form, b, function () {
+						return api("save_step", { app: app, step: step, data: {} }).then(function (next) {
+							next.current = steps[steps.indexOf(step) + 1] || "request";
+							return next;
+						});
+					});
+				});
+			});
+		});
+		if (state.status === "wizard") show(state.current);
+	})();
+</script>
+</body>
+</html>

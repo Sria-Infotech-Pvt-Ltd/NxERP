@@ -1,0 +1,23 @@
+# gitleaks configuration (used by CI job `secret-scan` and the pre-commit hook).
+# Start from gitleaks' built-in rules and add ONE narrow allowlist; do not widen it to make a scan pass.
+title = "NXERP gitleaks config"
+
+[extend]
+useDefault = true
+
+# Only clearly fake test data may be allowlisted: values on the reserved `example.test` domain (RFC 2606 / 6761, can never
+# resolve to a real mailbox or host) and the explicit placeholder markers used in *.env.example templates.
+[[allowlists]]
+description = "fake fixtures on example.test and CHANGE_ME / <...; secret> placeholders in *.env.example templates"
+condition = "OR"
+regexTarget = "match"
+regexes = [
+  '''[A-Za-z0-9._%+-]+@example\.test''',
+  '''https?://[A-Za-z0-9.-]*example\.test''',
+  '''CHANGE_ME[A-Za-z0-9_.-]*''',
+  '''<[^<>]*; secret>''',
+  '''<generated; secret>''',
+]
+paths = [
+  '''(^|/)[A-Za-z0-9_.-]*\.env\.example$''',
+]
