@@ -273,3 +273,19 @@ Repository reorganised into `apps/`, `deploy/`, `docs/`, `scripts/` (ADR-007). F
 `access/ login/ launcher/ branding/` packages once tests prove the hook paths (architecture rule 4); port Helpdesk's workflows to the
 root `.github/`; run the new CI and the production image build on GitHub; decide the licence mix; the "Assignee follows Team" work lives
 in a patch outside the repository.
+
+## Hybrid database programme, Phase 1: decide, measure, harden (2026-11-18)
+
+Branch `hybrid/phase-1-harden` (from `feat/nxdesk-onboarding` at `8a4910610`; the prompt names `feat/nxdesk-app-login`, which does not exist here: ASSUMPTION, same tip as the intended base). Work packages 1A, 1B, 1C committed; verified on the fake-data `nxerp-scratch` stack only. No production access: GATE G1 is still open.
+
+**Verified (FACT, run on scratch, 2026-11-18):**
+- `bash -n` and `shellcheck -x` pass on `scripts/isolation_audit.sh`, `deploy/scripts/backup.sh`, `deploy/scripts/restore.sh`; `docker compose ... config -q` exits 0; `scripts/check_architecture.py` OK.
+- `scripts/isolation_audit.sh all` on scratch: one database-level grant, no global privilege, no GRANT OPTION, root password absent from backend/websocket/queue-worker/scheduler, one published service (proxy). **FAIL `grants-host-not-wildcard`**: the site login's host is `%` (finding, to record in `measurements.md` for the real site). 6 apps share the single login (the problem, measured).
+- Check 1.1: plain backup = folder with dump, 2 file archives, `site_config_backup.json`, `MANIFEST`, `SHA256SUMS` (809 tables). Encrypted run = one `.tar.age` plus `.sha256`, no plain folder, last stdout line is the `.tar.age` path.
+- Check 1.2: wrong key: `age: error: no identity matched any of the recipients`; `restore.sh` with the wrong key exits 1 before changing anything.
+- Check 1.3: restore from `.tar.age` ran checksum, decrypt, safety backup, maintenance mode, `bench restore`: 44 s. First run exited 1 only because scratch had its scheduler disabled (health check FAIL scheduler); after `bench enable-scheduler` the health check passes.
+- Check 1.5: `root-env` PASS for all four services; `docker inspect` shows `[no-new-privileges:true]`.
+
+**Fixed while verifying:** `backup.sh` verified archives with `tar -tf "$f"`; GNU tar on Git Bash for Windows reads `C:` as a remote host and the backup aborted. Now `tar -tf - < "$f"` (portable). Existing behaviour elsewhere unchanged.
+
+**Not done (needs the owner):** GATE G1 (assumptions A1 to A13 and `GO READ PROD`), runbook steps 1.3 to 1.10 against a real production copy, GATE G1a (key saved: the key generated for the drill was a throwaway, not the production key), GATE G1b (nightly cron), ADR-009 acceptance, `measurements.md` results.

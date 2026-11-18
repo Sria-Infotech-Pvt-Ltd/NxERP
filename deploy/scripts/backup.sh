@@ -65,7 +65,7 @@ tables=$(gzip -dc "$db" | grep -c '^CREATE TABLE' || true)
 if [ -n "$files" ]; then
 	for f in "$dest"/*-files.tar "$dest"/*-private-files.tar; do
 		[ -f "$f" ] || die "missing files archive: $f"
-		tar -tf "$f" >/dev/null || die "unreadable archive: $f"
+		tar -tf - < "$f" >/dev/null || die "unreadable archive: $f"
 	done
 fi
 
