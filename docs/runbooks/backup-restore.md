@@ -33,6 +33,38 @@ files archives are readable; checksums written. Then check the directory is mode
 encrypted, restrict access, and never attach it to a ticket or chat. Retention and the off-site target are the owner's decisions
 (owner-action-list item 18).
 
+## Encrypted backups (optional, off unless configured)
+
+A plain backup folder holds personal data and the site's `encryption_key`. With [age](https://github.com/FiloSottile/age) it can be
+written as one encrypted file that only the holder of a private key can open. Nothing changes while the variables below are unset.
+
+1. **Make the key pair once** (on your own machine, not on the server): `age-keygen -o nxerp-backup.key`. It prints `Public key: age1...`.
+   The file holds the **private** key.
+2. **Keep the private key safe:** two offline copies (an encrypted USB stick and a password-manager attachment), then delete it from
+   the working folder. **Never keep it on the host that stores the backups**, never commit it, never paste it in a ticket or chat.
+   If every copy is lost, every backup encrypted to it is unreadable for good.
+3. **Turn it on:** set `NXERP_BACKUP_AGE_RECIPIENT=<the age1... public key>` in the host's `.env` (the public key is safe to store).
+   Optionally `NXERP_BACKUP_DELETE_PLAINTEXT=1` removes the plain folder after the encrypted file is written and checked.
+
+```bash
+NXERP_BACKUP_AGE_RECIPIENT=age1... NXERP_BACKUP_DELETE_PLAINTEXT=1 scripts/backup.sh
+# last line: /var/backups/nxerp/<stamp>-<site>.tar.age   (next to it: <stamp>-<site>.tar.age.sha256)
+```
+
+`NXERP_BACKUP_UPLOAD_CMD` receives the `.tar.age` file when encryption is on, so the plaintext never leaves the host.
+`NXERP_BACKUP_KEEP_DAYS` also removes old `.tar.age` files. A missing `age` binary or a recipient that does not start with `age1`
+stops the script before anything is written.
+
+**Restore from an encrypted backup** (run where the private key is, never copy the key to the server):
+
+```bash
+NXERP_BACKUP_AGE_IDENTITY=/path/to/nxerp-backup.key scripts/restore.sh --yes /var/backups/nxerp/<stamp>-<site>.tar.age
+```
+
+The script checks `<file>.sha256`, decrypts into a private temporary folder, then continues exactly as for a plain directory
+(checksums inside the backup, safety backup, maintenance mode, `bench restore`, health check). The temporary folder is removed on exit,
+also on failure. A wrong key or a modified file fails at the decryption step, before anything is changed.
+
 ## Restore (destructive)
 
 ```bash
@@ -45,9 +77,18 @@ The script: verifies `SHA256SUMS` (refuses without it), takes a **safety backup 
 runs `bench restore --force` with files, optionally migrates, clears the cache, switches maintenance mode off, and runs
 `healthcheck.sh`. If `bench restore` fails the site stays in maintenance mode on purpose; the safety backup path is printed.
 
-**Restore drill (do this before you need it):** on a scratch host or the staging-like stack, restore the newest production backup, log
-in, open a document with an attachment, confirm an encrypted field (e.g. an email account password) still works. Record date and result
-here. **No drill has been done yet.**
+**Restore drill (do this before you need it):** on a scratch host or the staging-like stack (compose project `nxerp-scratch`,
+never the live site), restore the newest backup, and for an encrypted one use the commands above. Then:
+
+1. Run `deploy/scripts/healthcheck.sh` and log in; open a document with an attachment; confirm an encrypted field (for example an
+   email account password) still works (if it does not, the `encryption_key` of the backup is missing on the scratch site).
+2. Neutralise a restored copy of real data before it runs: `bench --site <site> set-config mute_emails 1`, `disable-scheduler`, and
+   disable Email Accounts and Webhooks, so it cannot contact real people.
+3. Record in the table below: date, backup file, time the restore took (your real recovery time), result, who ran it.
+
+| Date | Backup | Encrypted | Restore took | Result | By |
+| --- | --- | --- | --- | --- | --- |
+| *(none recorded yet)* | | | | | |
 
 ## Verification after a restore
 

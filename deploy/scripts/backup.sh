@@ -4,12 +4,19 @@
 #   deploy/scripts/backup.sh [--no-files]
 #
 # Output: $NXERP_BACKUP_DIR/<UTC timestamp>-<site>/  holding the Frappe backup files, SHA256SUMS and MANIFEST.
-# The LAST line printed on stdout is the backup directory, so other scripts can capture it.
+# The LAST line printed on stdout is the backup directory (the .tar.age path when the plaintext was deleted), so other scripts can capture it.
 #
 # Optional environment:
 #   NXERP_BACKUP_KEEP_DAYS    delete local backup directories older than N days (default: keep everything)
 #   NXERP_BACKUP_UPLOAD_CMD   command run with the backup directory as $1 after verification, e.g. an rclone/aws wrapper
-#                             (off-site storage is the owner's choice: see docs/governance/owner-action-list.md)
+#                             (off-site storage is the owner's choice: see docs/governance/owner-action-list.md).
+#                             With encryption on it receives the .tar.age file instead, so plaintext never leaves the host.
+#   NXERP_BACKUP_AGE_RECIPIENT  an age PUBLIC key (age1...). When set, after verification the directory is also written as
+#                             <backup-dir>.tar.age (encrypted to that key) with <backup-dir>.tar.age.sha256 next to it.
+#                             Needs the `age` binary; the script stops before touching anything if it is missing. Generate the key
+#                             pair with age-keygen and keep the PRIVATE key offline (docs/runbooks/backup-restore.md). Unset: no change.
+#   NXERP_BACKUP_DELETE_PLAINTEXT  1: after the encrypted file is written and checked, remove the plaintext directory, and print the
+#                             .tar.age path as the last line. Ignored unless NXERP_BACKUP_AGE_RECIPIENT is set. Default: keep it.
 #
 # SECURITY: the backup contains personal data and the site's encryption_key (in the site config copy), which is
 # required to restore encrypted fields. Treat the directory as secret: mode 700, encrypted storage, restricted access.
@@ -23,6 +30,17 @@ case "${1:-}" in
 	"") ;;
 	*) die "usage: $0 [--no-files]" ;;
 esac
+
+# encryption is optional; fail before anything is written if it was asked for but cannot work
+encrypt=0
+if [ -n "${NXERP_BACKUP_AGE_RECIPIENT:-}" ]; then
+	command -v age >/dev/null 2>&1 || die "NXERP_BACKUP_AGE_RECIPIENT is set but the age binary is not installed (see docs/runbooks/backup-restore.md)"
+	case "$NXERP_BACKUP_AGE_RECIPIENT" in
+		age1*) ;;
+		*) die "NXERP_BACKUP_AGE_RECIPIENT must be an age public key starting with age1 (never the private key)" ;;
+	esac
+	encrypt=1
+fi
 
 stamp=$(date -u +%Y%m%dT%H%M%SZ)
 dest="$NXERP_BACKUP_DIR/$stamp-$NXERP_SITE"
@@ -64,11 +82,33 @@ rm -f "$dest/.listing"
 chmod 600 "$dest"/* 2>/dev/null || true
 log "verified: $tables tables in the dump, $(find "$dest" -type f | wc -l | tr -d ' ') files, checksums written"
 
+result=$dest
+upload=$dest
+if [ "$encrypt" = 1 ]; then
+	enc="$dest.tar.age"
+	log "encrypting to $enc"
+	if ! (umask 077 && tar -C "$dest" -cf - . | age -r "$NXERP_BACKUP_AGE_RECIPIENT" -o "$(hostpath "$enc")"); then
+		rm -f "$enc"
+		die "encryption failed; the plaintext backup is intact: $dest"
+	fi
+	[ -s "$enc" ] || { rm -f "$enc"; die "encrypted file is empty; the plaintext backup is intact: $dest"; }
+	(cd "$NXERP_BACKUP_DIR" && sha256sum -- "$(basename "$enc")" >"$(basename "$enc").sha256") || die "could not write the checksum of $enc"
+	chmod 600 "$enc" "$enc.sha256" 2>/dev/null || true
+	log "encrypted: $(wc -c <"$enc" | tr -d ' ') bytes, checksum written"
+	upload=$enc
+	if [ "${NXERP_BACKUP_DELETE_PLAINTEXT:-0}" = 1 ]; then
+		rm -rf "$dest"
+		log "plaintext directory removed"
+		result=$enc
+	fi
+fi
+
 if [ -n "${NXERP_BACKUP_UPLOAD_CMD:-}" ]; then
 	log "uploading with NXERP_BACKUP_UPLOAD_CMD"
-	$NXERP_BACKUP_UPLOAD_CMD "$dest" || die "upload command failed (the local backup is intact: $dest)"
+	$NXERP_BACKUP_UPLOAD_CMD "$upload" || die "upload command failed (the local backup is intact: $upload)"
 fi
 if [ -n "${NXERP_BACKUP_KEEP_DAYS:-}" ]; then
 	find "$NXERP_BACKUP_DIR" -mindepth 1 -maxdepth 1 -type d -mtime "+$NXERP_BACKUP_KEEP_DAYS" -print -exec rm -rf {} + >&2 || true
+	find "$NXERP_BACKUP_DIR" -mindepth 1 -maxdepth 1 -type f -name '*.tar.age*' -mtime "+$NXERP_BACKUP_KEEP_DAYS" -print -delete >&2 || true
 fi
-echo "$dest"
+echo "$result"
