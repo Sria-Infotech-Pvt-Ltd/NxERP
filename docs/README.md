@@ -1,4 +1,4 @@
-# NXERP documentation index
+# NXDESK documentation index
 
 Every document in `docs/`, by purpose. Start with the row that matches what you are doing. Statements in these documents are
 labelled **FACT** (verified, with evidence), **ASSUMPTION** or **DECISION**; where a page says a thing was not verified, it was not.
@@ -9,11 +9,13 @@ labelled **FACT** (verified, with evidence), **ASSUMPTION** or **DECISION**; whe
 | Understand how the platform fits together | [architecture/overview.md](architecture/overview.md) |
 | Know why something is the way it is | [adr/README.md](adr/README.md) (the decision log) |
 | Add an app (HRMS, Project Management, ...) | [guides/how-to-add-an-app.md](guides/how-to-add-an-app.md) |
+| See every existing, planned and proposed application | [ecosystem/application-registry.md](ecosystem/application-registry.md) ([how the lists differ](ecosystem/README.md)) |
+| Work on the hybrid database programme (branches, worktrees) | [governance/hybrid-programme-workflow.md](governance/hybrid-programme-workflow.md) |
 | Find out what is done and what is open | [PROGRESS.md](PROGRESS.md), [acceptance/acceptance-report.md](acceptance/acceptance-report.md) |
 | Fix a login or environment problem | [runbooks/login-recovery.md](runbooks/login-recovery.md), [guides/troubleshooting.md](guides/troubleshooting.md) |
 
 The project rules live in the repository root: [CLAUDE.md](../CLAUDE.md) (non-negotiable rules for people and AI assistants),
-[CONTRIBUTING.md](../CONTRIBUTING.md) (branches, commits, reviews), [README.md](../README.md) (what NXERP is), and `CODEOWNERS`.
+[CONTRIBUTING.md](../CONTRIBUTING.md) (branches, commits, reviews), [README.md](../README.md) (what NXDESK is), and `CODEOWNERS`.
 
 ## Onboarding
 

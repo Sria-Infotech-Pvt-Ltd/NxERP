@@ -1,6 +1,6 @@
 # nxerp_platform (Frappe app `nxerp`)
 
-The NXERP platform app: the shared login (`/login`), the post-login router (`/nxerp/go`), the launcher (`/nxerp/apps`),
+The NXDESK platform app (technical name `nxerp`): the shared login (`/login`), the post-login router (`/nxerp/go`), the launcher (`/nxerp/apps`),
 the access layer that decides which apps a user may enter (enforced on the server), and platform branding.
 
 - **Folder name vs app name.** This folder is `apps/nxerp_platform/`; the Frappe app and Python package are called

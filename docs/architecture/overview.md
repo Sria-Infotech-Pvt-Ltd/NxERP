@@ -1,4 +1,4 @@
-# NXERP architecture overview
+# NXDESK architecture overview
 
 Status: matches the code on branch `phase-4/release-readiness` (Phases 1 to 3 built; Phase 4 is release readiness).
 Solid boxes exist and are covered by tests; dashed boxes are **not built**. Where this page says a thing works, the

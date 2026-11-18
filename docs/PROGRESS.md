@@ -11,6 +11,20 @@ Resume point for the next session. Update this file in every PR that changes pha
 | 3: Unified login, launcher, routing | **Complete locally and browser-verified (55/55); not pushed, no PR** |
 | 4: Helpdesk parity, CI/CD, release readiness, acceptance | **Built locally; nothing ran on GitHub; see `docs/acceptance/acceptance-report.md`** (9 BLOCKED-NEEDS-OWNER, most others PARTIAL) |
 
+## Hybrid database programme, Phase 0: identity, ecosystem registry, worktrees (2026-11-18)
+
+Branch `hybrid/phase-0-foundation` (from `feat/nxdesk-onboarding` at `8a4910610`). Not pushed, no PR. Documentation only: no application code, deployment configuration or production was touched.
+
+**Done:** NXDESK shown as the umbrella in `README.md`, `docs/README.md`, `docs/architecture/overview.md`, `CONTRIBUTING.md` and the platform README (titles and intro lines only; technical identifiers unchanged);
+planning registry for existing, planned and proposed applications in `docs/ecosystem/` (README plus `application-registry.md`); branch and worktree rules in `docs/governance/hybrid-programme-workflow.md`
+(no `hybrid/track-*` branches, stacked phase branches, merge commits, one ADR-009 owner).
+
+**Left alone on purpose (recommendations, not changes):** `hooks.py` `app_description`, `apps/nxerp_platform/pyproject.toml` description, the Frappe module name "NXERP Platform" (`modules.txt`, two DocType JSON files, one test),
+the Dockerfile image label, the issue-template text, and historical documents (ADR text, audit, research, evidence), which ADR-008 says to read as "NXDESK platform". `README.md` still describes the old two-folder
+workspace (`frapper sria/`), which ADR-007 superseded: a topology fix, separate from naming.
+
+**Open for the owner:** "Royal HRMS" vs "AIRA HRMS" (A13), scope and priority of Project Management, Budget Management and CRM, push access for the branch chain.
+
 ## Public site design pass (2026-11-13)
 
 Same branch (`feat/nxdesk-onboarding`). Owner request: the entry page looked flat and needs more modules. Added: grouped header menus (Products, Platform, Solutions, Company; a menu panel on small screens), a richer footer,

@@ -1,6 +1,6 @@
-# Contributing to NXERP
+# Contributing to NXDESK (repository NxERP)
 
-Read [CLAUDE.md](CLAUDE.md) first; it holds the non-negotiable rules.
+Read [CLAUDE.md](CLAUDE.md) first; it holds the non-negotiable rules. The hybrid database programme has its own branch and worktree rules: [docs/governance/hybrid-programme-workflow.md](docs/governance/hybrid-programme-workflow.md).
 
 ## Branching
 

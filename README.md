@@ -1,6 +1,13 @@
-# NXERP
+# NXDESK
 
-NXERP is Sria Infotech's enterprise platform on the [Frappe Framework](https://github.com/frappe/frappe).
+NXDESK is Sria Infotech's umbrella platform on the [Frappe Framework](https://github.com/frappe/frappe): one login, one launcher and one identity over the products below. This repository (GitHub name `NxERP`) holds the platform app, whose technical name stays `nxerp`.
+
+```
+NXDESK  (umbrella platform)
+  |-- NXERP            ERP product (ERPNext inside)
+  |-- Sria Helpdesk    support product (Helpdesk inside)
+  `-- future products  planned or proposed, not installed: docs/ecosystem/application-registry.md
+```
 
 | Name | What it is |
 | --- | --- |
@@ -10,7 +17,7 @@ NXERP is Sria Infotech's enterprise platform on the [Frappe Framework](https://g
 | **Frappe Framework** | The underlying technology; not presented to business users as an application |
 | **`nxerp` (this app)** | The platform app that lets the other apps feel like one product. Its technical name does not change |
 
-Future apps (HRMS, Project Management, Budget Management, ...) are **not installed** and are not shown anywhere.
+Future apps (HRMS, CRM, Project Management, Budget Management, ...) are **not installed** and are not shown anywhere. They are tracked, as planning only, in the [ecosystem registry](docs/ecosystem/application-registry.md).
 
 > **Status: Phase 4 (release readiness), not released.** The `nxerp` app holds the registry, the access layer, the shared login, the router and the launcher. Nothing is pushed and CI has not run on GitHub. See [docs/PROGRESS.md](docs/PROGRESS.md), [docs/acceptance/acceptance-report.md](docs/acceptance/acceptance-report.md) and the [docs index](docs/README.md).
 
