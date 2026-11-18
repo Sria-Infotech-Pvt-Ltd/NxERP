@@ -289,3 +289,5 @@ Branch `hybrid/phase-1-harden` (from `feat/nxdesk-onboarding` at `8a4910610`; th
 **Fixed while verifying:** `backup.sh` verified archives with `tar -tf "$f"`; GNU tar on Git Bash for Windows reads `C:` as a remote host and the backup aborted. Now `tar -tf - < "$f"` (portable). Existing behaviour elsewhere unchanged.
 
 **Not done (needs the owner):** GATE G1 (assumptions A1 to A13 and `GO READ PROD`), runbook steps 1.3 to 1.10 against a real production copy, GATE G1a (key saved: the key generated for the drill was a throwaway, not the production key), GATE G1b (nightly cron), ADR-009 acceptance, `measurements.md` results.
+
+**Owner decisions (2026-11-18):** assumptions A1 to A13 accepted as defaults (ADR-009 stays Proposed until the owner sets Accepted). **No production host exists yet** (owner: "NO PROD YET"): runbook steps 1.3 to 1.10 against a real production copy and the nightly cron line (G1b) are deferred until one exists; `GO READ PROD` / `GO INSTALL BACKUP JOB` were given but have nothing to act on. Real backup key pair generated outside git (public key `age1ttd9...`, private key on the owner's machine only); G1a (`KEY SAVED`) pending.
