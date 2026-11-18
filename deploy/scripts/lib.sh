@@ -46,7 +46,7 @@ hostpath() {
 dc() {
 	local args=(docker compose) f
 	[ -z "$NXERP_COMPOSE_PROJECT" ] || args+=(-p "$NXERP_COMPOSE_PROJECT")
-	for f in $NXERP_ENV_FILES; do args+=(--env-file "$f"); done
+	for f in $NXERP_ENV_FILES; do args+=(--env-file "$(hostpath "$f")"); done
 	args+=(-f "$NXERP_COMPOSE_FILE")
 	"${args[@]}" "$@"
 }
