@@ -1,5 +1,7 @@
 # NXERP application data isolation blueprint
 
+> **Addendum 2026-11-19: production measured, assumptions A1 and A2 corrected.** A read-only look at the live host (details in `measurements.md`) shows: NXERP and Helpdesk are already **two separate Frappe sites** with separate databases and `localhost`-only logins; the host is **bare-metal systemd, not Docker**, shared with at least 8 other applications; MariaDB is 10.11 (pin: 11.8); the NXERP site holds almost no business data (0 customers, 0 invoices) while Helpdesk holds 53 tickets. Consequences: the "one shared database login" finding in Part 1 describes the staging-like Docker stack and the repository's bootstrap, not production; the Docker-specific parts of Phases 1, 5 and 8 (compose, `backup.sh`) need a bare-metal variant; Phases 2 to 4 (contracts, outbox, shared read layer) are unaffected. The HTML copy of this blueprint is not regenerated and is out of date on these points.
+
 Branch `docs/architecture-isolation`, written 2026-11-03 against commit `83b19b95b` (on `develop` at `84905cec5`). Documentation only: no production code changed, nothing pushed.
 Pins in force: Frappe v16.53.0, ERPNext v16.52.1, MariaDB 11.8, Redis 8.6 (`deploy/versions.env`, `deploy/apps.json`).
 
@@ -23,8 +25,8 @@ Pins in force: Frappe v16.53.0, ERPNext v16.52.1, MariaDB 11.8, Redis 8.6 (`depl
 
 | ID | Assumption taken | Override if |
 | --- | --- | --- |
-| A1 | Production runs one site with all six apps, as staging-like does | production already has several sites |
-| A2 | One organisation, one Docker host, a handful of apps | multi-client SaaS or several hosts |
+| A1 | ~~Production runs one site with all six apps~~ **Measured 2026-11-19: production has two sites (NXERP and Helpdesk) on separate benches, each with its own database and login** | corrected |
+| A2 | One organisation, **one bare-metal systemd host (no Docker) shared with other applications**, a handful of apps | multi-client SaaS or several hosts |
 | A3 | Helpdesk becomes read-only toward ERPNext (no more writes to Customer) | support needs the two-way sync |
 | A4 | Customers (portal users) log in at the identity site too | you accept local Helpdesk customer accounts |
 | A5 | Business roles (`Agent`, `Sales User`) stay managed inside each app; the identity site grants only app access | you want one place for all roles |
