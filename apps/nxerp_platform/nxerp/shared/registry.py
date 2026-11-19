@@ -54,3 +54,52 @@ def payload_unlisted(entity_type: str, payload: dict) -> list:
 	"""Payload keys that are not in the entity's allow-list (empty list = payload is allowed)."""
 	allowed = set(shared_fields(entity_type))
 	return sorted(key for key in payload if key not in allowed)
+
+
+EVENT_KEYS = (
+	"event_id",
+	"seq",
+	"source_app",
+	"entity_type",
+	"entity_id",
+	"op",
+	"contract_version",
+	"source_modified",
+	"tenant_id",
+	"payload",
+)
+
+
+def event_problems(event: dict) -> list:
+	"""What is wrong with one feed event, judged against the contracts (empty list = acceptable).
+
+	Stdlib twin of envelope_schema.json plus the per-entity rules a schema cannot hold: a known entity, the
+	owner's source_app, the current contract version, and a payload with no field outside the allow-list.
+	"""
+	problems = [f"missing key '{key}'" for key in EVENT_KEYS if key not in event]
+	problems += [f"unknown key '{key}'" for key in event if key not in EVENT_KEYS]
+	if problems:
+		return problems
+	contract = get_contract(event["entity_type"])
+	if contract is None:
+		return [f"unknown entity_type '{event['entity_type']}'"]
+	if event["op"] not in ("upsert", "delete", "resync"):
+		problems.append(f"unknown op '{event['op']}'")
+	if event["source_app"] != contract["owner_app"]:
+		problems.append(f"source_app '{event['source_app']}' is not the owner '{contract['owner_app']}'")
+	if event["contract_version"] != contract["contract_version"]:
+		problems.append(
+			f"contract_version {event['contract_version']} is not the current {contract['contract_version']}"
+		)
+	payload = event["payload"]
+	if event["op"] == "upsert":
+		if not isinstance(payload, dict):
+			problems.append("an upsert needs a payload object")
+		else:
+			problems += [
+				f"payload field '{key}' is not in the allow-list"
+				for key in payload_unlisted(event["entity_type"], payload)
+			]
+	elif payload is not None:
+		problems.append(f"a {event['op']} carries no payload")
+	return problems

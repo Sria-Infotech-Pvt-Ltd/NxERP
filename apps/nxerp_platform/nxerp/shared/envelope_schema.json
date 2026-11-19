@@ -1,0 +1,53 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "nxerp/shared/envelope_schema.json",
+	"title": "NXDESK shared-entity event envelope",
+	"description": "One event as an owner's feed returns it to the projector. The payload carries only the contract's allow-listed fields (checked per entity by nxerp.shared.registry.event_problems, because the allow-list differs for every entity). upsert carries a payload; delete carries none; resync means 're-read this entity from the owner' and carries none.",
+	"type": "object",
+	"additionalProperties": false,
+	"required": [
+		"event_id",
+		"seq",
+		"source_app",
+		"entity_type",
+		"entity_id",
+		"op",
+		"contract_version",
+		"source_modified",
+		"tenant_id",
+		"payload"
+	],
+	"properties": {
+		"event_id": {"type": "string", "minLength": 1, "maxLength": 64},
+		"seq": {"type": ["integer", "null"], "minimum": 1},
+		"source_app": {"type": "string", "pattern": "^[a-z][a-z0-9_]{1,40}$"},
+		"entity_type": {
+			"enum": [
+				"contact",
+				"customer",
+				"employee_ref",
+				"org_unit",
+				"project_ref",
+				"ticket_summary",
+				"user_ref"
+			]
+		},
+		"entity_id": {"type": "string", "minLength": 1, "maxLength": 140},
+		"op": {"enum": ["upsert", "delete", "resync"]},
+		"contract_version": {"type": "integer", "minimum": 1},
+		"source_modified": {
+			"description": "The owner's modified of the row at write time: the version stamp.",
+			"type": "string",
+			"pattern": "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}(\\.\\d{1,6})?$"
+		},
+		"tenant_id": {"type": "string", "minLength": 1, "maxLength": 64},
+		"payload": {"type": ["object", "null"]}
+	},
+	"allOf": [
+		{
+			"if": {"properties": {"op": {"const": "upsert"}}},
+			"then": {"properties": {"payload": {"type": "object"}}},
+			"else": {"properties": {"payload": {"type": "null"}}}
+		}
+	]
+}
