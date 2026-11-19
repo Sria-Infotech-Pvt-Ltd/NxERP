@@ -410,6 +410,11 @@ class Projector:
 
 	def run_forever(self, poll_seconds: float = 1.0) -> None:
 		log.info("projector started for %s source(s)", len(self.sources))
+		try:
+			apply.record_contracts(self.conn())
+		except Exception as exc:
+			log.warning("could not record the contracts: %s", type(exc).__name__)
+			self.reset_connection()
 		while not self.stopping:
 			for source in self.sources:
 				self._cycle(source)

@@ -16,6 +16,7 @@ carries the delete's stamp, so views hide it and a late older upsert cannot brin
 import json
 
 from nxerp.shared import payload as payload_module
+from nxerp.shared import registry
 from nxerp.shared_service import sqlutil
 from nxerp.shared_service.schema.generate_columns import table_name
 
@@ -195,3 +196,25 @@ def dead_letter(cur, source: str, event: dict, reason: str, attempts: int = 1) -
 			attempts,
 		),
 	)
+
+
+def record_contracts(conn) -> int:
+	"""Record which contracts (by hash) this service runs, so drift between the files and the running service is visible."""
+	count = 0
+	with conn.cursor() as cur:
+		for contract in registry.load_contracts().values():
+			cur.execute(
+				"INSERT INTO contract_registry (entity_type, contract_version, owner_app, status, contract_sha256, loaded_at) "
+				"VALUES (%s, %s, %s, %s, %s, NOW(6)) ON DUPLICATE KEY UPDATE contract_version = VALUES(contract_version), "
+				"owner_app = VALUES(owner_app), status = VALUES(status), contract_sha256 = VALUES(contract_sha256), loaded_at = NOW(6)",
+				(
+					contract["entity_type"],
+					contract["contract_version"],
+					contract["owner_app"],
+					contract["status"],
+					payload_module.payload_hash(contract),
+				),
+			)
+			count += 1
+	conn.commit()
+	return count

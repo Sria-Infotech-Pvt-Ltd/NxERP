@@ -6,6 +6,9 @@
 	views                      generate the per-consumer views, then refresh the per-object grants
 	status                     counts only: rows per entity table, cursors, dead letters, metrics
 	projector [--once]         pull the owners' feeds and apply them (the only writer of the entity tables)
+	reconcile --recent|--full  compare with the owners and repair drift (owner to shared, never the reverse)
+	reconcile-loop             the reconciler process: recent scan hourly, full compare nightly
+	rebuild --source X|--all   snapshot every entity, replay the events since, and report the drift left
 
 Output is JSON, one object per line, with counts and names only: never a password, a token or a payload value.
 """
@@ -118,6 +121,59 @@ def cmd_projector(args) -> int:
 	return 0
 
 
+def _ops_setup():
+	logging.basicConfig(
+		level=logging.INFO, stream=sys.stderr, format="%(asctime)s %(levelname)s %(name)s %(message)s"
+	)
+	settings = db.settings_from_env("projector")
+	return (lambda: db.connect(settings)), config.load_sources()
+
+
+def cmd_reconcile(args) -> int:
+	from nxerp.shared_service.reconcile import HashFunctionMismatch, Reconciler
+
+	connect, sources = _ops_setup()
+	try:
+		report = Reconciler(connect, sources).run("recent" if args.recent else "full", only=args.source)
+	except HashFunctionMismatch as exc:
+		emit(command="reconcile", status="failed", error=str(exc))
+		return 2
+	emit(command="reconcile", **report)
+	return 0 if report["refused"] == 0 and all(s["status"] == "ok" for s in report["sources"].values()) else 1
+
+
+def cmd_reconcile_loop(args) -> int:
+	"""The reconciler process: a recent scan every hour, a full compare nightly (SHARED_RECONCILE_FULL_HOUR, UTC, default 3)."""
+	import os
+
+	from nxerp.shared_service.reconcile import Reconciler, Schedule, run_schedule
+
+	connect, sources = _ops_setup()
+	state = {"stop": False}
+
+	def stop(signum, frame):
+		state["stop"] = True
+
+	signal.signal(signal.SIGTERM, stop)
+	signal.signal(signal.SIGINT, stop)
+	schedule = Schedule(full_hour=int(os.environ.get("SHARED_RECONCILE_FULL_HOUR", "3")))
+	run_schedule(Reconciler(connect, sources), schedule, stop=lambda: state["stop"])
+	return 0
+
+
+def cmd_rebuild(args) -> int:
+	from nxerp.shared_service.rebuild import RebuildError, rebuild
+
+	connect, sources = _ops_setup()
+	try:
+		report = rebuild(connect, sources, only=None if args.all else args.source, relay_wait=args.relay_wait)
+	except RebuildError as exc:
+		emit(command="rebuild", **exc.report, error=str(exc))
+		return 1
+	emit(command="rebuild", **report)
+	return 0 if all(s["drift_after"] == 0 for s in report["sources"].values()) else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
 	parser = argparse.ArgumentParser(prog="python -m nxerp.shared_service", description=__doc__)
 	sub = parser.add_subparsers(dest="command", required=True)
@@ -127,6 +183,19 @@ def build_parser() -> argparse.ArgumentParser:
 	grants_parser.add_argument("action", choices=["sync", "show"])
 	sub.add_parser("views")
 	sub.add_parser("status")
+	reconcile_parser = sub.add_parser("reconcile")
+	mode = reconcile_parser.add_mutually_exclusive_group(required=True)
+	mode.add_argument("--recent", action="store_true", help="documents modified since the last scan (hourly)")
+	mode.add_argument("--full", action="store_true", help="every id and payload hash (nightly)")
+	reconcile_parser.add_argument("--source", help="only this source")
+	sub.add_parser("reconcile-loop")
+	rebuild_parser = sub.add_parser("rebuild")
+	target = rebuild_parser.add_mutually_exclusive_group(required=True)
+	target.add_argument("--source", help="rebuild this source")
+	target.add_argument("--all", action="store_true", help="rebuild every source")
+	rebuild_parser.add_argument(
+		"--relay-wait", type=float, default=90.0, help="seconds to wait for the owner's relay (default 90)"
+	)
 	projector_parser = sub.add_parser("projector")
 	projector_parser.add_argument("--once", action="store_true", help="one pass over every source, then exit")
 	return parser
@@ -139,6 +208,9 @@ HANDLERS = {
 	"views": cmd_views,
 	"status": cmd_status,
 	"projector": cmd_projector,
+	"reconcile": cmd_reconcile,
+	"reconcile-loop": cmd_reconcile_loop,
+	"rebuild": cmd_rebuild,
 }
 
 
