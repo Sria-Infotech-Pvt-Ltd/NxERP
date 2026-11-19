@@ -51,6 +51,10 @@ def assign_sequence(raise_if_busy: bool = False) -> int:
 	"""Give every committed pending row the next sequence number. Returns how many rows were sequenced."""
 	if not outbox.is_enabled():
 		return 0
+	# The relay is a job: it ends any transaction it inherits first. MariaDB's default isolation (REPEATABLE READ) keeps
+	# the snapshot of the first read in a transaction, so a row committed by another connection since then would stay
+	# invisible and be sequenced late. A scheduled run starts clean; this makes the function safe anywhere else too.
+	frappe.db.commit()
 	if not frappe.db.sql("SELECT GET_LOCK(%s, 0)", (LOCK_NAME,))[0][0]:
 		if raise_if_busy:
 			raise RelayBusy("the outbox relay is already running")
