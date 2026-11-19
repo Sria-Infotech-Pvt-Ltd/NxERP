@@ -8,9 +8,18 @@ names) and drops them afterwards: the stack's real database and accounts are nev
 
 import os
 import secrets
+import tempfile
 import unittest
+from pathlib import Path
 
-from nxerp.shared_service import accounts, db, grants, migrate, views
+from nxerp.shared import registry
+from nxerp.shared_service import accounts, db, grants, migrate, sqlutil, views
+from nxerp.shared_service.config import Source
+from nxerp.shared_service.feedclient import FeedClient
+from nxerp.shared_service.metrics import Metrics
+from nxerp.shared_service.projector import Projector
+from nxerp.shared_service.schema.generate_columns import table_name
+from nxerp.shared_service.tests.fakeowner import FakeOwner
 
 SKIP_REASON = "no reachable MariaDB with SHARED_DB_ROOT_PASSWORD set (run: deploy/scripts/shared.sh test)"
 
@@ -118,3 +127,75 @@ class SharedDbTestCase(unittest.TestCase):
 		if role == "root":
 			return db.connect(db.settings_from_env("root"), database=cls.db_name, autocommit=autocommit)
 		return db.connect(db.settings_from_env(role, cls.env), autocommit=autocommit)
+
+
+class OwnerTestCase(SharedDbTestCase):
+	"""A shared database plus a fake owner feed and a projector wired to both. Every test starts from empty shared tables."""
+
+	batch_size = 500
+
+	def setUp(self):
+		self.owner = FakeOwner().start()
+		self.addCleanup(self.owner.stop)
+		self._tmp = tempfile.TemporaryDirectory()
+		self.addCleanup(self._tmp.cleanup)
+		key_file = Path(self._tmp.name, "feed.key")
+		key_file.write_text(self.owner.key + "\n", encoding="utf-8")
+		self.source = Source("stub", self.owner.base_url, str(key_file), None)
+		self.metrics = Metrics()
+		self.projector = self.new_projector()
+		self.addCleanup(self.projector.reset_connection)
+		root = self.connect("root")
+		with root.cursor() as cur:
+			for entity_type in registry.load_contracts():
+				cur.execute(sqlutil.on_table("DELETE FROM", table_name(entity_type)))
+			for table in ("sync_cursor", "sync_dead_letter", "sync_metric"):
+				cur.execute(sqlutil.on_table("DELETE FROM", table))
+		root.commit()
+		root.close()
+
+	def new_projector(self, **kwargs) -> Projector:
+		options = {"metrics": self.metrics, "batch_size": self.batch_size}
+		options.update(kwargs)
+		return Projector(
+			lambda: self.connect("projector"),
+			[self.source],
+			client_factory=lambda source: FeedClient(source, self.owner.key),
+			**options,
+		)
+
+	def query(self, sql: str, params=None) -> list:
+		root = self.connect("root")
+		try:
+			with root.cursor() as cur:
+				cur.execute(sql, params)
+				rows = list(cur.fetchall())
+			root.commit()
+			return rows
+		finally:
+			root.close()
+
+	def row(self, entity_type: str, entity_id: str):
+		rows = self.query(
+			sqlutil.on_table("SELECT * FROM", table_name(entity_type), " WHERE entity_id = %s"), (entity_id,)
+		)
+		return rows[0] if rows else None
+
+	def count(self, entity_type: str, tombstones: bool = False) -> int:
+		where = "" if tombstones else " WHERE deleted_at IS NULL"
+		return self.query(sqlutil.on_table("SELECT COUNT(*) AS n FROM", table_name(entity_type), where))[0][
+			"n"
+		]
+
+	def cursor(self) -> dict:
+		rows = self.query("SELECT last_seq, state FROM sync_cursor WHERE source_app = 'stub'")
+		return rows[0] if rows else {"last_seq": 0, "state": "none"}
+
+	def dead_letters(self) -> list:
+		return self.query(
+			"SELECT event_id, seq, entity_id, error_text, event_json, attempts FROM sync_dead_letter ORDER BY id"
+		)
+
+	def metric(self, name: str):
+		rows = self.query("SELECT value FROM sync_metric WHERE source = 'stub' AND name = %s", (name,))
+		return rows[0]["value"] if rows else None
