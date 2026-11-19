@@ -18,9 +18,9 @@ name: CI
 
 on:
   pull_request:
-    branches: [main, develop]
+    branches: [main, develop, "integration/**"]
   push:
-    branches: [main, develop]
+    branches: [main, develop, "integration/**"]
   schedule:
     # weekly: GitHub evicts caches not used for 7 days, so refresh the stack cache on main
     - cron: "17 3 * * 1"

@@ -17,17 +17,24 @@
 --   * this file creates no account and grants nothing (accounts and grants are Phase 4).
 --
 -- Idempotent upsert, as the projector will run it inside one transaction together with the cursor update
--- (shown for entity_customer; every entity table has the same system columns):
+-- (shown for entity_customer; every entity table has the same system columns). MariaDB syntax: VALUES(col),
+-- not the MySQL 8 "AS new" row alias. The business columns and the other stamps are assigned FIRST, each guarded by
+-- the comparison on the OLD stamps; source_modified and last_seq are assigned LAST, because a column assigned
+-- earlier in ON DUPLICATE KEY UPDATE is already changed when a later assignment reads it.
 --   INSERT INTO entity_customer (source_app, entity_id, tenant_id, <fields>, source_modified, last_seq,
 --                                contract_version, deleted_at, synced_at)
---   VALUES (...) AS new
+--   VALUES (...)
 --   ON DUPLICATE KEY UPDATE
---     <field> = IF((new.source_modified, new.last_seq) > (source_modified, last_seq), new.<field>, <field>), ...
---     (source_modified, last_seq, contract_version, deleted_at, synced_at likewise, guarded by the same comparison);
---   UPDATE sync_cursor SET last_seq = ?, last_event_id = ?, updated_at = NOW(6) WHERE source_app = ?;
+--     <field> = IF((VALUES(source_modified), VALUES(last_seq)) > (source_modified, last_seq), VALUES(<field>), <field>),
+--     (deleted_at, synced_at, contract_version likewise),
+--     source_modified = GREATEST(source_modified, VALUES(source_modified)),
+--     last_seq = IF(VALUES(source_modified) > source_modified
+--                   OR (VALUES(source_modified) = source_modified AND VALUES(last_seq) > last_seq),
+--                   VALUES(last_seq), last_seq);
+--   INSERT INTO sync_cursor ... ON DUPLICATE KEY UPDATE last_seq = VALUES(last_seq), updated_at = VALUES(updated_at);
 --   COMMIT;
--- Executed against MariaDB 11.8: UNVERIFIED in Phase 2 (no database server is started here). Phase 4 runs it:
---   mariadb --user=<migration account> < 0001_shared_model.sql   on an empty scratch MariaDB 11.8.
+-- Verified on MariaDB 11.8.9 by scripts/check_shared_ddl.sh (2026-11-19): the file runs twice, an older event is
+-- ignored, a replay is a no-op, a newer event wins, a tombstone sticks and a late older event cannot resurrect it.
 
 -- ---------------------------------------------------------------------------------------------------------
 -- Entity tables (generated)

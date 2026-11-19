@@ -75,7 +75,7 @@ Revisit this decision, and say so in a new ADR, when any of these becomes true:
 
 Not decided by this ADR and not verified. Each one has an owner decision or a check:
 
-1. **DDL not executed.** `nxerp/shared_service/schema/0001_shared_model.sql` is checked against the contracts by parsing only. Executing it on MariaDB 11.8 is UNVERIFIED; Phase 4 runs it on an empty scratch server.
+1. ~~**DDL not executed.**~~ **Resolved 2026-11-19.** `scripts/check_shared_ddl.sh` runs `0001_shared_model.sql` twice on a throwaway MariaDB 11.8.9 container and checks 12 tables, utf8mb4, no foreign keys, real columns equal to the contracts, the idempotent upsert (older event ignored, replay a no-op, newer wins, tombstone sticks, late older event cannot resurrect), cursor rollback and the dead-letter unique key: all PASS. Re-run it in Phase 4.
 2. **MariaDB version.** The pin is 11.8 (ADR-002); the live host runs 10.11.14. Which version the shared layer and the owners run in production is an ADR-002 decision.
 3. **Hosting.** The shared read database, the projector and the Read API need a place on a host that today runs more than eight other applications under one operator account.
 4. **Identity owner.** `user_ref` is owned by `identity`, a planned site (Phase 6). Until then each app keeps its own `User` table; whether one of them publishes `user_ref` in the meantime is not decided.
@@ -85,7 +85,7 @@ Not decided by this ADR and not verified. Each one has an owner decision or a ch
 8. **Derived overdue flag.** Whether Helpdesk may see a `has_overdue_invoice` boolean (blueprint A12): off by default, not in any contract.
 9. **Retention and compliance.** Outbox rows kept 14 days and read audit 400 days are ASSUMPTIONS; a compliance owner decides, including right-to-erasure handling.
 10. **Virtual DocType as a Link target** for Desk screens: link validation has a virtual branch, search dispatch was not verified.
-11. **CI.** The new contract check is a step in `.github/workflows/ci.yml`; no workflow has run on GitHub with it.
+11. ~~**CI.**~~ **Partly resolved 2026-11-19.** The contract check ran on GitHub (dispatched on `integration/hybrid-db`) and passed. The first run also exposed a bandit finding in a Phase 2 test (fixed). CI did not run for pull requests into `integration/hybrid-db` until `ci.yml` was extended to `integration/**`. Three CI jobs fail for reasons that predate this programme (`license-check`: four third-party packages outside the licence policy; `e2e (journeys)`; the aggregate `ci-gate`); they were already failing on `develop` on 2026-11-05 and are the team's to resolve.
 
 ## Assumptions A1 to A13 (accepted by the owner)
 

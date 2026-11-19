@@ -8,10 +8,11 @@ The JSON Schema test needs the `jsonschema` package and is skipped (not failed) 
 stdlib only and checks the same structure.
 """
 
+import contextlib
 import copy
 import importlib.util
+import io
 import json
-import subprocess
 import sys
 import tempfile
 import unittest
@@ -218,14 +219,16 @@ class TestLintRejectsBadContracts(unittest.TestCase):
 
 class TestLintCommandLine(unittest.TestCase):
 	def run_lint(self, *args):
-		return subprocess.run(
-			[sys.executable, "-I", str(LINT_PATH), *args], capture_output=True, text=True, cwd=REPO
-		)
+		"""Run the lint's own main() in-process (as the architecture tests do) and capture what it prints."""
+		out, err = io.StringIO(), io.StringIO()
+		with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+			code = lint.main(["check_contracts.py", *args])
+		return code, out.getvalue(), err.getvalue()
 
 	def test_default_run_passes_for_seven(self):
-		result = self.run_lint()
-		self.assertEqual(result.returncode, 0, result.stderr)
-		self.assertEqual(result.stdout.count("PASS "), 8)  # seven entities and the summary line
+		code, out, err = self.run_lint()
+		self.assertEqual(code, 0, err)
+		self.assertEqual(out.count("PASS "), 8)  # seven entities and the summary line
 
 	def test_check_2_1_a_copy_with_tax_id_fails_with_one_line_naming_it(self):
 		contract = copy.deepcopy(registry.get_contract("customer"))
@@ -233,10 +236,10 @@ class TestLintCommandLine(unittest.TestCase):
 		with tempfile.TemporaryDirectory() as tmp:
 			path = Path(tmp, "customer.copy.json")
 			path.write_text(json.dumps(contract), encoding="utf-8")
-			result = self.run_lint(str(path))
-		self.assertNotEqual(result.returncode, 0)
-		named = [line for line in result.stderr.splitlines() if "tax_id" in line]
-		self.assertEqual(len(named), 1, result.stderr)
+			code, _, err = self.run_lint(str(path))
+		self.assertNotEqual(code, 0)
+		named = [line for line in err.splitlines() if "tax_id" in line]
+		self.assertEqual(len(named), 1, err)
 
 
 if __name__ == "__main__":
