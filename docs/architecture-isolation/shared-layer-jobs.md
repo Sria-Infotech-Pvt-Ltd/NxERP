@@ -25,3 +25,9 @@ through the same account and the same version rule.
 
 Reports hold ids and counts only. Metrics (`sync_metric`): `applied`, `skipped_old`, `dead_letters`, `errors` (counters), `lag_seconds`, `last_success`, `gap`, `source_stopped`, `reconcile_drift`,
 `last_reconcile_at`, `rebuilt_rows` (gauges). Suggested alerts: `lag_seconds` above 300, `gap` 1, `source_stopped` 1, `dead_letters` rising, `reconcile_drift` above 0 for two runs in a row.
+
+## The live audit
+
+`scripts/shared_audit.sh all` (or `ports`, `accounts`, `api`, `pipeline`, `sample`, `tests`) checks a running stack and prints `PASS`, `FAIL` or `INFO` lines: no published host port; the exact grant matrix and, as each app account itself, what it
+cannot do; no sensitive column names; the live Read API with a real token (401, 403, 405, field denial); no dead letters, gap or stopped source and `reconcile --full` drift 0; 20 random rows per entity equal to the owner's own feed.
+It needs a token file `deploy/env/shared/secrets/read-helpdesk.token`. Do not run `shared.sh test` against a stack that is carrying a soak or real data: the database tests reuse the stack's own database and empty the entity tables.
