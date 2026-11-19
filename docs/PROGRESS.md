@@ -335,3 +335,13 @@ Branch `hybrid/phase-2-verification` (from `integration/hybrid-db`), before Phas
 **CI gap closed:** `ci.yml` ran only for PRs and pushes to `main` and `develop`, so PRs into `integration/hybrid-db` never ran CI and the bandit failure was not seen. It now also runs for `integration/**`.
 
 **Still UNVERIFIED:** the CI run above was on the integration tip, not yet on this branch's fixes (the PR run will show it); the lint job and `ci-gate` stay red until the two older failures are fixed.
+
+## Hybrid database programme, Phase 3A: spike (2026-11-19)
+
+Branch `hybrid/phase-3-outbox` (from `integration/hybrid-db` at `5346b86c4`). Dev bench: the existing scratch stack (pinned Frappe 16.53.0, ERPNext 16.52.1) with the current `nxerp` code copied in and a fresh throwaway site `phase3.localhost`. Spike code lived only inside the scratch containers and was moved out afterwards; `hooks.py` there is restored to the repository version.
+
+**Done:** `docs/architecture-isolation/spike-publication.md`: eight items (a) to (h) answered by running code, with evidence and confidence. **No contradiction** with the blueprint. **Recommendation: proceed with `on_change` capture** (plus `on_trash` and `after_rename`); the `before_commit` fallback is not needed.
+
+**Five findings beyond the blueprint** (all in the document): GET requests never commit, so `ack` must be a POST; rename fires no `on_change` and delete fires `on_change` with `in_delete`; `frappe.db.set_value`, `frappe.db.delete`, `frappe.db.bulk_insert` fire nothing; the single worker is shared, so the relay must use bounded batches; a site's DB login created by `new-site` works only from the creating container unless `--mariadb-user-host-login-scope` is passed (the scheduler was refused until the host was widened).
+
+**Measured save overhead for one extra INSERT in a handler:** about 0.6 ms (about 2%) per Customer save, within noise.
