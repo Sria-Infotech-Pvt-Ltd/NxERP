@@ -67,6 +67,50 @@ Action: on the owner site check the feed service user is enabled, holds the role
 Symptom: `TransientDbError` in the log. The projector rolls the batch back, never acknowledges it and retries with backoff. Nothing needs doing once the database is back.
 If the database volume is lost, start the stack (`shared.sh up`) and `rebuild --all`: the shared layer is rebuilt entirely from the owners.
 
-## Rebuild and reconcile
+## Reconcile: drift between an owner and the shared layer
 
-See the sections added with the reconciler and rebuild (work package 4C): when to run `reconcile --recent`, `reconcile --full` and `rebuild`, how often each runs, and what the report says.
+The outbox cannot see a change made without a document event (`frappe.db.set_value`, raw SQL, a bulk insert), so the reconciler compares the shared layer with each owner's feed and repairs the
+difference: always owner to shared, never the reverse. It runs by itself (the `shared-reconciler` service, see [shared-layer-jobs.md](../architecture-isolation/shared-layer-jobs.md)); run it by hand after an
+outage or when you suspect drift:
+
+```
+deploy/scripts/shared.sh reconcile --recent      # documents modified since the last scan (minus 5 minutes): missing and stale rows
+deploy/scripts/shared.sh reconcile --full        # every id and payload hash: also extra rows and same-stamp changes
+```
+
+The output is one JSON report (counts and ids, never values), for example: `{"mode": "full", "drift": 1, "repaired": 1, "refused": 0, "sources": {"nxerp": {"status": "ok", "entities": {"customer": {"owner": 120,
+"shared": 120, "missing": 0, "extra": 0, "stale": 0, "hash_mismatch": 1, "ahead": 0, "repaired": 1, "refused": 0, "ids": {"hash_mismatch": ["CUST-0007"]}}}}}}`.
+
+| Category | Meaning | Repair |
+| --- | --- | --- |
+| `missing` | the owner has it, the shared layer has no live row | copied from the owner |
+| `extra` | the shared layer has a live row the owner no longer has | tombstoned (full compare only) |
+| `stale` | the owner's version stamp is newer than ours | copied from the owner |
+| `hash_mismatch` | same stamp, different content: a change made without an event | copied from the owner |
+| `ahead` | our stamp is newer than the owner's | reported only, never repaired: look at the owner's clock and its recent restores |
+
+Healthy: `drift` 0, `refused` 0, every source `ok`. A few `stale` or `missing` rows are normal only after an outage; many `hash_mismatch` rows point at a code path that writes without events (find it:
+the reconciler is a safety net, not the design).
+
+| Report says | Action |
+| --- | --- |
+| `status` `unreachable` or `rejected` for a source | that source was skipped and none of its rows were touched (an unreachable owner is never read as "everything deleted"); see the source sections above |
+| `refused` above 0 | the owner returned a field outside the contract for those ids; nothing was written. Fix the owner's projection or the contract (a reviewed change); never edit the shared tables |
+| the run fails with `HashFunctionMismatch` | owner and shared service hash payloads differently (almost every row with equal stamps differs). Both must run the same `nxerp/shared/payload.py` and contracts: check both run the same release. Nothing was repaired |
+| drift keeps coming back for the same ids | a writer bypasses the outbox for that entity: find it and fix it at the source |
+
+## Rebuild: one command for a first fill and for disaster recovery
+
+```
+deploy/scripts/shared.sh rebuild --source nxerp        # one owner
+deploy/scripts/shared.sh rebuild --all
+```
+
+What it does: marks the source `rebuilding` (the projector leaves it alone), waits up to 90 seconds for the owner's relay, records the owner's head as `start_seq`, streams a snapshot of every entity
+the feed serves, tombstones rows the owner no longer has, sets the cursor to `start_seq`, replays the events after it (changes made while it ran arrive here) and finishes with a full compare. The report
+has `snapshot_rows` and `tombstoned` per entity, `replayed`, `dead_letters` and `drift_after`; success is `drift_after` 0.
+
+- **A first fill** and **a lost database** are the same thing: `shared.sh up` (or `migrate`) creates the empty tables, then `rebuild --all`. There is no other step.
+- **Interrupted** (the owner went down mid-way, the command was stopped): the source stays `rebuilding`; run the same command again. Everything it writes is idempotent.
+- **Read API during a rebuild**: it keeps serving what is there; rows appear as the snapshot streams in. Plan a rebuild outside peak hours for a large layer.
+- **Cursor behind the owner** after an owner restore: `rebuild --source <app_key>` (the source is stopped on a gap until then).
