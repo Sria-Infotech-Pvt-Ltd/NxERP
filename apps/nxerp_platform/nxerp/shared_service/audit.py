@@ -263,6 +263,29 @@ def _owner_hash(item: dict) -> str:
 	return payload.payload_hash(item.get("payload", item))
 
 
+def audit_watch() -> None:
+	"""Soak watcher: for SOAK_SECONDS print `n,first_seen_epoch` the first time each marker `Soak NNNNNN` shows in a shared customer."""
+	import re
+	import time
+
+	deadline = time.time() + int(os.environ.get("SOAK_SECONDS", "3600")) + 120
+	seen: set = set()
+	conn = db.connect(db.settings_from_env("projector"), autocommit=True)
+	try:
+		while time.time() < deadline:
+			with conn.cursor() as cur:
+				cur.execute("SELECT display_name FROM entity_customer WHERE deleted_at IS NULL")
+				now = time.time()
+				for row in cur.fetchall():
+					match = re.fullmatch(r"Soak (\d{6})", row["display_name"] or "")
+					if match and match.group(1) not in seen:
+						seen.add(match.group(1))
+						print(f"{int(match.group(1))},{now:.3f}", flush=True)
+			time.sleep(0.5)
+	finally:
+		conn.close()
+
+
 def main(argv: list) -> int:
 	checks = {
 		"accounts": audit_accounts,
@@ -270,10 +293,12 @@ def main(argv: list) -> int:
 		"columns": audit_columns,
 		"api": audit_api,
 		"sample": audit_sample,
+		"watch": audit_watch,
 	}
 	if len(argv) != 2 or argv[1] not in checks:
 		print(
-			"usage: python -m nxerp.shared_service.audit accounts|probe|columns|api|sample", file=sys.stderr
+			"usage: python -m nxerp.shared_service.audit accounts|probe|columns|api|sample|watch",
+			file=sys.stderr,
 		)
 		return 2
 	try:

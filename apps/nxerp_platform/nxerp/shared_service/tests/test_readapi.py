@@ -15,13 +15,15 @@ PLATFORM = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PLATFORM))
 
 from nxerp.shared_service import accounts, credentials, grants, views
-from nxerp.shared_service.readapi import MAX_LIMIT, ReadApi
 from nxerp.shared_service.tests.support import SharedDbTestCase
 
 try:
 	from werkzeug.test import Client
-except ImportError:  # the image has Werkzeug; a host without it skips
-	Client = None
+
+	from nxerp.shared_service.readapi import MAX_LIMIT, ReadApi
+except ImportError:  # the image has Werkzeug and PyMySQL; a host without them skips
+	Client = ReadApi = None
+	MAX_LIMIT = 200
 
 STAMP_OLD = "2026-11-18 10:00:00.000000"
 STAMP_NEW = "2026-11-18 11:00:00.000000"
