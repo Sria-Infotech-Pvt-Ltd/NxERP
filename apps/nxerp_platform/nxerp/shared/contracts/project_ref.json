@@ -1,0 +1,55 @@
+{
+	"entity_type": "project_ref",
+	"contract_version": 1,
+	"owner_app": "project_management",
+	"source_doctype": "Project",
+	"id_field": "name",
+	"tenant": {
+		"mode": "constant",
+		"value": "ORG-001"
+	},
+	"fields": [
+		{
+			"shared": "name",
+			"source": "project_name",
+			"class": "S1",
+			"type": "string",
+			"verify": true
+		},
+		{
+			"shared": "status",
+			"source": "status",
+			"class": "S1",
+			"type": "string",
+			"verify": true
+		},
+		{
+			"shared": "owner_user_id",
+			"source": "project_manager",
+			"class": "S1",
+			"type": "string",
+			"verify": true
+		}
+	],
+	"excluded_by_design": [
+		"budget amounts",
+		"costs",
+		"billing",
+		"client contract terms"
+	],
+	"events": [
+		"on_change",
+		"on_trash",
+		"after_rename"
+	],
+	"consumers": {
+		"helpdesk": [
+			"name",
+			"status",
+			"owner_user_id"
+		]
+	},
+	"commands": [],
+	"status": "planned",
+	"note": "The project application is not installed. Today Helpdesk reaches an external project system over HTTP (integrations/external/pbt.py, unverified). Source names are unconfirmed."
+}

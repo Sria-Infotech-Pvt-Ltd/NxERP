@@ -1,0 +1,81 @@
+{
+	"entity_type": "contact",
+	"contract_version": 1,
+	"owner_app": "erpnext",
+	"source_doctype": "Contact",
+	"id_field": "name",
+	"tenant": {
+		"mode": "constant",
+		"value": "ORG-001"
+	},
+	"fields": [
+		{
+			"shared": "customer_id",
+			"source": "Dynamic Link row with link_doctype Customer: link_name",
+			"class": "S1",
+			"type": "string",
+			"derived": true
+		},
+		{
+			"shared": "full_name",
+			"source": "full_name",
+			"class": "S2",
+			"type": "string"
+		},
+		{
+			"shared": "email",
+			"source": "email_ids row with is_primary: email_id",
+			"class": "S2",
+			"type": "string",
+			"derived": true
+		},
+		{
+			"shared": "phone",
+			"source": "phone_nos row with is_primary_phone: phone",
+			"class": "S2",
+			"type": "string",
+			"derived": true
+		},
+		{
+			"shared": "is_primary",
+			"source": "is_primary_contact",
+			"class": "S1",
+			"type": "boolean"
+		}
+	],
+	"excluded_by_design": [
+		"address",
+		"designation",
+		"department",
+		"user",
+		"image",
+		"links other than Customer"
+	],
+	"events": [
+		"on_change",
+		"on_trash",
+		"after_rename"
+	],
+	"consumers": {
+		"helpdesk": [
+			"customer_id",
+			"full_name",
+			"email",
+			"phone",
+			"is_primary"
+		]
+	},
+	"commands": [
+		{
+			"name": "contact.update_contact",
+			"writable_fields": [
+				"full_name",
+				"email",
+				"phone"
+			],
+			"needs_role": "NXERP Access: ERPNext",
+			"note": "Role is a placeholder to confirm with the owner."
+		}
+	],
+	"status": "active"
+}

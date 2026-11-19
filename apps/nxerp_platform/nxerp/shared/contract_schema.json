@@ -1,0 +1,145 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "nxerp/shared/contract_schema.json",
+	"title": "NXDESK shared-entity ownership contract",
+	"description": "One file per shared entity. The owner app is the only app that writes the entity; the shared read layer only holds a derived copy of the listed fields. Everything later phases generate (hooks, payload projection, views, grants, commands) follows from this file. scripts/check_contracts.py enforces the rules a schema cannot express (deny-list, one owner per entity, registered apps).",
+	"type": "object",
+	"additionalProperties": false,
+	"required": [
+		"entity_type",
+		"contract_version",
+		"owner_app",
+		"source_doctype",
+		"id_field",
+		"tenant",
+		"fields",
+		"excluded_by_design",
+		"events",
+		"consumers",
+		"commands",
+		"status"
+	],
+	"properties": {
+		"entity_type": {
+			"description": "Stable entity name, also the shared table suffix (entity_<entity_type>) and the Read API path.",
+			"type": "string",
+			"pattern": "^[a-z][a-z0-9_]{1,40}$"
+		},
+		"contract_version": {
+			"description": "Bumped on every change to fields; events carry it so a consumer can tell which shape a payload has.",
+			"type": "integer",
+			"minimum": 1
+		},
+		"owner_app": {
+			"description": "Registry key of the one app that owns and writes this entity (nxerp/registry.py), or a planned owner while status is planned.",
+			"type": "string",
+			"pattern": "^[a-z][a-z0-9_]{1,40}$"
+		},
+		"source_doctype": {
+			"description": "The owner's DocType (or external record type for a planned owner) the entity comes from.",
+			"type": "string",
+			"minLength": 1
+		},
+		"id_field": {
+			"description": "The owner's field that is the entity id. It becomes entity_id in the shared layer and is never a shared field.",
+			"type": "string",
+			"minLength": 1
+		},
+		"tenant": {
+			"description": "How tenant_id is set: a constant organisation, or the entity itself when it is the organisation unit.",
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["mode"],
+			"properties": {
+				"mode": {"enum": ["constant", "self"]},
+				"value": {"type": "string", "minLength": 1}
+			},
+			"if": {"properties": {"mode": {"const": "constant"}}},
+			"then": {"required": ["value"]}
+		},
+		"fields": {
+			"description": "The allow-list: only these fields leave the owner. Nothing else is shared.",
+			"type": "array",
+			"minItems": 1,
+			"items": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["shared", "source", "class", "type"],
+				"properties": {
+					"shared": {
+						"description": "Column and payload name in the shared layer.",
+						"type": "string",
+						"pattern": "^[a-z][a-z0-9_]{1,60}$"
+					},
+					"source": {
+						"description": "The owner's field name, or a short description of the derivation when derived is true.",
+						"type": "string",
+						"minLength": 1
+					},
+					"class": {
+						"description": "Sensitivity class. S3 (finance, tax, payroll, credentials, health) is refused by the lint.",
+						"enum": ["S0", "S1", "S2", "S3"]
+					},
+					"type": {"enum": ["string", "integer", "boolean", "datetime", "date"]},
+					"max_length": {"type": "integer", "minimum": 1, "maximum": 1000},
+					"derived": {
+						"description": "True when the value is computed by the owner, not read from one field.",
+						"type": "boolean"
+					},
+					"verify": {
+						"description": "True when the source field was not confirmed against the owner's DocType; resolved by Phase 3 contract tests on a dev site.",
+						"type": "boolean"
+					},
+					"note": {"type": "string"}
+				}
+			}
+		},
+		"excluded_by_design": {
+			"description": "Owner fields deliberately NOT shared (documentation for reviewers; the allow-list above is what is enforced).",
+			"type": "array",
+			"items": {"type": "string", "minLength": 1}
+		},
+		"events": {
+			"description": "Owner doc_events that publish this entity to the outbox.",
+			"type": "array",
+			"minItems": 1,
+			"items": {"enum": ["after_insert", "on_update", "on_change", "on_trash", "after_rename"]},
+			"uniqueItems": true
+		},
+		"consumers": {
+			"description": "App key -> the shared fields that app may read through the Read API (a subset of fields).",
+			"type": "object",
+			"additionalProperties": {
+				"type": "array",
+				"minItems": 1,
+				"items": {"type": "string"},
+				"uniqueItems": true
+			}
+		},
+		"commands": {
+			"description": "The only ways another app may ask the owner to change this entity.",
+			"type": "array",
+			"items": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["name", "writable_fields", "needs_role"],
+				"properties": {
+					"name": {"type": "string", "pattern": "^[a-z_]+\\.[a-z_]+$"},
+					"writable_fields": {
+						"type": "array",
+						"minItems": 1,
+						"items": {"type": "string"},
+						"uniqueItems": true
+					},
+					"needs_role": {"type": "string", "minLength": 1},
+					"note": {"type": "string"}
+				}
+			}
+		},
+		"status": {
+			"description": "planned = the owner app is not installed yet; no events are published and nothing is shown.",
+			"enum": ["active", "planned"]
+		},
+		"note": {"type": "string"}
+	}
+}
