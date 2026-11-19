@@ -1,0 +1,173 @@
+# One app stack (Phase 5B): the staging-like layout WITHOUT mariadb and WITHOUT a proxy. ONE file, instantiated once per app:
+#   nxerp-id   (identity)   nxerp-erp (ERPNext)   nxerp-hd (Helpdesk)   and any later app from deploy/env/isolated/app.env.example
+# The instance is chosen by the compose project name (-p nxerp-<stack>) and the stack's env file; nothing in this file names an app.
+#
+# Each stack owns: its site, its authoritative database and login (on the tier named by NXERP_DB_NETWORK), a Redis pair, worker,
+# scheduler, files volume and secrets. Shared with others: only the edge proxy and the database servers.
+#
+# Networks
+#   default (this project)  every service of this stack; the edge joins it to reach backend and websocket
+#   db   (external ${NXERP_DB_NETWORK})  internal tier network: ONLY configurator, create-site, backend, queue-worker, scheduler
+#   api  (external nxerp-api)           app-to-app (sync) network: ONLY backend. The feed and command endpoints are reachable here
+#                                        and are refused by the edge. Phase 4's shared project joins this network
+#                                        (set SHARED_SYNC_NETWORK=nxerp-api in deploy/env/shared/shared.env).
+# The database root password is passed ONLY to create-site (a one-shot), never to a long-running service.
+# Run through deploy/scripts/stack.sh <stack> ...; it exports the root password of the stack's tier for create-site and nothing else.
+
+x-nxerp: &nxerp
+  image: ${NXERP_IMAGE:-ghcr.io/sria-infotech-pvt-ltd/nxerp}:${NXERP_IMAGE_TAG:?set NXERP_IMAGE_TAG, e.g. 0.1.0-ab12cd34ef56}
+  restart: unless-stopped
+  security_opt: ["no-new-privileges:true"]
+  environment:
+    NXERP_CONFIGURE: "0"
+  volumes:
+    - sites:/home/frappe/frappe-bench/sites
+  depends_on:
+    configurator:
+      condition: service_completed_successfully
+
+services:
+  redis-cache:
+    image: ${REDIS_IMAGE:-redis:8.6-alpine}
+    restart: unless-stopped
+    security_opt: ["no-new-privileges:true"]
+
+  redis-queue:
+    image: ${REDIS_IMAGE:-redis:8.6-alpine}
+    restart: unless-stopped
+    security_opt: ["no-new-privileges:true"]
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-queue-data:/data
+
+  # one-shot: refreshes the image's generated sites/ files into the volume and writes sites/common_site_config.json
+  configurator:
+    <<: *nxerp
+    restart: "no"
+    depends_on:
+      redis-cache:
+        condition: service_started
+    environment:
+      NXERP_CONFIGURE: "1"
+      NXERP_DB_HOST: ${NXERP_DB_HOST:?set NXERP_DB_HOST (mariadb-standard or mariadb-restricted)}
+      NXERP_REDIS_CACHE: redis://redis-cache:6379
+      NXERP_REDIS_QUEUE: redis://redis-queue:6379
+    command: ["true"]
+    networks: [default, db]
+
+  # one-shot, profile "init": creates this stack's site and installs ONLY the apps of NXERP_STACK_APPS, in that order.
+  # The database login is created for the tier's subnet only (NXERP_DB_USER_SCOPE). A failure drops what was half-created.
+  create-site:
+    <<: *nxerp
+    profiles: ["init"]
+    restart: "no"
+    depends_on:
+      configurator:
+        condition: service_completed_successfully
+      redis-cache:
+        condition: service_started
+      redis-queue:
+        condition: service_started
+    environment:
+      NXERP_CONFIGURE: "0"
+      NXERP_SITE: ${NXERP_SITE:?set NXERP_SITE}
+      NXERP_DB_HOST: ${NXERP_DB_HOST:?set NXERP_DB_HOST}
+      NXERP_DB_USER_SCOPE: ${NXERP_DB_USER_SCOPE:?set NXERP_DB_USER_SCOPE, e.g. 172.30.10.%}
+      NXERP_STACK_APPS: ${NXERP_STACK_APPS:?set NXERP_STACK_APPS, space separated, in install order}
+      NXERP_PUBLIC_URL: ${NXERP_PUBLIC_URL:-}
+      NXERP_DB_ROOT_PASSWORD: ${NXERP_DB_ROOT_PASSWORD:-}
+      NXERP_ADMIN_PASSWORD: ${NXERP_ADMIN_PASSWORD:?set NXERP_ADMIN_PASSWORD}
+    command:
+      - bash
+      - -c
+      - |
+        set -euo pipefail
+        [ -n "$$NXERP_DB_ROOT_PASSWORD" ] || { echo "no database root password: run this through deploy/scripts/stack.sh <stack> create-site"; exit 1; }
+        if [ -d "sites/$$NXERP_SITE" ]; then echo "site $$NXERP_SITE already exists"; exit 0; fi
+        # a failed create leaves nothing behind: drop the database, its login and the site folder, then fail
+        cleanup() {
+          status=$$?
+          trap - EXIT
+          if [ "$$status" -ne 0 ]; then
+            echo "create-site failed (exit $$status): removing what was half-created" >&2
+            # drop-site removes the database but not a login created for a subnet scope: read the login name first, drop it after
+            db_login=$$(env/bin/python -c "import json,sys; print(json.load(open(sys.argv[1])).get('db_name',''))" "sites/$$NXERP_SITE/site_config.json" 2>/dev/null || true)
+            bench drop-site "$$NXERP_SITE" --mariadb-root-password "$$NXERP_DB_ROOT_PASSWORD" --no-backup --force >&2 || true
+            if [ -n "$$db_login" ]; then
+              MYSQL_PWD="$$NXERP_DB_ROOT_PASSWORD" mariadb -h "$$NXERP_DB_HOST" -uroot -e "DROP USER IF EXISTS '$$db_login'@'$$NXERP_DB_USER_SCOPE'" >&2 || true
+            fi
+            rm -rf "sites/$$NXERP_SITE"
+          fi
+          exit "$$status"
+        }
+        trap cleanup EXIT
+        # wait until the database server and both Redis servers answer (Docker's DNS can lag a few seconds on a busy host)
+        for target in "$$NXERP_DB_HOST:3306" redis-cache:6379 redis-queue:6379; do
+          ready=0
+          for _ in $$(seq 1 60); do
+            if (exec 3<>"/dev/tcp/$${target%%:*}/$${target##*:}") 2>/dev/null; then ready=1; break; fi
+            sleep 2
+          done
+          [ "$$ready" = 1 ] || { echo "$$target did not answer within 2 minutes" >&2; exit 1; }
+        done
+        bench new-site "$$NXERP_SITE" --mariadb-root-password "$$NXERP_DB_ROOT_PASSWORD" \
+          --mariadb-user-host-login-scope "$$NXERP_DB_USER_SCOPE" \
+          --admin-password "$$NXERP_ADMIN_PASSWORD"
+        for app in $$NXERP_STACK_APPS; do bench --site "$$NXERP_SITE" install-app "$$app"; done
+        bench --site "$$NXERP_SITE" set-config host_name "$${NXERP_PUBLIC_URL:-https://$$NXERP_SITE}"
+        # a new site starts with its scheduler disabled; the stack's scheduler service would otherwise idle (and healthcheck.sh fails)
+        bench --site "$$NXERP_SITE" enable-scheduler
+        bench use "$$NXERP_SITE"
+    networks: [default, db]
+
+  backend:
+    <<: *nxerp
+    depends_on:
+      configurator:
+        condition: service_completed_successfully
+      redis-cache:
+        condition: service_started
+      redis-queue:
+        condition: service_started
+    networks:
+      default:
+        aliases: ["${NXERP_STACK:?set NXERP_STACK (the stack name, e.g. id)}-backend"]
+      db: {}
+      api:
+        aliases: ["${NXERP_STACK}-backend"]
+
+  websocket:
+    <<: *nxerp
+    command: ["node", "/home/frappe/frappe-bench/apps/frappe/socketio.js"]
+    healthcheck:
+      disable: true
+    networks:
+      default:
+        aliases: ["${NXERP_STACK}-websocket"]
+
+  queue-worker:
+    <<: *nxerp
+    command: ["bench", "worker", "--queue", "short,default,long"]
+    healthcheck:
+      disable: true
+    networks: [default, db]
+
+  scheduler:
+    <<: *nxerp
+    command: ["bench", "schedule"]
+    healthcheck:
+      disable: true
+    networks: [default, db]
+
+volumes:
+  redis-queue-data:
+  sites:
+
+networks:
+  default: {}
+  db:
+    name: ${NXERP_DB_NETWORK:?set NXERP_DB_NETWORK (nxerp-db-standard or nxerp-db-restricted)}
+    external: true
+  api:
+    name: nxerp-api
+    external: true
