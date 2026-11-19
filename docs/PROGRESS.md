@@ -333,3 +333,8 @@ Owner replied `APPROVE CATALOGUE` at GATE G2 (the seven contracts and the five j
 **Design notes:** no credential column in `consumer_grant` (where the per-app credential hash lives is a Phase 4 decision); the SQL header documents the idempotent upsert guarded by `(source_modified, last_seq)`.
 
 **Waiting:** GATE G2b (owner replies `ACCEPT ADR-009`).
+
+## Hybrid database programme, Phase 6A: federation spike (2026-11-19)
+
+Branch `hybrid/phase-6-identity` from `hybrid/phase-5-stacks`. `docs/architecture-isolation/spike-federation.md` answers items (a) to (h) with a real run on the Phase 5 `id` and `hd` stacks (`scripts/spike_federation_flow.py`). **FACT:** single sign-on works with userinfo only: `hd logged user after callback = user@example.test`; unknown user: 403 with Sign ups Deny, auto-created Website User with the portal role `HD Customer` with Allow; disabled user: "Not Allowed / User is disabled"; with `disable_user_pass_login` the password POST answers 401 with no `sid` and SSO still works; the `sid` cookie has no Domain (host-only). **Findings that change the plan:** the OAuth Client secret is a clear-text Data field of 10 hex characters when auto-generated (we set our own); OAuth Client `allowed_roles` is a real gate (an empty list allows nobody; a user without the role is refused at the identity site with `400 Invalid client_id`), so the identity site can enforce the grant; nothing reads the `roles` claim. Phase 5 follow-up in this branch: the edge now aliases every stack host name on each stack network. **DECISION (6A): GO.**
+
