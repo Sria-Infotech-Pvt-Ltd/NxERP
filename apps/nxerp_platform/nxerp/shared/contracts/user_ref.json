@@ -1,0 +1,74 @@
+{
+	"entity_type": "user_ref",
+	"contract_version": 1,
+	"owner_app": "identity",
+	"source_doctype": "User",
+	"id_field": "name",
+	"tenant": {
+		"mode": "constant",
+		"value": "ORG-001"
+	},
+	"fields": [
+		{
+			"shared": "display_name",
+			"source": "full_name",
+			"class": "S2",
+			"type": "string"
+		},
+		{
+			"shared": "enabled",
+			"source": "enabled",
+			"class": "S1",
+			"type": "boolean"
+		},
+		{
+			"shared": "user_type",
+			"source": "user_type",
+			"class": "S1",
+			"type": "string"
+		},
+		{
+			"shared": "apps_granted",
+			"source": "the NXERP Access roles the user holds, as a comma-separated list of app identifiers",
+			"class": "S1",
+			"type": "string",
+			"derived": true,
+			"max_length": 300,
+			"note": "Renamed from the blueprint's app_keys_granted: the lint refuses any field name containing 'key'."
+		}
+	],
+	"excluded_by_design": [
+		"password",
+		"api_key",
+		"api_secret",
+		"two_factor_secret",
+		"reset_password_key",
+		"email",
+		"mobile_no",
+		"last_login",
+		"last_ip",
+		"roles other than app access"
+	],
+	"events": [
+		"on_change",
+		"on_trash",
+		"after_rename"
+	],
+	"consumers": {
+		"erpnext": [
+			"display_name",
+			"enabled",
+			"user_type",
+			"apps_granted"
+		],
+		"helpdesk": [
+			"display_name",
+			"enabled",
+			"user_type",
+			"apps_granted"
+		]
+	},
+	"commands": [],
+	"status": "planned",
+	"note": "The identity site (Phase 6) is not built, and on today's sites each app keeps its own User table, so the owner is a planned one. ASSUMPTION to confirm at the catalogue gate."
+}

@@ -1,0 +1,86 @@
+{
+	"entity_type": "customer",
+	"contract_version": 1,
+	"owner_app": "erpnext",
+	"source_doctype": "Customer",
+	"id_field": "name",
+	"tenant": {
+		"mode": "constant",
+		"value": "ORG-001"
+	},
+	"fields": [
+		{
+			"shared": "display_name",
+			"source": "customer_name",
+			"class": "S2",
+			"type": "string",
+			"note": "S2 because an Individual customer's name is a person's name; the blueprint lists S1 for Company customers."
+		},
+		{
+			"shared": "customer_type",
+			"source": "customer_type",
+			"class": "S1",
+			"type": "string"
+		},
+		{
+			"shared": "customer_group",
+			"source": "customer_group",
+			"class": "S1",
+			"type": "string"
+		},
+		{
+			"shared": "territory",
+			"source": "territory",
+			"class": "S1",
+			"type": "string"
+		},
+		{
+			"shared": "disabled",
+			"source": "disabled",
+			"class": "S1",
+			"type": "boolean"
+		},
+		{
+			"shared": "primary_contact_id",
+			"source": "customer_primary_contact",
+			"class": "S1",
+			"type": "string"
+		}
+	],
+	"excluded_by_design": [
+		"tax_id",
+		"credit_limits",
+		"accounts",
+		"payment_terms",
+		"default_price_list",
+		"primary_address",
+		"email_id",
+		"mobile_no"
+	],
+	"events": [
+		"on_change",
+		"on_trash",
+		"after_rename"
+	],
+	"consumers": {
+		"helpdesk": [
+			"display_name",
+			"customer_type",
+			"customer_group",
+			"territory",
+			"disabled",
+			"primary_contact_id"
+		]
+	},
+	"commands": [
+		{
+			"name": "customer.request_change",
+			"writable_fields": [
+				"display_name"
+			],
+			"needs_role": "NXERP Access: ERPNext",
+			"note": "Helpdesk asks, ERPNext validates and applies as the acting user. Role is a placeholder to confirm with the owner."
+		}
+	],
+	"status": "active"
+}
