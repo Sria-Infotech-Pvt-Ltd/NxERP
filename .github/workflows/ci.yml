@@ -100,6 +100,8 @@ jobs:
         run: python3 -I deploy/check_pins.py
       - name: Architecture rules (ADR-005)
         run: python3 -I scripts/check_architecture.py
+      - name: Shared-data ownership contracts (docs/architecture/shared-data-contracts.md)
+        run: python3 -I scripts/check_contracts.py
       - name: Workflow files (actionlint)
         run: docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.12 -color
       - name: Shell syntax of deploy and CI scripts
