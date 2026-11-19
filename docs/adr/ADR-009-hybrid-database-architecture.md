@@ -1,7 +1,7 @@
 # ADR-009: Hybrid database architecture (database per application plus one shared read database)
 
 - **Status:** Proposed. Becomes Accepted only when the owner confirms assumptions A1 to A13 below (blueprint Phase 1, step 1.11). Nothing in this ADR is built yet.
-- **Date:** 2026-11-18
+- **Date:** 2026-11-18 (updated 2026-11-19: production measurements, Phase 2 contracts)
 - **Changes:** nothing yet. This ADR records a direction and the questions the owner must answer. It does not change ADR-001 to ADR-008. If accepted it would
   refine ADR-005 (apps never import each other: the shared read layer is how they exchange reference data) and ADR-006 (the dev and staging stacks).
 - **Source:** `docs/architecture-isolation/NXERP_Isolation_Blueprint.md` (isolation-only version) and the NXDESK hybrid database blueprint (version 6, 2026-11-18),
@@ -54,6 +54,38 @@
 | Webhooks plus a nightly pull | A Frappe webhook can be lost on a crash or outage; a transactional outbox cannot lose a committed change |
 | A message broker (Kafka, RabbitMQ) now | Operational weight not justified at five apps; revisit on the written triggers |
 | PostgreSQL for the shared layer (row-level security) | A second engine to operate; see assumption A10 |
+
+## The corrected earlier rejection
+
+The isolation-only blueprint (version 5) rejected "a shared database" outright. That stays right for a shared **operational** database, one that several apps write and that holds each app's authoritative data: it recreates the Integration Database pattern and hands every app the same login.
+It was wrong for a **read-only, derived, rebuildable** shared layer, which is a different thing: nothing is authoritative there, only one projector writes it, apps reach it only through a Read API that filters by field and tenant and keeps an audit, sensitive classes are never copied into it, and it can be dropped and rebuilt from the owners. The decision to give every app its own authoritative database stands. Phase 2 makes the line concrete: a field can enter the shared layer only through a reviewed contract file (`apps/nxerp_platform/nxerp/shared/contracts/`), checked by `scripts/check_contracts.py`.
+
+## Triggers to reconsider
+
+Revisit this decision, and say so in a new ADR, when any of these becomes true:
+
+- more than about 10 independent consumers of the owners' feeds, sustained load above about 50 events per second, or a need for propagation under 5 seconds: add a broker as a wake-up layer in front of the same outbox (never replacing it);
+- a screen needs a shared field to be current to the second: read it from the owner instead, or revisit the lag target (A11);
+- finance or reporting needs amounts or balances across apps: that is a governed analytics store, a separate decision (A12), never the shared read layer;
+- the contract lint's deny-list refuses fields that several owners legitimately need: review the list rather than adding exceptions one by one;
+- the shared layer grows beyond reference data (more than a handful of entities, or free text): reconsider whether it is still a read model;
+- production stays one host for every app: re-check whether the isolation gained is worth the extra database instances (the live host already has one database and login per Frappe app, see the 2026-11-19 correction).
+
+## Unresolved items
+
+Not decided by this ADR and not verified. Each one has an owner decision or a check:
+
+1. **DDL not executed.** `nxerp/shared_service/schema/0001_shared_model.sql` is checked against the contracts by parsing only. Executing it on MariaDB 11.8 is UNVERIFIED; Phase 4 runs it on an empty scratch server.
+2. **MariaDB version.** The pin is 11.8 (ADR-002); the live host runs 10.11.14. Which version the shared layer and the owners run in production is an ADR-002 decision.
+3. **Hosting.** The shared read database, the projector and the Read API need a place on a host that today runs more than eight other applications under one operator account.
+4. **Identity owner.** `user_ref` is owned by `identity`, a planned site (Phase 6). Until then each app keeps its own `User` table; whether one of them publishes `user_ref` in the meantime is not decided.
+5. **Unconfirmed source fields.** Fields marked `verify` in the contracts (`org_unit.disabled`, `ticket_summary.customer_id` and `assignee_user_id`, and all of `employee_ref` and `project_ref`) were not confirmed against a live DocType.
+6. **Command roles.** `needs_role` values in the contracts are placeholders until each owner names the real role.
+7. **Names.** Whether "Royal HRMS" (`CLAUDE.md`) and "AIRA HRMS" (`public_catalog.py`) are the same product (A13).
+8. **Derived overdue flag.** Whether Helpdesk may see a `has_overdue_invoice` boolean (blueprint A12): off by default, not in any contract.
+9. **Retention and compliance.** Outbox rows kept 14 days and read audit 400 days are ASSUMPTIONS; a compliance owner decides, including right-to-erasure handling.
+10. **Virtual DocType as a Link target** for Desk screens: link validation has a virtual branch, search dispatch was not verified.
+11. **CI.** The new contract check is a step in `.github/workflows/ci.yml`; no workflow has run on GitHub with it.
 
 ## Assumptions A1 to A13 (every one: owner to confirm)
 

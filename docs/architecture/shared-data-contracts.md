@@ -60,3 +60,9 @@ A command is the only way another app asks the owner to change an entity. Add `{
 ## Add a new entity
 
 Add `<entity_type>.json`, a column set in the DDL and, if its owner app is not installed, `status: planned`. Nothing is shared until the contract is merged.
+
+## The shared tables and the event envelope
+
+- **Tables.** `apps/nxerp_platform/nxerp/shared_service/schema/0001_shared_model.sql` holds one typed table per entity (`entity_<entity_type>`) plus five control tables (`sync_cursor`, `sync_dead_letter`, `consumer_grant`, `read_audit`, `contract_registry`). The entity tables are generated from the contracts by `shared_service/schema/generate_columns.py`; after a contract change run `python generate_columns.py --ddl`, paste the output over the entity tables, and run the tests. The file creates no account and grants nothing (Phase 4), and has not been run against a MariaDB server (UNVERIFIED until Phase 4).
+- **Envelope.** `nxerp/shared/envelope_schema.json` is the shape of one feed event (`event_id`, `seq`, `source_app`, `entity_type`, `entity_id`, `op`, `contract_version`, `source_modified`, `tenant_id`, `payload`). `nxerp.shared.registry.event_problems(event)` adds the per-entity rules: the owner is the source, the contract version is current, and the payload holds no field outside the allow-list.
+- **Tests.** `python -m unittest apps/nxerp_platform/nxerp/shared_service/tests/test_schema_matches_contracts.py apps/nxerp_platform/nxerp/shared_service/tests/test_envelope.py`. They need no Frappe site and no database.
