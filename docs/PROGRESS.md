@@ -399,3 +399,5 @@ Branch `hybrid/phase-4-shared-layer` (from `integration/hybrid-db` after Phase 3
 **Found while testing:** audit `outcome` was VARCHAR(16) and truncated `denied_unauthorized`, so those audit rows failed and were retried forever; widened by migration 0004 and a data error now drops the batch with an error log instead of looping.
 
 **Not yet:** runbook steps against the owner site (feed keys, backfill, soak, `scripts/shared_audit.sh`). 12 I001 ruff findings in `nxerp/www/*` exist with ruff 0.16.9 (not touched here; CI pins another ruff).
+
+**Soak result (2026-11-19, 10 minutes, not the 1 hour asked; ~1 owner edit/s, 600 edits plus contact inserts and deletes on a throwaway site).** FACT: the projector cursor moved from 759 to 1379 and every event applied; dead letters 0, gap 0. A full reconcile right after the load found drift 4 (deleted contacts the relay had not yet published) and repaired it; a second full reconcile found drift 0. UNVERIFIED: p95 end-to-end lag. The watcher started too late and recorded only 9 markers, so no valid figure exists; the relay is a one-minute cron, so p95 may exceed 60 s. Re-run for an hour before relying on a lag number.
