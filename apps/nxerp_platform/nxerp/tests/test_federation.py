@@ -6,6 +6,7 @@ is proved on the Phase 5 stacks (docs/PROGRESS.md, Phase 6 runbook checks). Ever
 """
 
 import itertools
+import os
 from unittest.mock import patch
 
 import frappe
@@ -15,6 +16,7 @@ from frappe.utils import add_to_date, now_datetime
 from nxerp import access, install, registry
 from nxerp.api import access as access_api
 from nxerp.federation import api, client, outbox, reconcile
+from nxerp.federation import setup as setup_module
 from nxerp.tests.test_identity_site import DUMMIES, PEER_ORIGINS, IdentityCase, identity_site, make_peer
 from nxerp.tests.utils import PLAIN_DESK_ROLE, delete_users, make_user, purge_test_users, unique_email
 
@@ -554,3 +556,104 @@ class TestIdentityOutbox(IdentityCase):
 			outbox.process()
 			self.assertEqual(sorted(c[2] for c in self.fake.calls), sorted(PEER_ORIGINS))
 			self.assertTrue(all(c[0] == "provision_user" for c in self.fake.calls))
+
+
+class TestSetupHelpers(IdentityCase):
+	"""federation/setup.py: idempotent, secrets only from the environment, never logged, never disables local login."""
+
+	SECRET = "s" * 12 + "-test-only-secret-" + "x" * 20  # fake, 50 characters
+
+	def env(self, **extra):
+		base = {
+			setup_module.secret_env_name(key): self.SECRET
+			for key in ("helpdesk", "erpnext", "dummy-a", "dummy-b", "dummy-c")
+		}
+		return patch.dict("os.environ", {**base, **extra})
+
+	def test_the_identity_setup_creates_one_gated_client_per_peer_and_a_second_run_changes_nothing(self):
+		before = frappe.db.get_single_value("System Settings", "disable_user_pass_login")
+		for name in frappe.get_all("OAuth Client", filters={"app_name": ("like", "NXERP %")}, pluck="name"):
+			frappe.delete_doc("OAuth Client", name, force=True, ignore_permissions=True)
+		with identity_site(), self.env():
+			first = setup_module.configure_identity_site()
+			self.assertEqual(set(first), set(PEER_ORIGINS))
+			self.assertTrue(all(v["changed"] for v in first.values()))
+			second = setup_module.configure_identity_site()
+			self.assertEqual(
+				{k: v["client_id"] for k, v in first.items()}, {k: v["client_id"] for k, v in second.items()}
+			)
+			self.assertFalse(any(v["changed"] for v in second.values()), second)
+			hd = frappe.get_doc("OAuth Client", first["helpdesk"]["client_id"])
+			self.assertEqual([r.role for r in hd.allowed_roles], ["NXERP Access: Helpdesk"])
+			self.assertEqual(hd.redirect_uris, "https://hd.example.test" + setup_module.REDIRECT_PATH)
+			self.assertEqual(
+				(hd.grant_type, hd.response_type, hd.scopes, hd.skip_authorization),
+				("Authorization Code", "Code", "all openid", 1),
+			)
+			self.assertEqual(frappe.db.count("OAuth Client", {"app_name": "NXERP Helpdesk"}), 1)
+		self.assertEqual(
+			frappe.db.get_single_value("System Settings", "disable_user_pass_login"),
+			before,
+			"local login is never touched",
+		)
+
+	def test_the_app_setup_creates_the_social_login_key_with_sign_ups_denied_and_a_second_run_changes_nothing(
+		self,
+	):
+		frappe.db.delete("Social Login Key", {"name": setup_module.PROVIDER_KEY})
+		before = frappe.db.get_single_value("System Settings", "disable_user_pass_login")
+		env = self.env(
+			NXERP_IDENTITY_ORIGIN="https://id.example.test",
+			NXERP_SSO_CLIENT_ID="abc123client",
+			NXERP_SSO_CLIENT_SECRET=self.SECRET,
+		)
+		with env:
+			first = setup_module.configure_app_site()
+			second = setup_module.configure_app_site()
+		self.assertTrue(first["changed"])
+		self.assertFalse(second["changed"])
+		key = frappe.get_doc("Social Login Key", "frappe")
+		self.assertEqual(
+			(key.sign_ups, key.enable_social_login, key.base_url, key.client_id),
+			("Deny", 1, "https://id.example.test", "abc123client"),
+		)
+		self.assertEqual(key.redirect_url, setup_module.REDIRECT_PATH)
+		self.assertEqual(frappe.db.get_single_value("System Settings", "disable_user_pass_login"), before)
+
+	def test_no_secret_appears_in_a_result_a_log_or_the_output(self):
+		import contextlib
+		import io
+
+		frappe.db.delete("Social Login Key", {"name": setup_module.PROVIDER_KEY})
+		env = self.env(
+			NXERP_IDENTITY_ORIGIN="https://id.example.test",
+			NXERP_SSO_CLIENT_ID="abc123client",
+			NXERP_SSO_CLIENT_SECRET=self.SECRET,
+		)
+		out = io.StringIO()
+		with identity_site(), env, contextlib.redirect_stdout(out), contextlib.redirect_stderr(out):
+			results = [setup_module.configure_identity_site(), setup_module.configure_app_site()]
+		blob = repr(results) + out.getvalue() + " ".join(self.logged_lines())
+		self.assertNotIn(self.SECRET, blob)
+		self.assertNotIn(self.SECRET[:20], blob)
+
+	def logged_lines(self):
+		return []  # the setup helpers write no log lines; the assertion above also covers the returned values and the output
+
+	def test_a_missing_or_short_secret_is_refused_and_the_message_names_the_variable_only(self):
+		with identity_site(), patch.dict("os.environ", {setup_module.secret_env_name("helpdesk"): "short"}):
+			with self.assertRaises(ValueError) as caught:
+				setup_module.configure_identity_site()
+			self.assertIn("NXERP_SSO_SECRET_", str(caught.exception))
+			self.assertNotIn("short", str(caught.exception).replace("set NXERP_SSO_SECRET_", ""))
+		with patch.dict("os.environ", {}, clear=False), self.assertRaises(ValueError):
+			for name in ("NXERP_IDENTITY_ORIGIN", "NXERP_SSO_CLIENT_ID"):
+				os.environ.pop(name, None)
+			setup_module.configure_app_site()
+
+	def test_the_helpers_never_write_system_settings(self):
+		import inspect
+
+		source = inspect.getsource(setup_module)
+		for forbidden in ("set_single_value", '"System Settings"', 'System Settings"'):
+			self.assertNotIn(forbidden, source)

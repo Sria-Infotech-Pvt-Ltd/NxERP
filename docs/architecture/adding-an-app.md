@@ -2,10 +2,24 @@
 
 Adding an app is **one registry entry plus grants**. No platform code changes, no imports.
 
-## 1. Install the app
+## 1. Give the app its own stack (the stack template)
 
-Add it to `deploy/apps.json`, pinned to an exact commit (never vendored, ADR-001), after the apps it
-depends on and before `nxerp`. Rebuild with `./deploy/bootstrap/up.sh`.
+Each app has its own site, database, database login, Redis pair, worker, scheduler, files volume and secrets; no existing app, database, cache or login is
+touched (ADR-009; blueprint section 2.8). The one template is `deploy/docker/compose/isolated/stack.compose.yaml`; the steps are the same for every app:
+
+| Step | What you do | Where |
+| --- | --- | --- |
+| 1 | Name the app and choose its database tier (standard, or restricted for tax, credit, payment or payroll data) | one new line in `deploy/env/isolated/stacks.list`: `<name> <host-prefix> <standard\|restricted>` |
+| 2 | Pin the app in `deploy/apps.json` (exact commit, never vendored, ADR-001) before `nxerp`, and build the image | `deploy/apps.json`, `deploy/docker/build.sh` |
+| 3 | Copy the generic env template, fill in the site name, `NXERP_STACK_APPS` (the apps to install on that site, in order), the database host and network, fresh passwords | `deploy/env/isolated/app.env.example` to `deploy/env/isolated/<name>.env` (mode 600) |
+| 4 | Create the site once and start it | `deploy/scripts/stack.sh <name> create-site`, then `deploy/scripts/stack.sh <name> up` |
+| 5 | Regenerate the edge proxy (no hand edits) and reload it | `deploy/scripts/stack.sh edge up` (runs `edge-gen.sh`) |
+| 6 | Add the registry entry (section 2 below), register the app on the identity site (an NXERP Peer record) and create its OAuth client (`nxerp.federation.setup` or the Desk screens) | `registry.py`; `docs/architecture-isolation/phase-6-user-actions.md` steps 6.3 to 6.6 |
+| 7 | Grant access on the identity site (section 3 below) | the identity site |
+| 8 | Run the isolation checks: the new login appears as a new row and column in the matrix | `scripts/isolation_audit.sh cross-read reach published hostnames` |
+| 9 | Add the app's backup schedule and monitoring | `deploy/scripts/stack.sh <name> backup` |
+
+Nothing else changes: the three throwaway stand-ins `app3`, `app4`, `app5` in the Phase 5 rehearsal were added exactly this way.
 
 ## 2. Add one `AppEntry` to `apps/nxerp_platform/nxerp/registry.py`
 
@@ -40,9 +54,10 @@ turns a website user into a system user). Run `bench --site <site> migrate` once
 
 ## 3. Grant access
 
-Roles are the grants (ADR-003). In Desk: open the **User** (or a **Role Profile**), tick
-`NXERP Access: HRMS`. Or use the API: `nxerp.api.access.set_app_access(user, "hrms", 1)` (System Manager only).
-Revocation is immediate on the next request.
+Roles are the grants (ADR-003), made on the **identity site** and copied to the app site (ADR-003 amendment 2). In Desk on the identity site: open the
+**User** (or a **Role Profile**), tick `NXERP Access: HRMS`. Or use the API: `nxerp.api.access.set_app_access(user, "hrms", 1)` (System Manager only;
+on an identity site the answer also says `"provisioning": "queued"`). The app site's own administrator gives the person a business role there.
+Revocation is queued at once and delivered within about a minute; the nightly reconcile repairs anything missed.
 
 ## 4. Verify
 
