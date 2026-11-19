@@ -59,7 +59,7 @@ ALLOWED_TOP = {*REQUIRED, "note"}
 FIELD_REQUIRED = ("shared", "source", "class", "type")
 FIELD_ALLOWED = {*FIELD_REQUIRED, "max_length", "derived", "verify", "note"}
 FIELD_TYPES = {"string", "integer", "boolean", "datetime", "date"}
-EVENTS = {"after_insert", "on_update", "on_change", "on_trash", "after_rename"}
+EVENTS = {"on_change", "on_trash", "after_rename"}  # the events nxerp/shared/capture.py implements
 
 
 def registry_keys(path: Path = REGISTRY) -> set:

@@ -103,7 +103,7 @@
 			"description": "Owner doc_events that publish this entity to the outbox.",
 			"type": "array",
 			"minItems": 1,
-			"items": {"enum": ["after_insert", "on_update", "on_change", "on_trash", "after_rename"]},
+			"items": {"enum": ["on_change", "on_trash", "after_rename"]},
 			"uniqueItems": true
 		},
 		"consumers": {
