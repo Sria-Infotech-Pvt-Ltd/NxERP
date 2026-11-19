@@ -317,3 +317,9 @@ Owner replied `APPROVE CATALOGUE` at GATE G2 (the seven contracts and the five j
 **Design notes:** no credential column in `consumer_grant` (where the per-app credential hash lives is a Phase 4 decision); the SQL header documents the idempotent upsert guarded by `(source_modified, last_seq)`.
 
 **Waiting:** GATE G2b (owner replies `ACCEPT ADR-009`).
+
+## Hybrid database programme: ADR-009 accepted, integration branch (2026-11-19)
+
+**GATE G2b answered:** owner replied `ACCEPT ADR-009`; ADR-009 status is Accepted (assumptions A1 to A13 accepted, A1 and A2 as corrected by measurement; open questions stay in its unresolved list). Phase 2 is complete apart from the UNVERIFIED items in the 2B entry (SQL not run on MariaDB 11.8, CI not run on GitHub, Frappe site suites not run).
+
+**Branch route changed (owner decision):** Phases 0 and 1 reached `main` by pull request (#7, #9), because `feat/nxdesk-onboarding` was not on origin; PR #10 (Phase 2) merged into `hybrid/phase-1-harden`, not `main`. New long-lived branch `integration/hybrid-db` (from `hybrid/phase-1-harden`, with `main` merged in; contains Phases 0, 1, 2 and all of `main`; ancestry verified) is now the base of every later phase PR. `main` is promoted only deliberately. Details and the answer to "why is code in main" are in `docs/governance/hybrid-programme-workflow.md`.

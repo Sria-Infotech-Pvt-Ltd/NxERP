@@ -55,3 +55,17 @@ One **base**, then one **stacked branch per phase**. There are no `hybrid/track-
 | 4 | "Merge the pull request (squash is fine)" | Squash breaks stacked branches | Merge commits only |
 | 5 | Phase 1 (1C) and Phase 2 (2B) both create `ADR-009-hybrid-database-architecture.md` and its index row | Add/add conflict when the chains meet | Phase 1 creates it; Phase 2 edits it |
 | 6 | Dependency table: Phase 2 needs Phase 1. Timeline: they run in parallel. Phase 2 prompt: "Preconditions: None", from the base | Contradictory; also causes 5 | Phase 2 starts from `hybrid/phase-1-harden` after 1C is committed |
+
+## Update 2026-11-19: where the phases merge (integration branch)
+
+What happened: the base branch `feat/nxdesk-onboarding` was never on origin, so the Phase 1 pull requests (#7, #9) were opened against `main` and merged there. That put Phases 0 and 1, and the whole onboarding history they sit on, into `main`.
+Nothing there is active (documents, scripts, contract files; every new behaviour is off by default) and no deployment runs from `main`: staging runs after a release tag and production is a manual run with a tag. A merged PR is not undone by rewriting history; `main` stays as it is.
+
+**DECISION (owner, 2026-11-19): from now on every hybrid phase pull request targets `integration/hybrid-db`, not `main`.**
+
+- `integration/hybrid-db` was created from `hybrid/phase-1-harden` (which already holds Phase 2) and has `main` merged in. It therefore contains Phases 0, 1 and 2 and everything in `main`; the ancestry was checked with `git merge-base --is-ancestor` for `main`, `hybrid/phase-1-harden` and `hybrid/phase-2-contracts`.
+- Later phase branches keep the stacked layout in the table above, but their draft PR base is `integration/hybrid-db` (merge commits, never squash). When a parent phase is already merged there, the child's PR shows only its own commits.
+- `main` is promoted from `integration/hybrid-db` only when the team decides, by one reviewed pull request, after Phase 8 or earlier if the team chooses. Nobody pushes to `main` or `integration/hybrid-db` directly.
+- Tracks A and B are two worktrees of the one repository, not separate repositories. They meet in Phase 7 and Phase 8 (rule 4); `hybrid/phase-8-cutover` then holds every phase and goes to `integration/hybrid-db` in one PR.
+
+If someone asks why code is in `main`: Phases 0 and 1 were merged there by pull request (not pushed directly) because the intended base branch was not on origin; the owner then moved the remaining phases to `integration/hybrid-db` so `main` is only promoted deliberately.

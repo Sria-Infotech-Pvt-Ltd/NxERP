@@ -1,6 +1,6 @@
 # ADR-009: Hybrid database architecture (database per application plus one shared read database)
 
-- **Status:** Proposed. Becomes Accepted only when the owner confirms assumptions A1 to A13 below (blueprint Phase 1, step 1.11). Nothing in this ADR is built yet.
+- **Status:** Accepted by the owner on 2026-11-19 (reply `ACCEPT ADR-009`), with assumptions A1 to A13 as listed below (defaults accepted 2026-11-18; A1 and A2 as corrected by the 2026-11-19 measurements). Accepting the direction builds nothing: the shared layer is built phase by phase, switched off by default.
 - **Date:** 2026-11-18 (updated 2026-11-19: production measurements, Phase 2 contracts)
 - **Changes:** nothing yet. This ADR records a direction and the questions the owner must answer. It does not change ADR-001 to ADR-008. If accepted it would
   refine ADR-005 (apps never import each other: the shared read layer is how they exchange reference data) and ADR-006 (the dev and staging stacks).
@@ -22,7 +22,7 @@
 - **NOT YET MEASURED** (Phase 1 does this, on a restored scratch copy): the table-by-app inventory, cross-app Link fields, the grants of the live database account,
   and the row counts and field use of the candidate shared entities. See `docs/architecture-isolation/measurements.md`.
 
-## Decision (proposed)
+## Decision
 
 1. **Each application gets its own authoritative database and its own database login.** Only that app writes it. No app reads or writes another app's database.
 2. **One shared read database** holds an allow-listed, classified copy of a few reference entities (`customer`, `contact`, `user_ref`, `org_unit`, `employee_ref`,
@@ -87,25 +87,25 @@ Not decided by this ADR and not verified. Each one has an owner decision or a ch
 10. **Virtual DocType as a Link target** for Desk screens: link validation has a virtual branch, search dispatch was not verified.
 11. **CI.** The new contract check is a step in `.github/workflows/ci.yml`; no workflow has run on GitHub with it.
 
-## Assumptions A1 to A13 (every one: owner to confirm)
+## Assumptions A1 to A13 (accepted by the owner)
 
-The repository cannot decide these. None is guessed as true: each stays **owner to confirm** until you write "confirmed" or your change next to it.
+The repository cannot decide these; the owner did. On 2026-11-18 the owner replied `ACCEPT DEFAULTS` for A1 to A13, and on 2026-11-19 accepted this ADR. A1 and A2 were then measured on the live host and corrected (see `docs/architecture-isolation/measurements.md`). A10 and A13 are accepted as defaults but remain open questions in the unresolved list above (items 2 and 7).
 
 | ID | Assumption | Status | Owner's answer |
 | --- | --- | --- | --- |
-| A1 | ~~Production runs one site with all six apps, as staging-like does~~ **Measured 2026-11-19: false.** Production runs two separate Frappe sites on separate benches (`nxerp.nxsys.in`: frappe, erpnext, payments, nxerp; `helpdesk.nxsys.in`: frappe, telephony, helpdesk, nxerp), each with its own database and login | corrected by measurement; owner to confirm | See `docs/architecture-isolation/measurements.md` |
-| A2 | One organisation, **one bare-metal host (systemd, no Docker) shared with at least 8 other applications**, a handful of NXDESK apps; the shared model still carries a `tenant_id` from day one | host model corrected by measurement; owner to confirm | The Phase 5 Docker stack template and the Docker-based `backup.sh` do not describe production |
-| A3 | Helpdesk no longer writes into ERPNext tables; it may ask ERPNext to change a customer through ERPNext's command API | owner to confirm | |
-| A4 | Customers (portal users) sign in at the identity site too | owner to confirm | |
-| A5 | Business roles (`Agent`, `Sales User`) stay managed inside each app; the identity site grants only app access | owner to confirm | |
-| A6 | A freeze window of up to 2 hours is acceptable for the Helpdesk cutover | owner to confirm | |
-| A7 | `telephony` is used only by Helpdesk, so it lives in the Helpdesk stack | owner to confirm | |
-| A8 | "nxerp" means the ERP product (ERPNext) inside NXDESK per `CLAUDE.md`; the platform app `nxerp` runs on the identity site | owner to confirm | |
-| A9 | The three planned apps are HRMS, Project Management and Budget Management; HRMS and Budget are classed restricted, Project Management standard. AIRA HRMS stays "Coming soon" only | owner to confirm | |
-| A10 | The shared read database uses MariaDB 11.8 on its own server instance (not PostgreSQL) | owner to confirm | |
-| A11 | Sync lag up to 60 seconds at the 95th percentile is acceptable; reads that must be current go to the owner | owner to confirm | |
-| A12 | The shared layer is read-only reference data, not a reporting warehouse; financial amounts are not copied. Open sub-question: may Helpdesk see a derived `has_overdue_invoice` flag (default off) | owner to confirm | |
-| A13 | "Royal HRMS" (`CLAUDE.md`, ADR-008) and "AIRA HRMS" (`nxerp/public_catalog.py`) are the same planned product; the repository does not say so | owner to confirm | |
+| A1 | ~~Production runs one site with all six apps, as staging-like does~~ **Measured 2026-11-19: false.** Production runs two separate Frappe sites on separate benches (`nxerp.nxsys.in`: frappe, erpnext, payments, nxerp; `helpdesk.nxsys.in`: frappe, telephony, helpdesk, nxerp), each with its own database and login | corrected by measurement; accepted 2026-11-19 | See `docs/architecture-isolation/measurements.md` |
+| A2 | One organisation, **one bare-metal host (systemd, no Docker) shared with at least 8 other applications**, a handful of NXDESK apps; the shared model still carries a `tenant_id` from day one | host model corrected by measurement; accepted 2026-11-19 | The Phase 5 Docker stack template and the Docker-based `backup.sh` do not describe production |
+| A3 | Helpdesk no longer writes into ERPNext tables; it may ask ERPNext to change a customer through ERPNext's command API | accepted | default accepted 2026-11-18 |
+| A4 | Customers (portal users) sign in at the identity site too | accepted | default accepted 2026-11-18 |
+| A5 | Business roles (`Agent`, `Sales User`) stay managed inside each app; the identity site grants only app access | accepted | default accepted 2026-11-18 |
+| A6 | A freeze window of up to 2 hours is acceptable for the Helpdesk cutover | accepted | default accepted 2026-11-18 |
+| A7 | `telephony` is used only by Helpdesk, so it lives in the Helpdesk stack | accepted | default accepted 2026-11-18 |
+| A8 | "nxerp" means the ERP product (ERPNext) inside NXDESK per `CLAUDE.md`; the platform app `nxerp` runs on the identity site | accepted | default accepted 2026-11-18 |
+| A9 | The three planned apps are HRMS, Project Management and Budget Management; HRMS and Budget are classed restricted, Project Management standard. AIRA HRMS stays "Coming soon" only | accepted | default accepted 2026-11-18 |
+| A10 | The shared read database uses MariaDB 11.8 on its own server instance (not PostgreSQL) | accepted | default accepted 2026-11-18; see unresolved item 2 (production runs MariaDB 10.11) |
+| A11 | Sync lag up to 60 seconds at the 95th percentile is acceptable; reads that must be current go to the owner | accepted | default accepted 2026-11-18 |
+| A12 | The shared layer is read-only reference data, not a reporting warehouse; financial amounts are not copied. Open sub-question: may Helpdesk see a derived `has_overdue_invoice` flag (default off) | accepted | default accepted 2026-11-18 |
+| A13 | "Royal HRMS" (`CLAUDE.md`, ADR-008) and "AIRA HRMS" (`nxerp/public_catalog.py`) are the same planned product; the repository does not say so | accepted | default accepted 2026-11-18; still open, see unresolved item 7 |
 
 ## Open points (not decided here)
 
