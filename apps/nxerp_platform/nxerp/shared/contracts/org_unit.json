@@ -1,0 +1,60 @@
+{
+	"entity_type": "org_unit",
+	"contract_version": 1,
+	"owner_app": "erpnext",
+	"source_doctype": "Company",
+	"id_field": "name",
+	"tenant": {
+		"mode": "self"
+	},
+	"fields": [
+		{
+			"shared": "name",
+			"source": "company_name",
+			"class": "S1",
+			"type": "string"
+		},
+		{
+			"shared": "parent_id",
+			"source": "parent_company",
+			"class": "S1",
+			"type": "string"
+		},
+		{
+			"shared": "disabled",
+			"source": "disabled",
+			"class": "S1",
+			"type": "boolean",
+			"verify": true,
+			"note": "Company has no `disabled` field on the live site (checked 2026-11-19); confirm how an inactive company is represented."
+		}
+	],
+	"excluded_by_design": [
+		"default_currency",
+		"country",
+		"tax_id",
+		"default_bank_account",
+		"abbr",
+		"chart_of_accounts",
+		"accounts and cost centres"
+	],
+	"events": [
+		"on_change",
+		"on_trash",
+		"after_rename"
+	],
+	"consumers": {
+		"erpnext": [
+			"name",
+			"parent_id",
+			"disabled"
+		],
+		"helpdesk": [
+			"name",
+			"parent_id",
+			"disabled"
+		]
+	},
+	"commands": [],
+	"status": "active"
+}

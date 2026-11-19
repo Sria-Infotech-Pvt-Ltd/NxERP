@@ -1,0 +1,83 @@
+{
+	"entity_type": "ticket_summary",
+	"contract_version": 1,
+	"owner_app": "helpdesk",
+	"source_doctype": "HD Ticket",
+	"id_field": "name",
+	"tenant": {
+		"mode": "constant",
+		"value": "ORG-001"
+	},
+	"fields": [
+		{
+			"shared": "customer_id",
+			"source": "customer (an HD Customer; mapped to its erpnext_customer)",
+			"class": "S1",
+			"type": "string",
+			"derived": true,
+			"verify": true,
+			"note": "HD Ticket.customer links HD Customer, not the ERPNext Customer; the owner must map it through HD Customer.erpnext_customer, and the mapping is empty for customers with no ERPNext record."
+		},
+		{
+			"shared": "status",
+			"source": "status",
+			"class": "S1",
+			"type": "string"
+		},
+		{
+			"shared": "priority",
+			"source": "priority",
+			"class": "S1",
+			"type": "string"
+		},
+		{
+			"shared": "opened_at",
+			"source": "opening_date and opening_time",
+			"class": "S1",
+			"type": "datetime",
+			"derived": true
+		},
+		{
+			"shared": "resolved_at",
+			"source": "resolution_date and resolution_time",
+			"class": "S1",
+			"type": "datetime",
+			"derived": true
+		},
+		{
+			"shared": "assignee_user_id",
+			"source": "the first user in the document's assignment list",
+			"class": "S1",
+			"type": "string",
+			"derived": true,
+			"verify": true,
+			"note": "Assignments live in ToDo rows / _assign, not in an HD Ticket field."
+		}
+	],
+	"excluded_by_design": [
+		"subject",
+		"description",
+		"raised_by",
+		"contact",
+		"message text and attachments",
+		"feedback",
+		"resolution_details"
+	],
+	"events": [
+		"on_change",
+		"on_trash",
+		"after_rename"
+	],
+	"consumers": {
+		"erpnext": [
+			"customer_id",
+			"status",
+			"priority",
+			"opened_at",
+			"resolved_at",
+			"assignee_user_id"
+		]
+	},
+	"commands": [],
+	"status": "active"
+}

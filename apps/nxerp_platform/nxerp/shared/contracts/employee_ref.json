@@ -1,0 +1,76 @@
+{
+	"entity_type": "employee_ref",
+	"contract_version": 1,
+	"owner_app": "hrms",
+	"source_doctype": "Employee",
+	"id_field": "name",
+	"tenant": {
+		"mode": "constant",
+		"value": "ORG-001"
+	},
+	"fields": [
+		{
+			"shared": "display_name",
+			"source": "employee_name",
+			"class": "S2",
+			"type": "string",
+			"verify": true
+		},
+		{
+			"shared": "department",
+			"source": "department",
+			"class": "S1",
+			"type": "string",
+			"verify": true
+		},
+		{
+			"shared": "designation",
+			"source": "designation",
+			"class": "S1",
+			"type": "string",
+			"verify": true
+		},
+		{
+			"shared": "manager_employee_id",
+			"source": "reports_to",
+			"class": "S1",
+			"type": "string",
+			"verify": true
+		},
+		{
+			"shared": "active",
+			"source": "status == Active",
+			"class": "S1",
+			"type": "boolean",
+			"derived": true,
+			"verify": true
+		}
+	],
+	"excluded_by_design": [
+		"salary",
+		"bank details",
+		"national id number",
+		"date_of_birth",
+		"health data",
+		"personal email",
+		"address",
+		"phone"
+	],
+	"events": [
+		"on_change",
+		"on_trash",
+		"after_rename"
+	],
+	"consumers": {
+		"helpdesk": [
+			"display_name",
+			"department",
+			"designation",
+			"manager_employee_id",
+			"active"
+		]
+	},
+	"commands": [],
+	"status": "planned",
+	"note": "The HR application is not installed. Today Helpdesk reaches an external HR system over HTTP (integrations/external/hrms.py, unverified). Source names are unconfirmed until the owner app exists."
+}

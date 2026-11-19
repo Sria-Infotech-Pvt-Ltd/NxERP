@@ -295,3 +295,25 @@ Branch `hybrid/phase-1-harden` (from `feat/nxdesk-onboarding` at `8a4910610`; th
 ## Phase 1 update: production measured (2026-11-19)
 
 Owner gave `GO READ PROD` for the live Hostinger host (read-only, counts and grants only, nothing copied off it, no install). **FACT:** production is bare-metal systemd with no Docker; NXERP and Helpdesk are two separate Frappe sites on separate benches with separate databases and `localhost`-only logins (not one shared site); MariaDB 10.11 not 11.8; at least 8 unrelated applications share the host; `tabCustomer` is absent from the Helpdesk database; NXERP site has 0 customers, Helpdesk has 53 tickets. Results are in `docs/architecture-isolation/measurements.md`; assumptions A1 and A2 corrected in ADR-009 and the blueprint (ADR-009 stays Proposed). **Not done:** nightly backup job (the Docker `backup.sh` does not fit; a bare-metal `mysqldump` plus `age` design is to be shown to the owner first), MariaDB root-level checks (`sudo` needs a password), Redis exposure, firewall rules, backups already on the host.
+
+## Hybrid database programme, Phase 2A: contracts, registry, lint (2026-11-19)
+
+Branch `hybrid/phase-2-contracts` (fast-forwarded to `hybrid/phase-1-harden` at `8309269ad`, then new commits). Not pushed yet. Files and tests only: no hooks, no database, no change to Helpdesk or ERPNext.
+
+**Done:** `nxerp/shared/contract_schema.json`; seven contracts in `nxerp/shared/contracts/` (customer, contact, user_ref, org_unit, employee_ref, project_ref, ticket_summary); `nxerp/shared/registry.py` (no frappe import); `scripts/check_contracts.py` (rules C1 to C8, stdlib, reads the app registry with `ast`); `nxerp/tests/test_shared_contracts.py` (27 tests); CI step in `ci.yml`; `docs/architecture/shared-data-contracts.md`.
+
+**FACT (run 2026-11-19):** `python -I scripts/check_contracts.py` prints PASS for 7 contracts; 27 unittest tests pass; `ruff check` clean; `check_architecture.py` OK. The lint rejects `tax_id`, a second contract for an entity with another owner, and class S3 (negative tests). **UNVERIFIED:** the CI step has not run on GitHub; the existing Frappe site test suites were not run (no site in this window).
+
+**Decisions to confirm at GATE G2:** (1) `user_ref` owner is `identity`, status `planned` (no identity site exists; each app has its own User table), not an installed app; (2) `customer.display_name` is class S2 (an Individual's name), not S1; (3) `app_keys_granted` renamed `apps_granted` because the lint refuses the fragment "key"; (4) only installed apps are listed as consumers (planned consumers are added when those apps exist); (5) `ticket_summary.customer_id` needs a mapping HD Customer to ERPNext Customer, which is empty for customers with no ERPNext record, and `org_unit.disabled` has no source field (Company has none on the live site); both are marked `verify`.
+
+## Hybrid database programme, Phase 2B: shared model, envelope, ADR-009 (2026-11-19)
+
+Owner replied `APPROVE CATALOGUE` at GATE G2 (the seven contracts and the five judgement calls in the 2A entry stand). Files and tests only; no database server started, no account created, no Frappe code in `shared_service`.
+
+**Done:** `nxerp/shared_service/schema/0001_shared_model.sql` (7 entity tables generated from the contracts plus `sync_cursor`, `sync_dead_letter`, `consumer_grant`, `read_audit`, `contract_registry`; utf8mb4; no foreign keys; no accounts or grants); `schema/generate_columns.py`; `nxerp/shared/envelope_schema.json` and `registry.event_problems`; tests `test_schema_matches_contracts.py` (14) and `test_envelope.py` (11); ADR-009 extended (corrected earlier rejection, triggers to reconsider, 11 unresolved items; status still Proposed); contracts guide extended.
+
+**FACT (run 2026-11-19):** 27 + 14 + 11 unittest tests pass; `ruff check` clean on `shared`, `shared_service`, `scripts/check_contracts.py`; `check_contracts.py` PASS for 7; `check_architecture.py` OK; no `frappe` import under `shared` or `shared_service`. Check 2.2: a contract field with no column, a column with no contract field, a wrong type and a missing table are each named by the schema test. **UNVERIFIED:** the SQL has not been executed on MariaDB 11.8 (command for Phase 4: `mariadb --user=<migration account> < 0001_shared_model.sql` on an empty scratch server); CI has not run on GitHub; the existing Frappe site suites were not run.
+
+**Design notes:** no credential column in `consumer_grant` (where the per-app credential hash lives is a Phase 4 decision); the SQL header documents the idempotent upsert guarded by `(source_modified, last_seq)`.
+
+**Waiting:** GATE G2b (owner replies `ACCEPT ADR-009`).
