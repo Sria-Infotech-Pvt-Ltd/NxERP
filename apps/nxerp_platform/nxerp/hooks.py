@@ -115,3 +115,10 @@ for _doctype, _events in _shared_registry.capture_events().items():
 	doc_events.setdefault(_doctype, {}).update(
 		{_event: f"nxerp.shared.capture.{_event}" for _event in _events}
 	)
+
+# The relay gives committed outbox rows a sequence number every minute; the prune job removes acknowledged rows daily.
+# Both return at their first line unless the site sets `nxerp_shared_publish`. A change here needs `bench migrate`.
+scheduler_events = {
+	"cron": {"* * * * *": ["nxerp.shared.relay.assign_sequence"]},
+	"daily": ["nxerp.shared.relay.prune"],
+}

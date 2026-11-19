@@ -21,6 +21,18 @@ def ensure_access_roles():
 		).insert(ignore_permissions=True)
 
 
+def ensure_feed_role():
+	"""The service role the shared-entity feed API requires (nxerp/shared/feed.py). No desk access: it is held by a
+	service user that authenticates with an API key and secret, never by a person. Idempotent."""
+	from nxerp.shared.outbox import FEED_ROLE
+
+	if frappe.db.exists("Role", FEED_ROLE):
+		return
+	frappe.get_doc({"doctype": "Role", "role_name": FEED_ROLE, "desk_access": 0, "is_custom": 1}).insert(
+		ignore_permissions=True
+	)
+
+
 def ensure_platform_settings():
 	"""Own the post-login landing. Helpdesk's install sets `Portal Settings.default_portal_home` to
 	/helpdesk, which sent every user without a role home page to Helpdesk. Point it at the router unless an
@@ -49,11 +61,13 @@ def ensure_navbar_items():
 
 def after_install():
 	ensure_access_roles()
+	ensure_feed_role()
 	ensure_platform_settings()
 	ensure_navbar_items()
 
 
 def after_migrate():
 	ensure_access_roles()
+	ensure_feed_role()
 	ensure_platform_settings()
 	sync_signup_setting()
