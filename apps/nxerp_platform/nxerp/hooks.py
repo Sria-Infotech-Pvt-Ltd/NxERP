@@ -105,3 +105,13 @@ doc_events = {
 		"on_trash": "nxerp.guard.on_trash_user",
 	}
 }
+
+# Capture hooks for the shared-entity outbox (docs/architecture/shared-data-contracts.md), generated at import from the
+# active ownership contracts. The registry is pure Python (no frappe, no other app, no database access). Every handler
+# returns at its first line unless the site sets `nxerp_shared_publish`, so nothing changes until a site opts in.
+from nxerp.shared import registry as _shared_registry
+
+for _doctype, _events in _shared_registry.capture_events().items():
+	doc_events.setdefault(_doctype, {}).update(
+		{_event: f"nxerp.shared.capture.{_event}" for _event in _events}
+	)
