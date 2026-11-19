@@ -40,3 +40,8 @@ Thumbs.db
 # Local build outputs (SBOMs, backups)
 dist/
 backups/
+
+# the shared read layer stack: generated passwords, the sources file and the feed key files
+deploy/env/shared/shared.env
+deploy/env/shared/sources.json
+deploy/env/shared/secrets/

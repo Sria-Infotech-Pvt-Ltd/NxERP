@@ -1,0 +1,161 @@
+name: nxerp-shared
+
+# The shared read layer (ADR-009): its own MariaDB server, the projector (the only writer) and the Read API (the only reader).
+# Nothing here is authoritative: the database is derived from the owners' feeds and can be dropped and rebuilt.
+#
+#   deploy/scripts/shared.sh up        # create secrets if missing, start the database, accounts, migrations, grants, views, services
+#   deploy/scripts/shared.sh status
+#
+# No service publishes a host port. `shared-db` lives on an INTERNAL network that only the three services below join. The
+# projector reaches the owners' feed APIs, and the Read API is reached by the apps, over the `sync` network (an external network
+# named nxerp_sync, created by shared.sh if missing). The sync network is a private Docker network: plain HTTP inside it, TLS at
+# the edge proxy if the Read API is ever exposed beyond it.
+#
+# No root password reaches an application container: the database server gets it once to initialise itself; accounts and
+# migrations are created by one-shot runs (profile `tools`), and the long-running services use their own least-privilege accounts.
+# STATUS: `docker compose config` validated; the stack itself is exercised by scripts/shared_audit.sh.
+
+x-shared-app: &shared-app
+  image: ${NXERP_IMAGE:-ghcr.io/sria-infotech-pvt-ltd/nxerp}:${NXERP_IMAGE_TAG:?set NXERP_IMAGE_TAG in deploy/env/shared/shared.env}
+  restart: unless-stopped
+  security_opt: ["no-new-privileges:true"]
+  read_only: true
+  tmpfs: ["/tmp"]
+  entrypoint: []
+  working_dir: /home/frappe/frappe-bench
+  environment: &shared-env
+    PYTHONDONTWRITEBYTECODE: "1"
+    SHARED_DB_HOST: shared-db
+    SHARED_DB_PORT: "3306"
+    SHARED_DB_NAME: ${SHARED_DB_NAME:-nxerp_shared}
+    SHARED_DB_REQUIRE_SSL: ${SHARED_DB_REQUIRE_SSL:-0}
+    SHARED_ALLOW_INSECURE_FEED: ${SHARED_ALLOW_INSECURE_FEED:-0}
+    SHARED_SOURCES_FILE: /etc/nxerp-shared/sources.json
+  depends_on:
+    shared-db:
+      condition: service_healthy
+
+services:
+  shared-db:
+    image: ${MARIADB_IMAGE:-mariadb:11.8}
+    restart: unless-stopped
+    security_opt: ["no-new-privileges:true"]
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --skip-character-set-client-handshake
+    environment:
+      MARIADB_ROOT_PASSWORD: ${SHARED_DB_ROOT_PASSWORD:?set SHARED_DB_ROOT_PASSWORD in deploy/env/shared/shared.env}
+      MARIADB_AUTO_UPGRADE: "1"
+    volumes:
+      - shared-db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    networks: [shared_db]
+
+  # the only writer of the entity tables
+  shared-projector:
+    <<: *shared-app
+    command: ["/home/frappe/frappe-bench/env/bin/python", "-m", "nxerp.shared_service", "projector"]
+    environment:
+      <<: *shared-env
+      SHARED_PROJECTOR_USER: shared_projector
+      SHARED_PROJECTOR_PASSWORD: ${SHARED_PROJECTOR_PASSWORD:?set SHARED_PROJECTOR_PASSWORD}
+    volumes:
+      - ${SHARED_SOURCES_FILE:-./sources.json}:/etc/nxerp-shared/sources.json:ro
+      - ${SHARED_SECRETS_DIR:-./secrets}:/run/nxerp-shared:ro
+    networks: [shared_db, sync]
+
+  # compares the shared layer with the owners (recent scan hourly, full compare nightly) and repairs drift; a separate process,
+  # so it never delays the projector; it writes through the projector account only, by the same version rule
+  shared-reconciler:
+    <<: *shared-app
+    command: ["/home/frappe/frappe-bench/env/bin/python", "-m", "nxerp.shared_service", "reconcile-loop"]
+    environment:
+      <<: *shared-env
+      SHARED_PROJECTOR_USER: shared_projector
+      SHARED_PROJECTOR_PASSWORD: ${SHARED_PROJECTOR_PASSWORD:?set SHARED_PROJECTOR_PASSWORD}
+      SHARED_RECONCILE_FULL_HOUR: ${SHARED_RECONCILE_FULL_HOUR:-3}
+    volumes:
+      - ${SHARED_SOURCES_FILE:-./sources.json}:/etc/nxerp-shared/sources.json:ro
+      - ${SHARED_SECRETS_DIR:-./secrets}:/run/nxerp-shared:ro
+    networks: [shared_db, sync]
+
+  # the only reader: views only, no write verb, no base table
+  shared-api:
+    <<: *shared-app
+    command:
+      - /home/frappe/frappe-bench/env/bin/gunicorn
+      - --bind=0.0.0.0:8080
+      - --workers=2
+      - --threads=4
+      - --worker-class=gthread
+      - --worker-tmp-dir=/dev/shm
+      - --timeout=30
+      - nxerp.shared_service.readapi:app
+    environment:
+      <<: *shared-env
+      SHARED_READAPI_USER: shared_readapi
+      SHARED_READAPI_PASSWORD: ${SHARED_READAPI_PASSWORD:?set SHARED_READAPI_PASSWORD}
+    expose: ["8080"]
+    healthcheck:
+      test: ["CMD", "/home/frappe/frappe-bench/env/bin/python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/v1/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    networks: [shared_db, sync]
+
+  # ---- one-shot tools (profile `tools`): never started by `up` ----
+
+  # accounts and the first database: the only run that holds the root password
+  shared-root-tool:
+    <<: *shared-app
+    restart: "no"
+    profiles: [tools]
+    environment:
+      <<: *shared-env
+      SHARED_DB_ROOT_PASSWORD: ${SHARED_DB_ROOT_PASSWORD:?set SHARED_DB_ROOT_PASSWORD}
+      SHARED_MIGRATE_PASSWORD: ${SHARED_MIGRATE_PASSWORD:?set SHARED_MIGRATE_PASSWORD}
+      SHARED_PROJECTOR_PASSWORD: ${SHARED_PROJECTOR_PASSWORD:?set SHARED_PROJECTOR_PASSWORD}
+      SHARED_READAPI_PASSWORD: ${SHARED_READAPI_PASSWORD:?set SHARED_READAPI_PASSWORD}
+      SHARED_REPORT_RO_APPS: ${SHARED_REPORT_RO_APPS:-}
+    networks: [shared_db]
+
+  # migrations, grants, views, tokens: the migrate account (all privileges on the shared database only)
+  shared-admin:
+    <<: *shared-app
+    restart: "no"
+    profiles: [tools]
+    environment:
+      <<: *shared-env
+      SHARED_MIGRATE_USER: shared_migrate
+      SHARED_MIGRATE_PASSWORD: ${SHARED_MIGRATE_PASSWORD:?set SHARED_MIGRATE_PASSWORD}
+      SHARED_REPORT_RO_APPS: ${SHARED_REPORT_RO_APPS:-}
+    networks: [shared_db]
+
+  # reconcile, rebuild, status: the projector account, plus the owners' feeds
+  shared-ops:
+    <<: *shared-app
+    restart: "no"
+    profiles: [tools]
+    environment:
+      <<: *shared-env
+      SHARED_PROJECTOR_USER: shared_projector
+      SHARED_PROJECTOR_PASSWORD: ${SHARED_PROJECTOR_PASSWORD:?set SHARED_PROJECTOR_PASSWORD}
+    volumes:
+      - ${SHARED_SOURCES_FILE:-./sources.json}:/etc/nxerp-shared/sources.json:ro
+      - ${SHARED_SECRETS_DIR:-./secrets}:/run/nxerp-shared:ro
+    networks: [shared_db, sync]
+
+volumes:
+  shared-db-data:
+
+networks:
+  shared_db:
+    internal: true
+  sync:
+    name: ${SHARED_SYNC_NETWORK:-nxerp_sync}
+    external: true

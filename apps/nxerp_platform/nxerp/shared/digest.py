@@ -8,14 +8,12 @@ Payload values are JSON-safe: strings, ints, None. Booleans are 0 or 1, dates ar
 `YYYY-MM-DD HH:MM:SS.ffffff`. Nothing outside the contract's `fields` is ever read into the payload.
 """
 
-import hashlib
 import json
 
 import frappe
 from frappe.utils import cint, get_datetime, getdate
 
-DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
-DATE_FORMAT = "%Y-%m-%d"
+from nxerp.shared.payload import DATE_FORMAT, DATETIME_FORMAT, canonical_json, payload_hash
 
 
 class ProjectionError(Exception):
@@ -137,12 +135,3 @@ def project(contract: dict, doc) -> dict:
 			raise ProjectionError(f"{shared}: source field {field['source']} is not in {doc.doctype}")
 		payload[shared] = _coerce(value, field)
 	return payload
-
-
-def canonical_json(payload) -> str:
-	return json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
-
-
-def payload_hash(payload) -> str:
-	"""SHA-256 of the canonical JSON of a payload; reconciliation compares these, never values."""
-	return hashlib.sha256(canonical_json(payload).encode("utf-8")).hexdigest()

@@ -1,0 +1,16 @@
+{
+	"sources": [
+		{
+			"app_key": "nxerp",
+			"base_url": "https://nxerp.example.test",
+			"key_file": "/run/nxerp-shared/feed-nxerp.key",
+			"host_header": null
+		},
+		{
+			"app_key": "helpdesk",
+			"base_url": "https://helpdesk.example.test",
+			"key_file": "/run/nxerp-shared/feed-helpdesk.key",
+			"host_header": null
+		}
+	]
+}
