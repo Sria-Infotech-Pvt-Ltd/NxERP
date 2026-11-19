@@ -177,6 +177,7 @@ main() {
 		create-accounts) need_env; normalise_paths; ensure_network; tool shared-root-tool create-accounts ;;
 		views) need_env; normalise_paths; ensure_network; tool shared-admin views ;;
 		grants) need_env; normalise_paths; ensure_network; tool shared-admin grants "$@" ;;
+		_tool) need_env; normalise_paths; ensure_network; sdc --profile tools run --rm -T "$1" "$PYTHON_IN_IMAGE" -m nxerp.shared_service.audit "${2:?check}" ;;
 		tokens) need_env; normalise_paths; ensure_network; tool shared-admin tokens "$@" ;;
 		rebuild) need_env; normalise_paths; ensure_network; tool shared-ops rebuild "$@" ;;
 		reconcile) need_env; normalise_paths; ensure_network; tool shared-ops reconcile "$@" ;;
