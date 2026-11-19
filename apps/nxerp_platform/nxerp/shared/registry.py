@@ -15,6 +15,9 @@ CONTRACT_DIR = Path(__file__).resolve().parent / "contracts"
 SCHEMA_PATH = Path(__file__).resolve().parent / "contract_schema.json"
 ENVELOPE_SCHEMA_PATH = Path(__file__).resolve().parent / "envelope_schema.json"
 
+# The doc_events the capture hooks implement (nxerp/shared/capture.py). A contract may list only these.
+CAPTURE_EVENTS = ("on_change", "on_trash", "after_rename")
+
 
 @lru_cache(maxsize=1)
 def load_contracts() -> dict:
@@ -42,6 +45,26 @@ def consumers_of(entity_type: str) -> dict:
 	"""app key -> the shared fields that app may read (empty if the entity or its consumers are unknown)."""
 	contract = get_contract(entity_type)
 	return dict(contract["consumers"]) if contract else {}
+
+
+def contracts_for_doctype(doctype: str) -> list:
+	"""Active contracts whose source DocType is `doctype` (planned contracts are never captured)."""
+	return [
+		contract
+		for contract in load_contracts().values()
+		if contract["status"] == "active" and contract["source_doctype"] == doctype
+	]
+
+
+def capture_events() -> dict:
+	"""{source DocType: sorted capture events} for every active contract: what hooks.py registers."""
+	events: dict = {}
+	for contract in load_contracts().values():
+		if contract["status"] != "active":
+			continue
+		wanted = events.setdefault(contract["source_doctype"], set())
+		wanted.update(event for event in contract["events"] if event in CAPTURE_EVENTS)
+	return {doctype: sorted(wanted) for doctype, wanted in sorted(events.items())}
 
 
 def shared_fields(entity_type: str) -> list:

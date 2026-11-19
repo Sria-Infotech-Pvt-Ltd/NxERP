@@ -31,7 +31,9 @@ def _load(name, path):
 
 
 gen = _load("generate_columns", SCHEMA_DIR / "generate_columns.py")
-lint = _load("check_contracts", REPO / "scripts" / "check_contracts.py")
+LINT_PATH = REPO / "scripts" / "check_contracts.py"
+# scripts/ is not part of an installed copy of the app (a bench image): skip what needs it instead of failing discovery
+lint = _load("check_contracts", LINT_PATH) if LINT_PATH.is_file() else None
 
 CONTROL_TABLES = {"sync_cursor", "sync_dead_letter", "consumer_grant", "read_audit", "contract_registry"}
 INDEX_WORDS = ("PRIMARY", "UNIQUE", "KEY", "CONSTRAINT", "FOREIGN", "INDEX", "FULLTEXT")
@@ -127,6 +129,7 @@ class TestSchemaMatchesContracts(unittest.TestCase):
 		for name, table in self.tables.items():
 			self.assertIn("CHARSET=utf8mb4", table["tail"], name)
 
+	@unittest.skipUnless(lint is not None, "scripts/check_contracts.py is not part of this deployment")
 	def test_no_column_is_on_the_deny_list(self):
 		for name, table in self.tables.items():
 			for column, _ in table["columns"]:
