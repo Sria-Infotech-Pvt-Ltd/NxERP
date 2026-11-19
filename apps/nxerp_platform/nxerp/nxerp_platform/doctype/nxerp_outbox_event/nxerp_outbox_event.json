@@ -1,0 +1,136 @@
+{
+	"actions": [],
+	"allow_rename": 0,
+	"autoname": "UUID",
+	"creation": "2026-11-19 09:00:00.000000",
+	"doctype": "DocType",
+	"engine": "InnoDB",
+	"in_create": 1,
+	"links": [],
+	"modified": "2026-11-19 09:00:00.000000",
+	"modified_by": "Administrator",
+	"module": "NXERP Platform",
+	"name": "NXERP Outbox Event",
+	"owner": "Administrator",
+	"sort_field": "creation",
+	"sort_order": "DESC",
+	"states": [],
+	"track_changes": 0,
+	"read_only": 1,
+	"field_order": [
+		"seq",
+		"source_app",
+		"entity_type",
+		"entity_id",
+		"op",
+		"contract_version",
+		"source_modified",
+		"status",
+		"claimed_at",
+		"acked_at",
+		"payload_hash",
+		"payload"
+	],
+	"fields": [
+		{
+			"fieldname": "seq",
+			"fieldtype": "Long Int",
+			"label": "Sequence",
+			"unique": 1,
+			"read_only": 1,
+			"description": "Assigned by the relay in commit order; empty until claimed."
+		},
+		{
+			"fieldname": "source_app",
+			"fieldtype": "Data",
+			"label": "Source app",
+			"reqd": 1,
+			"read_only": 1,
+			"in_list_view": 1
+		},
+		{
+			"fieldname": "entity_type",
+			"fieldtype": "Data",
+			"label": "Entity type",
+			"reqd": 1,
+			"read_only": 1,
+			"in_list_view": 1,
+			"in_standard_filter": 1
+		},
+		{
+			"fieldname": "entity_id",
+			"fieldtype": "Data",
+			"label": "Entity id",
+			"reqd": 1,
+			"read_only": 1,
+			"in_list_view": 1
+		},
+		{
+			"fieldname": "op",
+			"fieldtype": "Select",
+			"label": "Operation",
+			"options": "upsert\ndelete\nresync",
+			"reqd": 1,
+			"read_only": 1,
+			"in_list_view": 1
+		},
+		{
+			"fieldname": "contract_version",
+			"fieldtype": "Int",
+			"label": "Contract version",
+			"reqd": 1,
+			"read_only": 1
+		},
+		{
+			"fieldname": "source_modified",
+			"fieldtype": "Datetime",
+			"label": "Source modified",
+			"reqd": 1,
+			"read_only": 1,
+			"description": "The owner's version stamp of the row."
+		},
+		{
+			"fieldname": "status",
+			"fieldtype": "Select",
+			"label": "Status",
+			"options": "pending\nclaimed\nacked",
+			"default": "pending",
+			"reqd": 1,
+			"read_only": 1,
+			"in_list_view": 1,
+			"in_standard_filter": 1
+		},
+		{
+			"fieldname": "claimed_at",
+			"fieldtype": "Datetime",
+			"label": "Claimed at",
+			"read_only": 1
+		},
+		{
+			"fieldname": "acked_at",
+			"fieldtype": "Datetime",
+			"label": "Acknowledged at",
+			"read_only": 1
+		},
+		{
+			"fieldname": "payload_hash",
+			"fieldtype": "Data",
+			"label": "Payload hash",
+			"read_only": 1
+		},
+		{
+			"fieldname": "payload",
+			"fieldtype": "JSON",
+			"label": "Payload",
+			"read_only": 1,
+			"description": "Contract fields only. Empty for a delete or a resync."
+		}
+	],
+	"index_web_pages_for_search": 0,
+	"permissions": [
+		{
+			"role": "System Manager",
+			"read": 1
+		}
+	]
+}
