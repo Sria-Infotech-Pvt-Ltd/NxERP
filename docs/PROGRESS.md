@@ -389,3 +389,13 @@ Branch `hybrid/phase-4-shared-layer` (from `integration/hybrid-db` after Phase 3
 **Decisions:** a repair tombstones an `extra` row with its own version stamp under the owner-truth rule (no clock arithmetic across the owner's time zone); the recent window is kept as a watermark in the owner's own timestamps, because the owner's `modified` is in its site time zone, not UTC; the compare holds one entity type's ids in memory (fine for reference data of this size, stated in the module).
 
 **Not yet:** 4D (Read API, tokens, grants audit), the runbook steps against the owner site, and `scripts/shared_audit.sh`.
+
+## Hybrid database programme, Phase 4D: Read API, tokens, audit (2026-11-19)
+
+**Done.** `credentials.py` (scrypt-hashed per-app tokens: issue, rotate with grace, revoke, list), `readapi.py` (GET-only WSGI: entity, list, health, metrics; fields and tenant enforced from the grant; tombstones hidden; `min_version` wait up to 2 s then 202; rate limit; one audit row per call, denied included, batched), migration `0004_audit_outcome_width.sql`, `docs/architecture/read-api-v1.md` (calls, errors, caching and degradation advice, TLS statement).
+
+**FACT, run 2026-11-19 on MariaDB 11.8.9 (`shared.sh test`):** 157 tests OK (3 skipped), 28 of them the Read API (T9: 401 no/garbage/expired/revoked token, 403 other app's token and field outside the grant, 404 tombstone and other tenant look alike, 405 for POST/PUT/DELETE/PATCH, audit for every outcome; T10: view with extra columns never leaks them, min_version wait and 202, 429, 503 with no SQL or trace). ruff and bandit clean for `shared_service`.
+
+**Found while testing:** audit `outcome` was VARCHAR(16) and truncated `denied_unauthorized`, so those audit rows failed and were retried forever; widened by migration 0004 and a data error now drops the batch with an error log instead of looping.
+
+**Not yet:** runbook steps against the owner site (feed keys, backfill, soak, `scripts/shared_audit.sh`). 12 I001 ruff findings in `nxerp/www/*` exist with ruff 0.16.9 (not touched here; CI pins another ruff).

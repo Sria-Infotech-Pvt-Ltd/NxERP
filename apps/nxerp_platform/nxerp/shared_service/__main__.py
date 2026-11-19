@@ -4,6 +4,7 @@
 	migrate                    shared_migrate: apply schema/*.sql, then refresh the per-object grants
 	grants sync | show         consumer_grant from the contracts
 	views                      generate the per-consumer views, then refresh the per-object grants
+	tokens create|rotate|revoke|list   per-app Read API tokens (the token is shown once)
 	status                     counts only: rows per entity table, cursors, dead letters, metrics
 	projector [--once]         pull the owners' feeds and apply them (the only writer of the entity tables)
 	reconcile --recent|--full  compare with the owners and repair drift (owner to shared, never the reverse)
@@ -19,7 +20,7 @@ import logging
 import signal
 import sys
 
-from nxerp.shared_service import accounts, config, db, grants, migrate, sqlutil, views
+from nxerp.shared_service import accounts, config, credentials, db, grants, migrate, sqlutil, views
 
 
 def emit(**values) -> None:
@@ -97,6 +98,41 @@ def cmd_status(args) -> int:
 		conn.close()
 	emit(command="status", tables=counts, cursors=cursors, unresolved_dead_letters=dead, metrics=metrics)
 	return 0
+
+
+def cmd_tokens(args) -> int:
+	"""Manage the Read API tokens (the migrate account). A token is shown once, when it is issued or rotated, and cannot be shown again."""
+	conn = db.connect(db.settings_from_env("migrate"))
+	try:
+		if args.action == "create":
+			emit(
+				command="tokens create",
+				app=args.app,
+				**credentials.issue(conn, _need(args.app, "--app"), args.expires_days),
+			)
+		elif args.action == "rotate":
+			emit(
+				command="tokens rotate",
+				app=args.app,
+				**credentials.rotate(conn, _need(args.app, "--app"), args.grace_hours),
+			)
+		elif args.action == "revoke":
+			emit(
+				command="tokens revoke",
+				revoked=credentials.revoke(conn, app=args.app, credential_id=args.credential_id),
+			)
+		else:
+			for row in credentials.list_credentials(conn):
+				emit(**row)
+	finally:
+		conn.close()
+	return 0
+
+
+def _need(value, flag: str):
+	if not value:
+		raise ValueError(f"{flag} is required")
+	return value
 
 
 def cmd_projector(args) -> int:
@@ -182,6 +218,16 @@ def build_parser() -> argparse.ArgumentParser:
 	grants_parser = sub.add_parser("grants")
 	grants_parser.add_argument("action", choices=["sync", "show"])
 	sub.add_parser("views")
+	tokens_parser = sub.add_parser("tokens")
+	tokens_parser.add_argument("action", choices=["create", "rotate", "revoke", "list"])
+	tokens_parser.add_argument("--app", help="the consuming app (a consumer in an enabled grant)")
+	tokens_parser.add_argument("--credential-id", help="revoke just this credential")
+	tokens_parser.add_argument(
+		"--expires-days", type=int, help="create: the token expires after this many days"
+	)
+	tokens_parser.add_argument(
+		"--grace-hours", type=int, default=0, help="rotate: keep the old token valid for this many hours"
+	)
 	sub.add_parser("status")
 	reconcile_parser = sub.add_parser("reconcile")
 	mode = reconcile_parser.add_mutually_exclusive_group(required=True)
@@ -206,6 +252,7 @@ HANDLERS = {
 	"migrate": cmd_migrate,
 	"grants": cmd_grants,
 	"views": cmd_views,
+	"tokens": cmd_tokens,
 	"status": cmd_status,
 	"projector": cmd_projector,
 	"reconcile": cmd_reconcile,
@@ -218,7 +265,14 @@ def main(argv=None) -> int:
 	args = build_parser().parse_args(argv)
 	try:
 		return HANDLERS[args.command](args)
-	except (db.SettingsError, config.ConfigError, migrate.MigrationError, views.ViewError, ValueError) as exc:
+	except (
+		db.SettingsError,
+		config.ConfigError,
+		migrate.MigrationError,
+		views.ViewError,
+		credentials.CredentialError,
+		ValueError,
+	) as exc:
 		print(f"{args.command}: {type(exc).__name__}: {exc}", file=sys.stderr)
 		return 1
 

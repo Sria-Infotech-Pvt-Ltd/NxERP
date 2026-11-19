@@ -81,7 +81,7 @@ class TestMigrations(SharedDbTestCase):
 				cur.execute("SELECT filename FROM schema_migrations ORDER BY filename")
 				self.assertEqual(
 					[r["filename"] for r in cur.fetchall()],
-					["0001_shared_model.sql", "0003_read_api_support.sql"],
+					["0001_shared_model.sql", "0003_read_api_support.sql", "0004_audit_outcome_width.sql"],
 				)
 		finally:
 			conn.close()
