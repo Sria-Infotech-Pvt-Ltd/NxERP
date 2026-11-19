@@ -40,3 +40,8 @@ Thumbs.db
 # Local build outputs (SBOMs, backups)
 dist/
 backups/
+
+# Isolated stacks (Phase 5): real env files hold passwords; generated edge files are rebuilt by deploy/scripts/edge-gen.sh
+deploy/env/isolated/*.env
+deploy/env/isolated/stacks.list
+deploy/docker/compose/isolated/edge/generated/
