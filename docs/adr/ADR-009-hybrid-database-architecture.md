@@ -9,6 +9,8 @@
 
 ## Context
 
+> **Correction 2026-11-19 (measured on production):** Frappe-level isolation already exists on the live host: NXERP and Helpdesk are separate sites with separate databases and separate `localhost`-only logins, and `tabCustomer` does not exist in the Helpdesk database. The remaining exposure is the shared host and MariaDB server, not a shared Frappe login. The decision below still holds for the apps that will need shared reference data, but its Phase 5 (split databases) is largely already true in production; Phases 6 to 8 must be re-planned for a bare-metal host.
+
 - **FACT** (`deploy/bootstrap/bootstrap.sh`, `deploy/docker/compose/staging-like/compose.yaml`): one site hosts frappe, payments, erpnext, telephony, helpdesk and nxerp;
   that site has one database and one database login, shared by every app. Role checks (`has_permission`, the `nxerp` gate) are Python inside the same process, so
   they cannot limit which tables code can read. A flaw in the internet-facing Helpdesk therefore reaches the ERPNext tables too.
@@ -59,8 +61,8 @@ The repository cannot decide these. None is guessed as true: each stays **owner 
 
 | ID | Assumption | Status | Owner's answer |
 | --- | --- | --- | --- |
-| A1 | Production runs one site with all six apps, as staging-like does | owner to confirm | |
-| A2 | One organisation, one Docker host, a handful of apps; the shared model still carries a `tenant_id` from day one | owner to confirm | |
+| A1 | ~~Production runs one site with all six apps, as staging-like does~~ **Measured 2026-11-19: false.** Production runs two separate Frappe sites on separate benches (`nxerp.nxsys.in`: frappe, erpnext, payments, nxerp; `helpdesk.nxsys.in`: frappe, telephony, helpdesk, nxerp), each with its own database and login | corrected by measurement; owner to confirm | See `docs/architecture-isolation/measurements.md` |
+| A2 | One organisation, **one bare-metal host (systemd, no Docker) shared with at least 8 other applications**, a handful of NXDESK apps; the shared model still carries a `tenant_id` from day one | host model corrected by measurement; owner to confirm | The Phase 5 Docker stack template and the Docker-based `backup.sh` do not describe production |
 | A3 | Helpdesk no longer writes into ERPNext tables; it may ask ERPNext to change a customer through ERPNext's command API | owner to confirm | |
 | A4 | Customers (portal users) sign in at the identity site too | owner to confirm | |
 | A5 | Business roles (`Agent`, `Sales User`) stay managed inside each app; the identity site grants only app access | owner to confirm | |
