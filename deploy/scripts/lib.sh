@@ -54,7 +54,10 @@ dc() {
 # inbench 'COMMAND' : run a shell command inside the bench service, in the bench directory.
 # NXERP_DB_ROOT_PASSWORD is forwarded by name (not value) so it never appears in a host process list.
 inbench() {
-	dc exec -T -e NXERP_DB_ROOT_PASSWORD "$NXERP_SERVICE" bash -lc "cd $NXERP_BENCH_DIR && $1"
+	local env_args=(-e NXERP_DB_ROOT_PASSWORD) name
+	# NXERP_PASSTHROUGH="NAME1 NAME2": more variables forwarded by name only (deploy/scripts/stack.sh, `bench execute`)
+	for name in ${NXERP_PASSTHROUGH:-}; do env_args+=(-e "$name"); done
+	dc exec -T "${env_args[@]}" "$NXERP_SERVICE" bash -lc "cd $NXERP_BENCH_DIR && $1"
 }
 
 # bench ARGS... : bench for the configured site

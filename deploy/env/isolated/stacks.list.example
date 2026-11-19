@@ -1,0 +1,5 @@
+# deploy/env/isolated/stacks.list (git-ignored; copy this file): one line per stack: <name> <host-prefix> <tier>
+# <name> has deploy/env/isolated/<name>.env; the host is <host-prefix>.<NXERP_DOMAIN>; tier is standard or restricted.
+id id standard
+hd hd standard
+erp erp restricted
