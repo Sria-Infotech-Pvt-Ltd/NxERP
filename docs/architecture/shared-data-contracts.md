@@ -39,7 +39,7 @@ python -m unittest apps/nxerp_platform/nxerp/tests/test_shared_contracts.py
 
 On a Windows host without a `python3` shim, use `python`. The unit tests need no Frappe site; the JSON Schema test is skipped if `jsonschema` is not installed.
 
-**CI:** the lint is a step of the `pins-and-architecture` job in `.github/workflows/ci.yml`. UNVERIFIED on GitHub: the workflow has not run with this step (see `docs/PROGRESS.md`).
+**CI:** the lint is a step of the `pins-and-architecture` job in `.github/workflows/ci.yml`; it ran and passed on GitHub on 2026-11-19. CI runs for pull requests and pushes to `main`, `develop` and `integration/**`.
 
 ## Add or change a shared field
 
@@ -63,6 +63,6 @@ Add `<entity_type>.json`, a column set in the DDL and, if its owner app is not i
 
 ## The shared tables and the event envelope
 
-- **Tables.** `apps/nxerp_platform/nxerp/shared_service/schema/0001_shared_model.sql` holds one typed table per entity (`entity_<entity_type>`) plus five control tables (`sync_cursor`, `sync_dead_letter`, `consumer_grant`, `read_audit`, `contract_registry`). The entity tables are generated from the contracts by `shared_service/schema/generate_columns.py`; after a contract change run `python generate_columns.py --ddl`, paste the output over the entity tables, and run the tests. The file creates no account and grants nothing (Phase 4), and has not been run against a MariaDB server (UNVERIFIED until Phase 4).
+- **Tables.** `apps/nxerp_platform/nxerp/shared_service/schema/0001_shared_model.sql` holds one typed table per entity (`entity_<entity_type>`) plus five control tables (`sync_cursor`, `sync_dead_letter`, `consumer_grant`, `read_audit`, `contract_registry`). The entity tables are generated from the contracts by `shared_service/schema/generate_columns.py`; after a contract change run `python generate_columns.py --ddl`, paste the output over the entity tables, and run the tests. The file creates no account and grants nothing (Phase 4). `scripts/check_shared_ddl.sh` runs it on a throwaway MariaDB 11.8 container (needs Docker) and checks it against the contracts and the upsert pattern; it passed on 11.8.9 on 2026-11-19.
 - **Envelope.** `nxerp/shared/envelope_schema.json` is the shape of one feed event (`event_id`, `seq`, `source_app`, `entity_type`, `entity_id`, `op`, `contract_version`, `source_modified`, `tenant_id`, `payload`). `nxerp.shared.registry.event_problems(event)` adds the per-entity rules: the owner is the source, the contract version is current, and the payload holds no field outside the allow-list.
 - **Tests.** `python -m unittest apps/nxerp_platform/nxerp/shared_service/tests/test_schema_matches_contracts.py apps/nxerp_platform/nxerp/shared_service/tests/test_envelope.py`. They need no Frappe site and no database.
