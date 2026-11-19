@@ -5,15 +5,18 @@
 	grants sync | show         consumer_grant from the contracts
 	views                      generate the per-consumer views, then refresh the per-object grants
 	status                     counts only: rows per entity table, cursors, dead letters, metrics
+	projector [--once]         pull the owners' feeds and apply them (the only writer of the entity tables)
 
 Output is JSON, one object per line, with counts and names only: never a password, a token or a payload value.
 """
 
 import argparse
 import json
+import logging
+import signal
 import sys
 
-from nxerp.shared_service import accounts, db, grants, migrate, sqlutil, views
+from nxerp.shared_service import accounts, config, db, grants, migrate, sqlutil, views
 
 
 def emit(**values) -> None:
@@ -93,6 +96,28 @@ def cmd_status(args) -> int:
 	return 0
 
 
+def cmd_projector(args) -> int:
+	"""Run the projector until stopped (SIGTERM or SIGINT), or one pass with --once."""
+	from nxerp.shared_service.projector import Projector
+
+	logging.basicConfig(
+		level=logging.INFO, stream=sys.stderr, format="%(asctime)s %(levelname)s %(name)s %(message)s"
+	)
+	settings = db.settings_from_env("projector")
+	projector = Projector(lambda: db.connect(settings), config.load_sources())
+	if args.once:
+		emit(command="projector", **{"passes": projector.run_once()})
+		return 0
+
+	def stop(signum, frame):
+		projector.stopping = True
+
+	signal.signal(signal.SIGTERM, stop)
+	signal.signal(signal.SIGINT, stop)
+	projector.run_forever()
+	return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
 	parser = argparse.ArgumentParser(prog="python -m nxerp.shared_service", description=__doc__)
 	sub = parser.add_subparsers(dest="command", required=True)
@@ -102,6 +127,8 @@ def build_parser() -> argparse.ArgumentParser:
 	grants_parser.add_argument("action", choices=["sync", "show"])
 	sub.add_parser("views")
 	sub.add_parser("status")
+	projector_parser = sub.add_parser("projector")
+	projector_parser.add_argument("--once", action="store_true", help="one pass over every source, then exit")
 	return parser
 
 
@@ -111,6 +138,7 @@ HANDLERS = {
 	"grants": cmd_grants,
 	"views": cmd_views,
 	"status": cmd_status,
+	"projector": cmd_projector,
 }
 
 
@@ -118,7 +146,7 @@ def main(argv=None) -> int:
 	args = build_parser().parse_args(argv)
 	try:
 		return HANDLERS[args.command](args)
-	except (db.SettingsError, migrate.MigrationError, views.ViewError, ValueError) as exc:
+	except (db.SettingsError, config.ConfigError, migrate.MigrationError, views.ViewError, ValueError) as exc:
 		print(f"{args.command}: {type(exc).__name__}: {exc}", file=sys.stderr)
 		return 1
 

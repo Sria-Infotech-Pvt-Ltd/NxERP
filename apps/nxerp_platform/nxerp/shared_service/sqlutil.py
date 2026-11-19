@@ -40,6 +40,11 @@ def select(view: str, columns: list, where: str = "", order_by: str = "", limit:
 	return text
 
 
+def on_table(verb: str, table: str, tail: str = "") -> str:
+	"""`<verb> <table><tail>` with the table name validated (for `DELETE FROM`, `SELECT ... FROM` and the like; `tail` is fixed text)."""
+	return "".join([verb, " ", ident(table), tail])
+
+
 def create_view(view: str, columns: list, table: str, where: str) -> str:
 	"""`CREATE OR REPLACE ... VIEW` over one table; `where` is fixed text built by the caller from validated parts."""
 	parts = [
