@@ -16,6 +16,7 @@ import frappe
 from nxerp.shared import digest
 
 DOCTYPE = "NXERP Outbox Event"
+FEED_ROLE = "NXERP Shared Feed Reader"  # the service role that may call the feed API (nxerp/shared/feed.py)
 OPS = ("upsert", "delete", "resync")
 
 
