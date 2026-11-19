@@ -13,7 +13,8 @@ Presentation fields (display name, tagline, summary, features, category) feed th
 optional. They describe only what the installed app really does. There is deliberately no per-app colour.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+from urllib.parse import urlsplit
 
 import frappe
 
@@ -53,6 +54,9 @@ class AppEntry:
 	category: str = DEFAULT_CATEGORY
 	signup_policy: str = DEFAULT_SIGNUP_POLICY  # invite_only | request_access | open_portal
 	onboarding_steps: tuple = ("basics", "about")
+	# Where the app lives in a browser, e.g. https://hd.example.test. Empty everywhere except on an identity site, where it is
+	# filled from the app's enabled NXERP Peer by `active_entries()` (see docs/architecture/routes.md, "Cross-origin routes").
+	origin: str = ""
 
 	@property
 	def grant_roles(self) -> frozenset:
@@ -154,6 +158,82 @@ def installed_entries() -> list:
 	"""Entries whose app is installed on this site, in launcher order."""
 	installed = set(frappe.get_installed_apps())
 	return sorted((e for e in get_registry() if e.app in installed), key=lambda e: e.order)
+
+
+SITE_ROLES = ("identity", "app")
+
+
+def site_role() -> str:
+	"""`nxerp_site_role` from site config: "identity", "app", or "" (unset or anything else = today's behaviour)."""
+	value = frappe.conf.get("nxerp_site_role")
+	return value if value in SITE_ROLES else ""
+
+
+def normalise_origin(value) -> str:
+	"""`scheme://host[:port]` in lower case for an https URL (http only under developer_mode), else "". Strict: no userinfo, path,
+	query, fragment, percent-encoding, trailing dot or non-ASCII host, because the result is compared for exact equality."""
+	if not isinstance(value, str) or not value.strip() or value != value.strip():
+		return ""
+	if any(c in value for c in ("\\", "@", "%")) or any(ord(c) < 0x21 or ord(c) > 0x7E for c in value):
+		return ""
+	parts = urlsplit(value)
+	scheme = parts.scheme.lower()
+	allowed = ("https", "http") if frappe.conf.get("developer_mode") else ("https",)
+	if (
+		scheme not in allowed
+		or not parts.netloc
+		or parts.path not in ("", "/")
+		or parts.query
+		or parts.fragment
+	):
+		return ""
+	host = (parts.hostname or "").lower()
+	if not host or host.endswith(".") or parts.username is not None or parts.password is not None:
+		return ""
+	try:
+		port = parts.port
+	except ValueError:
+		return ""
+	return f"{scheme}://{host}" + (f":{port}" if port else "")
+
+
+def _peers() -> list:
+	"""Enabled NXERP Peer rows as dicts (app_key, origin). Empty when the DocType is not migrated yet."""
+	try:
+		return frappe.get_all("NXERP Peer", filters={"enabled": 1}, fields=["app_key", "origin"])
+	except Exception:  # the DocType does not exist yet (before migrate): behave as if there were no peers
+		return []
+
+
+def allowed_origins() -> frozenset:
+	"""Exact origins of the enabled NXERP Peer records. Empty unless this site has a site role, so a site that never
+	set `nxerp_site_role` can never be sent to another origin."""
+	if not site_role():
+		return frozenset()
+	return frozenset(o for o in (normalise_origin(p.origin) for p in _peers()) if o)
+
+
+def active_entries() -> list:
+	"""The entries this site offers. On an app site, or with no site role, exactly `installed_entries()`.
+
+	On an identity site the apps are not installed: every registry entry that has an enabled NXERP Peer is active, carrying
+	the peer's origin, in launcher order."""
+	if site_role() != "identity":
+		return installed_entries()
+	origins = {p.app_key: normalise_origin(p.origin) for p in _peers()}
+	return sorted(
+		(replace(e, origin=origins[e.key]) for e in get_registry() if origins.get(e.key)),
+		key=lambda e: e.order,
+	)
+
+
+def active_entry(key: str) -> AppEntry | None:
+	return next((e for e in active_entries() if e.key == key), None)
+
+
+def entry_for_origin(origin: str) -> AppEntry | None:
+	"""The active entry living at an exact origin (identity site), else None."""
+	return next((e for e in active_entries() if e.origin and e.origin == origin), None)
 
 
 def get_entry(key: str) -> AppEntry | None:

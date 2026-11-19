@@ -3,7 +3,8 @@
 Three jobs, all server-side:
 
 1. `safe_target`: turn untrusted input (the `redirect-to` parameter) into a normalised same-origin path,
-   or nothing. It never returns a URL with a scheme or host, however the input is encoded.
+   or nothing. It never returns a URL with a scheme or host, however the input is encoded, EXCEPT an absolute URL
+   whose origin is exactly that of an enabled NXERP Peer (identity sites only; docs/architecture/routes.md).
 2. `authorised_target`: a safe path is honoured only when the user may use the app that owns it.
 3. `route`: the single decision after login. A good `redirect-to` wins; otherwise the user's landing
    (`access.resolve_landing`) decides: no apps -> no-access page, one app -> that app, several -> launcher.
@@ -55,7 +56,9 @@ def safe_target(raw) -> str | None:
 		return None  # still changing after the allowed rounds: refuse
 
 	parts = urlsplit(candidate)
-	if parts.scheme or parts.netloc or not candidate.startswith("/"):
+	if parts.scheme or parts.netloc:
+		return _cross_origin_target(raw, parts)
+	if not candidate.startswith("/"):
 		return None
 
 	path = posixpath.normpath(parts.path)
@@ -68,6 +71,28 @@ def safe_target(raw) -> str | None:
 	# query could change what it means
 	raw_query = raw.partition("?")[2]
 	return path + (f"?{raw_query}" if raw_query else "")
+
+
+def _cross_origin_target(raw: str, parts) -> str | None:
+	"""An absolute URL is honoured ONLY when its origin is EXACTLY the origin of an enabled NXERP Peer (`registry.allowed_origins`),
+	which is empty on a site with no `nxerp_site_role`. Returned normalised: lower-case scheme and host, a cleaned path, the query as received.
+
+	Refused: any other scheme or host, userinfo (`https://evil.test@id.example.test`), a host that only starts or ends like a peer
+	(`id.example.test.evil.test`, a trailing dot), another port, percent-encoding or non-ASCII characters in the authority, and
+	http unless the site is in developer_mode."""
+	raw_parts = urlsplit(raw)
+	if raw_parts.netloc != parts.netloc:  # decoding changed the authority: something was hidden in it
+		return None
+	origin = registry.normalise_origin(f"{raw_parts.scheme}://{raw_parts.netloc}")
+	if not origin or origin not in registry.allowed_origins():
+		return None
+	path = posixpath.normpath(parts.path or "/")
+	if parts.path.endswith("/") and not path.endswith("/"):
+		path += "/"
+	if not path.startswith("/") or path.startswith("//"):
+		return None
+	raw_query = raw.partition("?")[2]
+	return origin + path + (f"?{raw_query}" if raw_query else "")
 
 
 def _clean(text: str) -> bool:
@@ -83,7 +108,18 @@ def authorised_target(user: str, target: str | None) -> str | None:
 	"""`target` if the user may use whatever owns it, else None (the caller then falls back to the router)."""
 	if not target:
 		return None
-	path = urlsplit(target).path
+	parts = urlsplit(target)
+	path = parts.path
+
+	if (
+		parts.scheme
+	):  # an absolute target only comes out of safe_target for a registered peer origin (identity site)
+		entry = registry.entry_for_origin(f"{parts.scheme}://{parts.netloc}")
+		if entry is None or user == "Guest" or not access.can_access_app(user, entry.key):
+			return None
+		if registry.under(path, entry.path_prefixes) or registry.under(path, entry.portal_prefixes):
+			return target
+		return None
 
 	if path in SHARED_TARGETS:
 		return target if user != "Guest" else None
@@ -130,7 +166,7 @@ def landing_for(user: str) -> dict:
 
 
 def route(user: str, redirect_to=None) -> str:
-	"""Where to send `user` now. Always a same-origin path."""
+	"""Where to send `user` now: a same-origin path, or (identity site only) the registered origin of an app plus its route."""
 	if not user or user == "Guest":
 		return access.LOGIN_ROUTE
 	if not access.is_enabled(user):

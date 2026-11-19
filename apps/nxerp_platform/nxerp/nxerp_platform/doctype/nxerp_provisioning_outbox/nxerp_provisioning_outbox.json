@@ -1,0 +1,106 @@
+{
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "module": "NXERP Platform",
+ "actions": [],
+ "links": [],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "owner": "Administrator",
+ "modified_by": "Administrator",
+ "creation": "2026-11-19 10:00:00.000000",
+ "modified": "2026-11-19 10:00:00.000000",
+ "name": "NXERP Provisioning Outbox",
+ "autoname": "format:NXPO-{#####}",
+ "in_create": 1,
+ "field_order": [
+  "user",
+  "app_key",
+  "action",
+  "status",
+  "attempts",
+  "next_attempt",
+  "last_error",
+  "idempotency_key"
+ ],
+ "fields": [
+  {
+   "fieldname": "user",
+   "fieldtype": "Data",
+   "label": "User",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "app_key",
+   "fieldtype": "Data",
+   "label": "Application",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "action",
+   "fieldtype": "Select",
+   "label": "Action",
+   "options": "Enable\nDisable",
+   "reqd": 1,
+   "in_list_view": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Pending\nSent\nFailed",
+   "default": "Pending",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "attempts",
+   "fieldtype": "Int",
+   "label": "Attempts",
+   "default": "0",
+   "read_only": 1
+  },
+  {
+   "fieldname": "next_attempt",
+   "fieldtype": "Datetime",
+   "label": "Next attempt",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_error",
+   "fieldtype": "Small Text",
+   "label": "Last error",
+   "length": 200,
+   "read_only": 1,
+   "description": "A short error kind only: never a token, a secret or a response"
+  },
+  {
+   "fieldname": "idempotency_key",
+   "fieldtype": "Data",
+   "label": "Idempotency key",
+   "reqd": 1,
+   "unique": 1,
+   "read_only": 1
+  }
+ ],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 0,
+   "share": 0,
+   "email": 0,
+   "print": 0
+  }
+ ]
+}

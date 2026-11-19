@@ -54,9 +54,10 @@ def is_platform_admin(user: str | None = None) -> bool:
 
 
 def get_user_apps(user: str | None = None) -> list:
-	"""Entries of installed apps the user has STAFF access to, in launcher order."""
+	"""Entries of the apps this site offers (`registry.active_entries`: the installed apps, or on an identity site the registered
+	peers) that the user has STAFF access to, in launcher order."""
 	user = user or frappe.session.user
-	entries = registry.installed_entries()
+	entries = registry.active_entries()
 
 	if user == "Administrator":
 		return entries
@@ -68,6 +69,11 @@ def get_user_apps(user: str | None = None) -> list:
 
 	roles = _roles(user)
 	return [e for e in entries if e.grant_roles & roles]
+
+
+def app_url(entry) -> str:
+	"""Where an entry's staff land: its route, prefixed by its origin on an identity site (empty origin everywhere else)."""
+	return f"{entry.origin}{entry.route}" if entry.origin else entry.route
 
 
 def can_access_app(user: str | None, app_key: str) -> bool:
@@ -123,12 +129,12 @@ def resolve_landing(user: str | None = None) -> dict:
 		return {"mode": "none", "destination": LOGIN_ROUTE, "apps": []}
 
 	apps = get_user_apps(user)
-	summary = [{"key": e.key, "title": e.title, "route": e.route, "logo": e.logo} for e in apps]
+	summary = [{"key": e.key, "title": e.title, "route": app_url(e), "logo": e.logo} for e in apps]
 
 	if len(apps) > 1:
 		return {"mode": "launcher", "destination": LAUNCHER_ROUTE, "apps": summary}
 	if len(apps) == 1:
-		return {"mode": "direct", "destination": apps[0].route, "apps": summary}
+		return {"mode": "direct", "destination": app_url(apps[0]), "apps": summary}
 
 	# no staff apps: a portal-only user (customer) goes straight to the customer-facing surface
 	for entry in registry.installed_entries():

@@ -17,7 +17,7 @@ import frappe
 from frappe import _
 from frappe.www.login import get_context as frappe_login_context
 
-from nxerp import branding, routing
+from nxerp import branding, registry, routing
 
 BRAND = branding.LOGIN_NAME
 LOGO = branding.LOGIN_LOGO
@@ -26,6 +26,11 @@ STOCK_NAMES = {"frappe", "helpdesk", "erpnext"}
 
 # UI switch. Social sign-in (e.g. Microsoft) still works in the backend; flip this to show its button.
 SHOW_SOCIAL_LOGIN = False
+
+# On an app site (site config nxerp_site_role = "app") the page shows ONE button, the Social Login Key named "frappe" that points at
+# the identity site. Nothing else changes, and local password login is never switched off from here (a person does that, after
+# single sign-on is proved: docs/runbooks/login-recovery.md).
+SSO_PROVIDER = "frappe"
 
 no_cache = True
 
@@ -67,9 +72,16 @@ def get_context(context):
 	context.nx_lang_name = _language_name(context.nx_lang_code)
 	context.nx_support_url = branding.support_url(BRAND)
 	context.nx_show_social = SHOW_SOCIAL_LOGIN
+	context.nx_sso_label = ""
 	# The email-link option is not offered; the social block only renders when switched on.
 	context.login_with_email_link = 0
-	if not SHOW_SOCIAL_LOGIN:
+	if registry.site_role() == "app":
+		sso = [p for p in (context.get("provider_logins") or []) if p.get("name") == SSO_PROVIDER]
+		context.provider_logins = sso
+		context.social_login = bool(sso)
+		context.nx_show_social = bool(sso)
+		context.nx_sso_label = _("Sign in with {0}").format(BRAND) if sso else ""
+	elif not SHOW_SOCIAL_LOGIN:
 		context.social_login = False
 		context.provider_logins = []
 	return context

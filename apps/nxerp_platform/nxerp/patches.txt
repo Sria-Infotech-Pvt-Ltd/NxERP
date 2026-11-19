@@ -6,3 +6,4 @@
 # Patches added in this section will be executed after doctypes are migrated
 nxerp.patches.create_access_roles
 nxerp.patches.enable_signup_when_configured
+nxerp.patches.create_federation_roles

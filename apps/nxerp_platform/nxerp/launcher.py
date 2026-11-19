@@ -36,7 +36,13 @@ LAUNCHER_NAVBAR_ITEM = {
 
 def _tiles(user: str) -> list:
 	return [
-		{"name": e.key, "title": e.title, "logo": e.logo, "route": e.route, "setup_wizard_text": None}
+		{
+			"name": e.key,
+			"title": e.title,
+			"logo": e.logo,
+			"route": access.app_url(e),
+			"setup_wizard_text": None,
+		}
 		for e in access.get_user_apps(user)
 	]
 
@@ -72,6 +78,6 @@ def extend_bootinfo(bootinfo):
 			row["on_apps_screen"] = False  # Framework, companions and apps the user does not hold
 
 	bootinfo.nxerp = {
-		"apps": [{"key": e.key, "title": e.title, "route": e.route} for e in apps],
+		"apps": [{"key": e.key, "title": e.title, "route": access.app_url(e)} for e in apps],
 		"launcher": "/nxerp/apps" if len(apps) > 1 else None,
 	}

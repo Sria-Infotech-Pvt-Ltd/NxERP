@@ -1,0 +1,108 @@
+{
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "module": "NXERP Platform",
+ "actions": [],
+ "links": [],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "owner": "Administrator",
+ "modified_by": "Administrator",
+ "creation": "2026-11-19 09:00:00.000000",
+ "modified": "2026-11-19 09:00:00.000000",
+ "name": "NXERP Peer",
+ "autoname": "field:app_key",
+ "track_changes": 1,
+ "field_order": [
+  "app_key",
+  "enabled",
+  "column_break_where",
+  "origin",
+  "internal_url",
+  "site_name",
+  "section_break_credentials",
+  "api_key",
+  "api_secret",
+  "webhook_secret"
+ ],
+ "fields": [
+  {
+   "fieldname": "app_key",
+   "fieldtype": "Data",
+   "label": "App Key",
+   "reqd": 1,
+   "unique": 1,
+   "in_list_view": 1,
+   "set_only_once": 1,
+   "description": "The registry key of the app this site calls, for example helpdesk or erpnext"
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "0",
+   "in_list_view": 1,
+   "description": "Untick to stop all provisioning to this site and to stop sending people to its origin"
+  },
+  {
+   "fieldname": "column_break_where",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "origin",
+   "fieldtype": "Data",
+   "label": "Origin",
+   "reqd": 1,
+   "in_list_view": 1,
+   "description": "The address in a browser, https://host with no path (for example https://hd.example.test). People may be redirected here and only here."
+  },
+  {
+   "fieldname": "internal_url",
+   "fieldtype": "Data",
+   "label": "Internal URL",
+   "description": "The address this site uses to call the other site directly (server to server), for example http://hd-backend:8000"
+  },
+  {
+   "fieldname": "site_name",
+   "fieldtype": "Data",
+   "label": "Site Name",
+   "description": "The site name of the other site, sent as X-Frappe-Site-Name on internal calls"
+  },
+  {
+   "fieldname": "section_break_credentials",
+   "fieldtype": "Section Break",
+   "label": "Service credentials"
+  },
+  {
+   "fieldname": "api_key",
+   "fieldtype": "Data",
+   "label": "API Key",
+   "description": "Of the provisioning service user on the other site (role NXERP Provisioner only)"
+  },
+  {
+   "fieldname": "api_secret",
+   "fieldtype": "Password",
+   "label": "API Secret"
+  },
+  {
+   "fieldname": "webhook_secret",
+   "fieldtype": "Password",
+   "label": "Webhook Secret"
+  }
+ ],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 0,
+   "print": 0,
+   "export": 0,
+   "share": 0,
+   "report": 0
+  }
+ ]
+}

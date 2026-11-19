@@ -226,6 +226,10 @@
 				} else {
 					each(".login-divider", function (d) { d.textContent = {{ _("Or sign in with") | tojson }}; });
 					var ms = '<svg class="nx-ms" viewBox="0 0 23 23" aria-hidden="true"><path fill="#f25022" d="M1 1h10v10H1z"/><path fill="#7fba00" d="M12 1h10v10H12z"/><path fill="#00a4ef" d="M1 12h10v10H1z"/><path fill="#ffb900" d="M12 12h10v10H12z"/></svg>';
+					{% if nx_sso_label %}
+					// app site: the one button is the sign-in through the identity site
+					each(".social-login-buttons .login-button-wrapper a.btn-login-option", function (a) { a.textContent = {{ nx_sso_label | tojson }}; });
+					{% endif %}
 					each(".social-login-buttons .login-button-wrapper a.btn-login-option", function (a) {
 						var name = a.textContent.replace(/^\s*Login with\s*/i, "").trim();
 						if (/microsoft|office/i.test(name + " " + a.className)) {

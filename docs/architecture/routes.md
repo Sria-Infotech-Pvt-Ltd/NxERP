@@ -140,3 +140,27 @@ and tiles. Palette tokens come from `apps/nxerp_platform/nxerp/public/css/nxerp-
 | `nxerp.api.access_request.decide(name, decision, note)` | POST | refused | **refused (PermissionError)** | **yes** | `decision` is Approve or Reject; Approve runs `nxerp.api.access.set_app_access` (one grant path, last-administrator guard, Version log) and gives the Desk User role to a Website User; deciding twice returns the first decision |
 
 Data: Desk list `/desk/nxerp-access-request` is the administrator queue (System Manager read and write; nobody else). `NXERP Onboarding` is System Manager read only.
+
+## Cross-origin routes (identity site, Phase 6)
+
+Off unless the site config key `nxerp_site_role` is `identity` or `app`; with it unset (or any other value) nothing here applies and no absolute URL is ever honoured.
+
+* `nxerp_site_role = identity`: the apps are not installed on this site. Every registry entry that has an **enabled NXERP Peer** is active (`registry.active_entries()`), carrying the peer's `origin`. Tiles, the launcher, `/nxerp/apps` and the router (`/nxerp/go`) point at `origin + route`, and a user sees only the apps whose `NXERP Access: <app>` role they hold.
+* `nxerp_site_role = app`: the app's own installed entries, as today. `/login` shows ONE button, "Sign in with NXERP" (the Social Login Key `frappe`), next to the password form. Local password login is never disabled from code.
+* `routing.safe_target` still refuses every scheme, host, `//`, backslash and control character, **except** an absolute URL whose origin is *exactly* the origin of an enabled NXERP Peer (`registry.allowed_origins()`). https only (http only when `developer_mode`). Refused even for a registered peer: user-info (`https://evil.test@id.example.test`), a host that only starts or ends like a peer (`id.example.test.evil.test`), a trailing dot, another port, percent-encoding or non-ASCII characters in the authority, `javascript:`/`data:` and scheme-relative forms. Scheme and host are lower-cased and the result is returned normalised.
+* `routing.authorised_target` honours an absolute target only when the user holds the app's access role AND the path is under that app's prefixes. The hostile-payload tests (`tests/test_routing.py`, 35 payloads) and the cross-origin cases (`tests/test_identity_site.py`) both pass with peers registered.
+* The NXERP Peer DocType (System Manager only) holds the app's origin, internal URL, site name and the service credentials (Password fields, read only with `get_decrypted_password`).
+
+## Provisioning endpoints (app sites, Phase 6)
+
+Whitelisted in `nxerp/federation/api.py`. Not `allow_guest`. Active only when `nxerp_site_role` is `app` (otherwise `PermissionError`). The caller must hold the role **NXERP Provisioner** (a service user with that one role; `Authorization: token <key>:<secret>`). Every denial is logged through `nxerp/audit.py` with a hashed user reference. They are reachable on the app-to-app network only: the edge refuses `/api/method/nxerp.federation.*` (and `nxerp.shared.*`).
+
+| Method | HTTP | Arguments | Answer |
+| --- | --- | --- | --- |
+| `nxerp.federation.api.provision_user` | POST | `email`, `full_name`, `enabled`=1, `user_type` (System User or Website User), `app_key`, `grant`=1, `idempotency_key` | `{"user", "created", "enabled", "app_access"}` |
+| `nxerp.federation.api.deprovision_user` | POST | `email`, `idempotency_key` | `{"user", "enabled": false}` |
+| `nxerp.federation.api.list_provisioned` | GET | `after` (email cursor), `limit` (max 200) | `{"users": [{"email", "enabled", "user_type", "apps"}], "next"}` |
+
+Rules: a user is created without a password and without a welcome email; only the access role of the app this site owns is added or removed (never System Manager; business roles are untouched); Administrator and Guest are refused; users are disabled, never deleted; the same `idempotency_key` returns the stored answer for 7 days and the operations set a desired state, so a repeat changes nothing. Frappe turns a user with no desk-access role into a Website User, so a provisioned person needs a business role from the app's own administrator before they count as staff there.
+
+`nxerp.api.access.set_app_access` on an identity site also queues provisioning and answers `"provisioning": "queued"` (unchanged elsewhere). On an identity site, `User` saves that change a grant queue a row in **NXERP Provisioning Outbox** (same transaction); the scheduler (`all`) delivers rows with exponential backoff (30 s doubling to 1 h, 8 attempts) and `nxerp.federation.reconcile.run` (`daily`) repairs drift toward the identity site.
