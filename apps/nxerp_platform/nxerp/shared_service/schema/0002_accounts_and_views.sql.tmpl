@@ -1,0 +1,24 @@
+-- Template for the shared database's accounts. NOT a migration (it is not applied by migrate.py): shared_service/accounts.py renders it
+-- and runs it with the root account, once, from a one-shot run.
+--
+--   ${name}      an identifier, checked against ^[A-Za-z0-9_]{1,64}$ before it is substituted
+--   {{pw:role}}  a bound parameter (the password from the environment): never written into this file, a log or a printed statement
+--   ${ssl}       REQUIRE SSL when SHARED_DB_REQUIRE_SSL=1, otherwise REQUIRE NONE
+--
+-- Accounts (blueprint 2.5):
+--   ${migrate}    all privileges on the shared database only, with grant option: runs migrations, views and object grants
+--   ${projector}  SELECT, INSERT, UPDATE, DELETE on the entity tables and the sync control tables, granted per object
+--   ${readapi}    SELECT on the generated views only (and INSERT on the audit view): no privilege on any base table
+-- Per-object privileges of the projector and the Read API are granted by accounts.apply_object_grants after the tables and views exist.
+
+CREATE DATABASE IF NOT EXISTS `${db}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+CREATE USER IF NOT EXISTS '${migrate}'@'%' IDENTIFIED BY {{pw:migrate}} ${ssl};
+ALTER USER '${migrate}'@'%' IDENTIFIED BY {{pw:migrate}} ${ssl};
+GRANT ALL PRIVILEGES ON `${db}`.* TO '${migrate}'@'%' WITH GRANT OPTION;
+
+CREATE USER IF NOT EXISTS '${projector}'@'%' IDENTIFIED BY {{pw:projector}} ${ssl};
+ALTER USER '${projector}'@'%' IDENTIFIED BY {{pw:projector}} ${ssl};
+
+CREATE USER IF NOT EXISTS '${readapi}'@'%' IDENTIFIED BY {{pw:readapi}} ${ssl};
+ALTER USER '${readapi}'@'%' IDENTIFIED BY {{pw:readapi}} ${ssl};
