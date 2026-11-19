@@ -25,9 +25,16 @@ sys.path.insert(0, str(PLATFORM))
 from nxerp.shared import registry
 
 LINT_PATH = REPO / "scripts" / "check_contracts.py"
-_spec = importlib.util.spec_from_file_location("check_contracts", LINT_PATH)
-lint = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(lint)
+# the lint lives in the repository's scripts/ folder, which an installed copy of the app (a bench image) does not have:
+# load it only when present and skip the tests that need it, as test_architecture does
+lint = None
+if LINT_PATH.is_file():
+	_spec = importlib.util.spec_from_file_location("check_contracts", LINT_PATH)
+	lint = importlib.util.module_from_spec(_spec)
+	_spec.loader.exec_module(lint)
+needs_lint = unittest.skipUnless(
+	lint is not None, "scripts/check_contracts.py is not part of this deployment"
+)
 
 try:
 	import jsonschema
@@ -43,7 +50,7 @@ ENTITIES = {
 	"project_ref",
 	"ticket_summary",
 }
-REGISTERED = lint.registry_keys()
+REGISTERED = lint.registry_keys() if lint else set()
 
 
 def violations(contract, name="x.json"):
@@ -62,11 +69,13 @@ class TestContractFiles(unittest.TestCase):
 			with self.subTest(entity=entity):
 				jsonschema.validate(contract, schema, cls=jsonschema.Draft202012Validator)
 
+	@needs_lint
 	def test_the_lint_passes_on_the_real_contracts(self):
 		errors, passed = lint.check_files(lint.collect([lint.CONTRACT_DIR]), REGISTERED)
 		self.assertEqual(errors, [])
 		self.assertEqual({entity for entity, _ in passed}, ENTITIES)
 
+	@needs_lint
 	def test_planned_owners_are_marked_planned(self):
 		contracts = registry.load_contracts()
 		for entity in ("employee_ref", "project_ref"):
@@ -75,6 +84,7 @@ class TestContractFiles(unittest.TestCase):
 			if contract["owner_app"] not in REGISTERED:
 				self.assertEqual(contract["status"], "planned", entity)
 
+	@needs_lint
 	def test_no_contract_shares_class_s3_or_a_denied_name(self):
 		for entity, contract in registry.load_contracts().items():
 			for field in contract["fields"]:
@@ -94,6 +104,7 @@ class TestContractFiles(unittest.TestCase):
 		):
 			self.assertNotIn(name, shared)
 
+	@needs_lint
 	def test_planned_apps_are_not_in_the_platform_registry(self):
 		self.assertEqual(REGISTERED & lint.PLANNED_APPS, set())
 
@@ -117,11 +128,12 @@ class TestRegistry(unittest.TestCase):
 		)
 
 	def test_registry_module_imports_no_other_app(self):
-		source = (PLATFORM / "nxerp" / "shared" / "registry.py").read_text(encoding="utf-8")
+		source = Path(registry.__file__).read_text(encoding="utf-8")
 		for forbidden in ("import frappe", "from frappe", "erpnext", "helpdesk"):
 			self.assertNotIn(forbidden, source.replace("helpdesk.json", ""), forbidden)
 
 
+@needs_lint
 class TestLintRejectsBadContracts(unittest.TestCase):
 	def customer(self):
 		return copy.deepcopy(registry.get_contract("customer"))
@@ -217,6 +229,7 @@ class TestLintRejectsBadContracts(unittest.TestCase):
 		self.assertViolation(violations(contract), "C1", "synced_at")
 
 
+@needs_lint
 class TestLintCommandLine(unittest.TestCase):
 	def run_lint(self, *args):
 		"""Run the lint's own main() in-process (as the architecture tests do) and capture what it prints."""
