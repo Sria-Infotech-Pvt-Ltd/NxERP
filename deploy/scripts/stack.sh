@@ -38,7 +38,7 @@ action="$2"
 shift 2
 
 in_stacks_list() { [ -f "$STACKS_LIST" ] && awk -v n="$1" '$1 == n && $1 !~ /^#/ {found = 1} END {exit !found}' "$STACKS_LIST"; }
-tier_of() { awk -v n="$1" '$1 == n && $1 !~ /^#/ {print $3}' "$STACKS_LIST"; }
+tier_of() { tr -d '\015' <"$STACKS_LIST" | awk -v n="$1" '$1 == n && $1 !~ /^#/ {print $3}'; }
 
 case "$name" in
 	db)

@@ -109,6 +109,22 @@ jobs:
         run: |
           printf 'NXERP_IMAGE_TAG=0.0.0-ci\nNXERP_SITE=staging.example.test\nNXERP_DB_ROOT_PASSWORD=dummy\nNXERP_ADMIN_PASSWORD=dummy\n' > "$RUNNER_TEMP/dummy.env"
           docker compose --env-file "$RUNNER_TEMP/dummy.env" -f deploy/docker/compose/staging-like/compose.yaml config -q
+      - name: Isolated stack compose files render (config only; dummy values, nothing is started)
+        run: |
+          for pair in "standard:id" "restricted:erp" "standard:hd"; do
+            tier="${pair%%:*}"; name="${pair##*:}"
+            printf 'NXERP_STACK=%s\nNXERP_SITE=%s.example.test\nNXERP_IMAGE_TAG=0.0.0-ci\nNXERP_ADMIN_PASSWORD=dummy\nNXERP_DB_HOST=mariadb-%s\nNXERP_DB_NETWORK=nxerp-db-%s\nNXERP_DB_USER_SCOPE=172.30.0.%%\nNXERP_STACK_APPS=nxerp\n' "$name" "$name" "$tier" "$tier" > "$RUNNER_TEMP/stack-$name.env"
+            docker compose -p "nxerp-$name" --env-file "$RUNNER_TEMP/stack-$name.env" -f deploy/docker/compose/isolated/stack.compose.yaml config -q
+          done
+          printf 'NXERP_DB_ROOT_PASSWORD_STANDARD=dummy\nNXERP_DB_ROOT_PASSWORD_RESTRICTED=dummy\n' > "$RUNNER_TEMP/db.env"
+          docker compose --env-file "$RUNNER_TEMP/db.env" -f deploy/docker/compose/isolated/db.compose.yaml config -q
+          # the edge files are generated: render them from the example list, then check the compose file and the nginx syntax with them
+          cp deploy/env/isolated/stacks.list.example deploy/env/isolated/stacks.list
+          for name in id hd erp; do cp "$RUNNER_TEMP/stack-id.env" "deploy/env/isolated/$name.env"; done
+          printf 'NXERP_DOMAIN=example.test\n' > deploy/env/isolated/edge.env
+          deploy/scripts/edge-gen.sh
+          docker compose --env-file deploy/env/isolated/edge.env -f deploy/docker/compose/isolated/edge.compose.yaml -f deploy/docker/compose/isolated/edge/generated/edge.networks.override.yaml config -q
+          docker run --rm -v "$PWD/deploy/docker/compose/isolated/edge/generated/default.conf.template:/etc/nginx/conf.d/default.conf:ro" nginx:1.27-alpine nginx -t
       - name: Dockerfile passes BuildKit's build checks (no build is run here; see job docker-build)
         run: docker buildx build --check -f deploy/docker/Dockerfile .
 

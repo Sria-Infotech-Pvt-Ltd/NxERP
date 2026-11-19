@@ -61,6 +61,13 @@ services:
     <<: *nxerp
     profiles: ["init"]
     restart: "no"
+    depends_on:
+      configurator:
+        condition: service_completed_successfully
+      redis-cache:
+        condition: service_started
+      redis-queue:
+        condition: service_started
     environment:
       NXERP_CONFIGURE: "0"
       NXERP_SITE: ${NXERP_SITE:?set NXERP_SITE}
@@ -83,19 +90,24 @@ services:
           trap - EXIT
           if [ "$$status" -ne 0 ]; then
             echo "create-site failed (exit $$status): removing what was half-created" >&2
-            bench drop-site "$$NXERP_SITE" --mariadb-root-password "$$NXERP_DB_ROOT_PASSWORD" --mariadb-user-host-login-scope "$$NXERP_DB_USER_SCOPE" --no-backup --force >&2 || true
+            bench drop-site "$$NXERP_SITE" --mariadb-root-password "$$NXERP_DB_ROOT_PASSWORD" --no-backup --force >&2 || true
             rm -rf "sites/$$NXERP_SITE"
           fi
           exit "$$status"
         }
         trap cleanup EXIT
-        for _ in $$(seq 1 60); do
-          if (exec 3<>"/dev/tcp/$$NXERP_DB_HOST/3306") 2>/dev/null; then break; fi
-          sleep 2
+        # wait until the database server and both Redis servers answer (Docker's DNS can lag a few seconds on a busy host)
+        for target in "$$NXERP_DB_HOST:3306" redis-cache:6379 redis-queue:6379; do
+          ready=0
+          for _ in $$(seq 1 60); do
+            if (exec 3<>"/dev/tcp/$${target%%:*}/$${target##*:}") 2>/dev/null; then ready=1; break; fi
+            sleep 2
+          done
+          [ "$$ready" = 1 ] || { echo "$$target did not answer within 2 minutes" >&2; exit 1; }
         done
         bench new-site "$$NXERP_SITE" --mariadb-root-password "$$NXERP_DB_ROOT_PASSWORD" \
           --mariadb-user-host-login-scope "$$NXERP_DB_USER_SCOPE" \
-          --admin-password "$$NXERP_ADMIN_PASSWORD" --no-mariadb-socket
+          --admin-password "$$NXERP_ADMIN_PASSWORD"
         for app in $$NXERP_STACK_APPS; do bench --site "$$NXERP_SITE" install-app "$$app"; done
         bench --site "$$NXERP_SITE" set-config host_name "$${NXERP_PUBLIC_URL:-https://$$NXERP_SITE}"
         bench use "$$NXERP_SITE"
