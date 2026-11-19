@@ -1,0 +1,31 @@
+# Development and test override for the shared stack: run the CURRENT source tree instead of the code baked into the image.
+# shared.sh adds this file automatically when SHARED_DEV_SRC is set in deploy/env/shared/shared.env. Never use it in production.
+#
+# SHARED_DEV_SRC is the folder that CONTAINS the `nxerp` package (apps/nxerp_platform in this repository). It is mounted
+# read-only and put first on PYTHONPATH, so `python -m nxerp.shared_service` runs the working copy.
+
+x-dev-source: &dev-source
+  volumes:
+    - ${SHARED_DEV_SRC:?set SHARED_DEV_SRC}:/opt/nxerp-src:ro
+  environment:
+    PYTHONPATH: /opt/nxerp-src
+
+services:
+  shared-projector:
+    <<: *dev-source
+    volumes:
+      - ${SHARED_DEV_SRC:?set SHARED_DEV_SRC}:/opt/nxerp-src:ro
+      - ${SHARED_SOURCES_FILE:-./sources.json}:/etc/nxerp-shared/sources.json:ro
+      - ${SHARED_SECRETS_DIR:-./secrets}:/run/nxerp-shared:ro
+  shared-api:
+    <<: *dev-source
+  shared-root-tool:
+    <<: *dev-source
+  shared-admin:
+    <<: *dev-source
+  shared-ops:
+    <<: *dev-source
+    volumes:
+      - ${SHARED_DEV_SRC:?set SHARED_DEV_SRC}:/opt/nxerp-src:ro
+      - ${SHARED_SOURCES_FILE:-./sources.json}:/etc/nxerp-shared/sources.json:ro
+      - ${SHARED_SECRETS_DIR:-./secrets}:/run/nxerp-shared:ro
