@@ -39,7 +39,13 @@ class FakeOwner:
 		self.drop_acks = 0  # answer the next N acks with HTTP 500
 		self.force_status: int | None = None  # answer every request with this status
 		self.last_host: str | None = None  # the Host header of the last request
-		self.lock = threading.Lock()
+		self.lock = (
+			threading.RLock()
+		)  # re-entrant: a hook may change the owner while a request is being served
+		self.digest_calls: list = []
+		self.snapshot_pages = 0
+		self.fail_snapshot_after: int | None = None  # answer snapshot pages after this many with HTTP 500
+		self.on_snapshot_page = None  # called with the page number after a snapshot page was built
 		owner = self
 
 		class Handler(BaseHTTPRequestHandler):
@@ -227,6 +233,7 @@ class FakeOwner:
 
 	def _feed_digest(self, params):
 		entity_type = self._entity(params)
+		self.digest_calls.append(dict(params))
 		ids, limit = self._page(entity_type, params)
 		items = [
 			{
@@ -241,6 +248,9 @@ class FakeOwner:
 
 	def _feed_snapshot(self, params):
 		entity_type = self._entity(params)
+		self.snapshot_pages += 1
+		if self.fail_snapshot_after is not None and self.snapshot_pages > self.fail_snapshot_after:
+			raise _Refused(500, "InternalError")
 		ids, limit = self._page(entity_type, params)
 		items = [
 			{
@@ -250,7 +260,10 @@ class FakeOwner:
 			}
 			for i in ids
 		]
-		return {"items": items, "next_after_id": items[-1]["entity_id"] if len(items) == limit else None}
+		answer = {"items": items, "next_after_id": items[-1]["entity_id"] if len(items) == limit else None}
+		if self.on_snapshot_page:
+			self.on_snapshot_page(self.snapshot_pages)
+		return answer
 
 	def _feed_snapshot_by_ids(self, params):
 		entity_type = self._entity(params)

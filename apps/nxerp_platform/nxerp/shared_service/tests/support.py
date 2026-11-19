@@ -199,3 +199,30 @@ class OwnerTestCase(SharedDbTestCase):
 	def metric(self, name: str):
 		rows = self.query("SELECT value FROM sync_metric WHERE source = 'stub' AND name = %s", (name,))
 		return rows[0]["value"] if rows else None
+
+	def drop_and_recreate_database(self) -> None:
+		"""Drop the whole shared database and bring it back empty: migrations, grants, views (accounts survive, as on a real server)."""
+		self.projector.reset_connection()
+		root = self.connect("root")
+		with root.cursor() as cur:
+			cur.execute("DROP DATABASE " + sqlutil.ident(self.db_name))
+			cur.execute(
+				"CREATE DATABASE "
+				+ sqlutil.ident(self.db_name)
+				+ " CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+			)  # nosec B608
+		root.commit()
+		root.close()
+		conn = self.connect("migrate")
+		try:
+			migrate.apply_migrations(conn)
+			grants.sync(conn)
+			views.apply_views(
+				conn,
+				views.render_all(grants.read_grants(conn)),
+				self.db_name,
+				accounts.all_accounts(self.env),
+			)
+			accounts.apply_object_grants(conn, self.env)
+		finally:
+			conn.close()
