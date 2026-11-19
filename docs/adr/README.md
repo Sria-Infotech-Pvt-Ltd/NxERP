@@ -5,7 +5,7 @@ and changed in the same pull request as the code (see [CONTRIBUTING.md](../../CO
 architecture group in `CODEOWNERS`.
 
 Statuses used: **Proposed** (written, waiting for the owner), **Accepted** (in force), **Superseded** (replaced; the file says by what). An amendment is a separate file that
-refines an Accepted ADR without changing its decision; read the ADR **and** its amendments together. ADR-009 is **Proposed** (not yet ratified by the owner); nothing else here is
+refines an Accepted ADR without changing its decision; read the ADR **and** its amendments together. ADR-009 is **Accepted** (ratified by the owner on 2026-11-19); nothing else here is
 Proposed or Superseded. "Accepted" records a decision, not that the owner has ratified every open item inside it.
 
 | # | Title | Status | Decision in one line | Amendments |
@@ -17,7 +17,7 @@ Proposed or Superseded. "Accepted" records a decision, not that the owner has ra
 | [ADR-005](ADR-005-code-placement-and-dependency-rules.md) | Where branding, login and launcher code lives; app dependency rules | Accepted (2026-10-27) | `nxerp` owns everything shared (login, router, launcher, no-access, branding, resolver); per-app code stays in the app; Helpdesk's title is "Helpdesk"; apps never import `nxerp` or each other and `nxerp` imports no app and declares no `required_apps`; `nxerp` is last in `deploy/apps.json`; enforced by `scripts/check_architecture.py` | Covered by ADR-003 amendment A1 (registry in `nxerp`, not a hook) and ADR-004 amendment 1 (upstream files touched). The checker now also verifies, when given the Helpdesk checkout (`--app-path`), that no app imports `nxerp` and that no platform code lives in an app; see [testing.md](../guides/testing.md) |
 | [ADR-006](ADR-006-dev-environment.md) | Development environment and one-command bootstrap | Accepted (2026-10-27) | Docker Compose dev stack in `deploy/bootstrap/` (compose project `nxerp-dev`, ports 8100 and 9100): `./deploy/bootstrap/up.sh -d` builds a pinned bench and a site from `deploy/apps.json`, repo bind-mounted at `/workspace`, `nxerp` soft-linked; clone outside OneDrive; dev-only conveniences are guarded | none. Production images are a follow-up and were not claimed by this ADR |
 | [ADR-008](ADR-008-nxdesk-platform-identity.md) | NXDESK identity: display names vs technical identifiers | Accepted (2026-11-11) | NXDESK is the umbrella platform; NXERP is the ERP product, Sria Helpdesk the support product, Royal HRMS a future product shown only once installed; the Python app `nxerp`, its folder, routes and roles do not change | none |
-| [ADR-009](ADR-009-hybrid-database-architecture.md) | Hybrid database architecture | Proposed (2026-11-18) | A database and login per application (authoritative, unshared) plus one shared read database for a few allow-listed reference entities, fed by a transactional outbox, read only through a Read API; assumptions A1 to A13 await the owner | none |
+| [ADR-009](ADR-009-hybrid-database-architecture.md) | Hybrid database architecture | Accepted (2026-11-19) | A database and login per application (authoritative, unshared) plus one shared read database for a few allow-listed reference entities, fed by a transactional outbox, read only through a Read API; assumptions A1 to A13 accepted by the owner | none |
 
 ## How to read the log
 
