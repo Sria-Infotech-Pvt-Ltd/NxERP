@@ -11,6 +11,7 @@
 #   ps | logs    docker compose ps / logs [ARGS]
 #   create-site  create the stack's site once (the only moment a database root password is used)
 #   bench ARGS   bench for the stack's site, e.g.  stack.sh hd bench list-apps
+#   drop-site    remove the stack's database and login from its tier (needs NXERP_ALLOW_DESTROY=1; rehearsal and rollback only)
 #   health       deploy/scripts/healthcheck.sh for the stack's site (apps expected = NXERP_EXPECT_APPS of its env file)
 #   backup       deploy/scripts/backup.sh for the stack's site
 #
@@ -25,7 +26,7 @@ COMPOSE_DIR=deploy/docker/compose/isolated
 STACKS_LIST="$ENV_DIR/stacks.list"
 
 fatal() { printf '[stack.sh] ERROR: %s\n' "$*" >&2; exit 1; }
-usage() { sed -n '2,19p' "$0" | sed 's/^# \{0,1\}//' >&2; exit 2; }
+usage() { sed -n "2,19p" "$0" | sed 's/^# \{0,1\}//' >&2; exit 2; }
 
 # env_value FILE KEY: the value of KEY in an env file (first match), empty when absent
 env_value() { [ -f "$1" ] && sed -n "s/^$2=//p" "$1" | head -n 1 | tr -d '\r' || true; }
@@ -133,6 +134,18 @@ case "$action" in
 		use_lib
 		. deploy/scripts/lib.sh
 		bench_site "$@"
+		;;
+	drop-site)
+		# removes the stack's database and its login from the tier (`down -v` removes only the stack's own volumes). Rehearsal and rollback only.
+		[ "$is_stack" = 1 ] || fatal "drop-site is for app stacks, not $name"
+		[ "${NXERP_ALLOW_DESTROY:-0}" = 1 ] || fatal "refusing: drop-site deletes the stack's database. Rehearsal only: NXERP_ALLOW_DESTROY=1 $0 $name drop-site"
+		use_lib
+		tier_root_password
+		db_host="$(env_value "$env_file" NXERP_DB_HOST)"
+		db_scope="$(env_value "$env_file" NXERP_DB_USER_SCOPE)"
+		# shellcheck source=deploy/scripts/lib.sh
+		. deploy/scripts/lib.sh
+		inbench "db_login=\$(env/bin/python -c \"import json,sys; print(json.load(open(sys.argv[1])).get('db_name',''))\" sites/$NXERP_SITE/site_config.json) && bench drop-site $NXERP_SITE --no-backup --force --mariadb-root-password \"\$NXERP_DB_ROOT_PASSWORD\" && MYSQL_PWD=\"\$NXERP_DB_ROOT_PASSWORD\" mariadb -h $db_host -uroot -e \"DROP USER IF EXISTS '\$db_login'@'$db_scope'\""
 		;;
 	health)
 		[ "$is_stack" = 1 ] || fatal "health is for app stacks, not $name"

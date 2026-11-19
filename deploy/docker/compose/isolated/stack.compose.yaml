@@ -90,7 +90,12 @@ services:
           trap - EXIT
           if [ "$$status" -ne 0 ]; then
             echo "create-site failed (exit $$status): removing what was half-created" >&2
+            # drop-site removes the database but not a login created for a subnet scope: read the login name first, drop it after
+            db_login=$$(env/bin/python -c "import json,sys; print(json.load(open(sys.argv[1])).get('db_name',''))" "sites/$$NXERP_SITE/site_config.json" 2>/dev/null || true)
             bench drop-site "$$NXERP_SITE" --mariadb-root-password "$$NXERP_DB_ROOT_PASSWORD" --no-backup --force >&2 || true
+            if [ -n "$$db_login" ]; then
+              MYSQL_PWD="$$NXERP_DB_ROOT_PASSWORD" mariadb -h "$$NXERP_DB_HOST" -uroot -e "DROP USER IF EXISTS '$$db_login'@'$$NXERP_DB_USER_SCOPE'" >&2 || true
+            fi
             rm -rf "sites/$$NXERP_SITE"
           fi
           exit "$$status"
@@ -110,6 +115,8 @@ services:
           --admin-password "$$NXERP_ADMIN_PASSWORD"
         for app in $$NXERP_STACK_APPS; do bench --site "$$NXERP_SITE" install-app "$$app"; done
         bench --site "$$NXERP_SITE" set-config host_name "$${NXERP_PUBLIC_URL:-https://$$NXERP_SITE}"
+        # a new site starts with its scheduler disabled; the stack's scheduler service would otherwise idle (and healthcheck.sh fails)
+        bench --site "$$NXERP_SITE" enable-scheduler
         bench use "$$NXERP_SITE"
     networks: [default, db]
 
