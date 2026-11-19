@@ -145,8 +145,8 @@ cmd_prepare() {
 
 cmd_up() {
 	cmd_prepare
-	log "starting the projector and the Read API"
-	sdc up -d shared-projector shared-api
+	log "starting the projector, the reconciler and the Read API"
+	sdc up -d shared-projector shared-reconciler shared-api
 	cmd_status
 }
 

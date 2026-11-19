@@ -69,6 +69,21 @@ services:
       - ${SHARED_SECRETS_DIR:-./secrets}:/run/nxerp-shared:ro
     networks: [shared_db, sync]
 
+  # compares the shared layer with the owners (recent scan hourly, full compare nightly) and repairs drift; a separate process,
+  # so it never delays the projector; it writes through the projector account only, by the same version rule
+  shared-reconciler:
+    <<: *shared-app
+    command: ["/home/frappe/frappe-bench/env/bin/python", "-m", "nxerp.shared_service", "reconcile-loop"]
+    environment:
+      <<: *shared-env
+      SHARED_PROJECTOR_USER: shared_projector
+      SHARED_PROJECTOR_PASSWORD: ${SHARED_PROJECTOR_PASSWORD:?set SHARED_PROJECTOR_PASSWORD}
+      SHARED_RECONCILE_FULL_HOUR: ${SHARED_RECONCILE_FULL_HOUR:-3}
+    volumes:
+      - ${SHARED_SOURCES_FILE:-./sources.json}:/etc/nxerp-shared/sources.json:ro
+      - ${SHARED_SECRETS_DIR:-./secrets}:/run/nxerp-shared:ro
+    networks: [shared_db, sync]
+
   # the only reader: views only, no write verb, no base table
   shared-api:
     <<: *shared-app

@@ -17,6 +17,12 @@ services:
       - ${SHARED_DEV_SRC:?set SHARED_DEV_SRC}:/opt/nxerp-src:ro
       - ${SHARED_SOURCES_FILE:-./sources.json}:/etc/nxerp-shared/sources.json:ro
       - ${SHARED_SECRETS_DIR:-./secrets}:/run/nxerp-shared:ro
+  shared-reconciler:
+    <<: *dev-source
+    volumes:
+      - ${SHARED_DEV_SRC:?set SHARED_DEV_SRC}:/opt/nxerp-src:ro
+      - ${SHARED_SOURCES_FILE:-./sources.json}:/etc/nxerp-shared/sources.json:ro
+      - ${SHARED_SECRETS_DIR:-./secrets}:/run/nxerp-shared:ro
   shared-api:
     <<: *dev-source
   shared-root-tool:
