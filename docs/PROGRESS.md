@@ -487,3 +487,12 @@ Branch `hybrid/phase-7-reads-writes` (from `hybrid/phase-4-shared-layer`, with `
 **Not implemented, by scope:** checklist line 5 "open the NXERP customer and see the open-ticket count (if enabled)": the `ticket_summary` display on the NXERP side is not built in Phase 7 (it says "if enabled"); the contact list for a customer (the Read API has no filter by customer).
 **UNVERIFIED:** `vue-tsc` type checking (the build is Vite, which does not type-check); the Vue components in a browser other than headless Chrome; behaviour with https on the public edge.
 **State left on the staging stacks:** local login is ON again on the `hd` staging site (it had been switched off in Phase 6 for the staging sign-in proof) so the fake agent can sign in directly for the checklist; the fake agent's password is in a scratch file outside the repository.
+
+## GATE G7 resolution (2026-11-20)
+
+DECISION (owner): G7 human UAT waived; the automated real-browser run is accepted instead. Not a human UAT pass. Re-run on 2026-11-20: 8 of 8 lines PASS (sign in, card shown with the NXERP name, phone change shown and stored in NXERP, banner with the shared layer stopped, ticket still saves, banner gone after restart). Sign-out was not scripted. Checklist line 5 (open-ticket count on the NXERP customer) is not implemented.
+
+## Phase 8 start
+
+ASSUMPTION: branch `hybrid/phase-8-cutover` is created from `hybrid/phase-7-reads-writes`, which already contains `hybrid/phase-6-identity` (merged in Phase 7), so the tree equals "phase 6 plus phase 7 merged". The draft PR base is `hybrid/phase-7-reads-writes`.
+DECISION (owner): finish all Phase 8 work packages and rehearsals first, then do the production operations through the gates. The owner will supply production inputs (GO READ PROD, domain/DNS, TLS, mailbox, off-host backup and age key, sign-offs) when asked.
