@@ -1,0 +1,21 @@
+# Interim ERP app (Phase 8B): attaches the OLD single-site stack's backend to the sync network as `erp-backend`, so the Helpdesk and
+# identity sites (and the shared layer's projector) can reach the old site as the ERP app until its data moves to the `erp` stack.
+#
+#   docker compose -p <old project> -f deploy/docker/compose/staging-like/compose.yaml \
+#     -f deploy/docker/compose/isolated/legacy-erp.override.yaml up -d backend
+#
+# Undo: run the same command WITHOUT this file's -f line; the backend is recreated on its default network only.
+# The old compose file is not edited. `nxerp-api` is created once by hand (docker network create nxerp-api), as for the isolated stacks.
+# The edge refuses /api/method/nxerp.shared.* and nxerp.federation.* from outside, so publishing the feed on this network is not public.
+
+services:
+  backend:
+    networks:
+      default: {}
+      nxerp-api:
+        aliases:
+          - erp-backend
+
+networks:
+  nxerp-api:
+    external: true

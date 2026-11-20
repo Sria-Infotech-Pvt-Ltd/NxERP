@@ -500,17 +500,20 @@ def compare_snapshots(source: dict, target: dict):
 # ----------------------------------------------------------------------------- naming series
 
 
-def reserve_naming_series_offset(offset: int):
+def reserve_naming_series_offset(offset: int = 0, gap: int = 0):
 	"""Raise the HD Ticket counter so a new ticket on the new site cannot reuse a number the source may still issue
-	after a rollback. Never lowers the counter."""
+	after a rollback. Never lowers the counter. `gap` asks for "the current counter plus gap" (the cutover script uses it)."""
 	_require_allowed()
 	offset = int(offset)
+	gap = int(gap)
 	autoname = frappe.get_meta("HD Ticket").autoname or ""
 	series = autoname.split("#")[0].rstrip(".")
 	if autoname.startswith("format:") or not autoname:
 		raise frappe.ValidationError("HD Ticket does not use a numbered series here; nothing to reserve.")
 	row = frappe.db.sql("SELECT current FROM `tabSeries` WHERE name = %s", (series,))
 	current = int(row[0][0]) if row else None
+	if gap:
+		offset = max(offset, (current or 0) + gap)
 	if current is None:
 		frappe.db.sql("INSERT INTO `tabSeries` (name, current) VALUES (%s, %s)", (series, offset))
 		result = offset

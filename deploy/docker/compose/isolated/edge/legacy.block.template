@@ -1,0 +1,45 @@
+# The OLD host name during and after the cutover (Phase 8B). edge-gen.sh renders this ONLY when NXERP_LEGACY_HOST and NXERP_LEGACY_SITE are set in
+# deploy/env/isolated/edge.env (no NXERP_LEGACY_STACK). It replaces the three tokens below (host, site, Helpdesk base URL) and nothing else.
+#
+#   /helpdesk and /helpdesk/<path>  ->  301 to the Helpdesk host, same path and query: old Helpdesk links keep working
+#   everything else                 ->  the OLD backend, reached as erp-backend:8000 on the nxerp-api network
+#                                       (deploy/docker/compose/isolated/legacy-erp.override.yaml gives the old backend that alias)
+# The app-to-app endpoints stay refused here as on every other host name.
+
+server {
+  listen 8080;
+  server_name ${LEGACY_HOST};
+  client_max_body_size 50m;
+
+  set $nxerp_legacy_backend erp-backend:8000;
+
+  if ($request_uri ~* "(^|/|%2f|\|%5c)(\.|%2e)(\.|%2e)(/|%2f|\|%5c|\?|$)") {
+    return 400;
+  }
+
+  add_header X-Content-Type-Options nosniff always;
+  add_header X-Frame-Options SAMEORIGIN always;
+  add_header Referrer-Policy strict-origin-when-cross-origin always;
+
+  location ~* ^/api/(v[0-9]+/)?method/nxerp\.(federation|shared)\. {
+    return 404;
+  }
+  if ($arg_cmd ~* "^nxerp\.(federation|shared)\.") {
+    return 404;
+  }
+
+  location ~ ^/helpdesk(/|$) {
+    return 301 ${HD_BASE}$request_uri;
+  }
+
+  location / {
+    proxy_set_header X-Frappe-Site-Name ${LEGACY_SITE};
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_read_timeout 120s;
+    proxy_redirect off;
+    proxy_pass http://$nxerp_legacy_backend;
+  }
+}

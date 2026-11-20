@@ -325,6 +325,15 @@ class TestNamingSeries(CutoverCase):
 		self.assertEqual(again["counter"], 50000)
 
 
+class TestNamingGap(CutoverCase):
+	def test_a_gap_is_added_to_the_current_counter(self):
+		_run(cutover.reserve_naming_series_offset, 70000)
+		result, _ = _run(cutover.reserve_naming_series_offset, gap=1000)
+		self.assertEqual(result["counter"], 71000)
+		again, _ = _run(cutover.reserve_naming_series_offset, 70500)
+		self.assertEqual(again["counter"], 71000)
+
+
 class TestDelta(CutoverCase):
 	def test_import_adds_skips_and_reports_conflicts_but_never_overwrites(self):
 		since = add_to_date(now_datetime(), minutes=-1).strftime("%Y-%m-%d %H:%M:%S")

@@ -14,6 +14,7 @@
 #   drop-site    remove the stack's database and login from its tier (needs NXERP_ALLOW_DESTROY=1; rehearsal and rollback only)
 #   health       deploy/scripts/healthcheck.sh for the stack's site (apps expected = NXERP_EXPECT_APPS of its env file)
 #   backup       deploy/scripts/backup.sh for the stack's site
+#   restore ARGS deploy/scripts/restore.sh for the stack's site (--yes <backup-dir> ...; cutover.sh uses it)
 #
 # NXERP_PASSTHROUGH="NAME1 NAME2": environment variables forwarded BY NAME into `bench execute` (never their values on a command line).
 # Secrets stay in the mode-600 env files; they are read here, never printed.
@@ -26,7 +27,7 @@ COMPOSE_DIR=deploy/docker/compose/isolated
 STACKS_LIST="$ENV_DIR/stacks.list"
 
 fatal() { printf '[stack.sh] ERROR: %s\n' "$*" >&2; exit 1; }
-usage() { sed -n "2,19p" "$0" | sed 's/^# \{0,1\}//' >&2; exit 2; }
+usage() { sed -n "2,20p" "$0" | sed 's/^# \{0,1\}//' >&2; exit 2; }
 
 # env_value FILE KEY: the value of KEY in an env file (first match), empty when absent
 env_value() { [ -f "$1" ] && sed -n "s/^$2=//p" "$1" | head -n 1 | tr -d '\r' || true; }
@@ -157,6 +158,12 @@ case "$action" in
 		use_lib
 		tier_root_password
 		exec deploy/scripts/backup.sh
+		;;
+	restore)
+		[ "$is_stack" = 1 ] || fatal "restore is for app stacks, not $name"
+		use_lib
+		tier_root_password
+		exec deploy/scripts/restore.sh "$@"
 		;;
 	*) usage ;;
 esac
