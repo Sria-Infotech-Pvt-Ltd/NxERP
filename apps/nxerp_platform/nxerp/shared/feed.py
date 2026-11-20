@@ -139,6 +139,11 @@ def _project(contract: dict, name: str) -> tuple:
 def head() -> dict:
 	"""Where the feed stands: the highest sequence, how many rows wait for a sequence, how old the oldest unacknowledged row is."""
 	_require_reader()
+	return feed_head()
+
+
+def feed_head() -> dict:
+	"""The head without the reader check: for the owner's own operator tools (nxerp.cutover)."""
 	empty = {"max_seq": 0, "pending_count": 0, "oldest_pending_age_seconds": 0, "acked_through": 0}
 	if not outbox.is_enabled():
 		return empty

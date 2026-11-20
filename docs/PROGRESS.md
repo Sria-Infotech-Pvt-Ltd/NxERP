@@ -496,3 +496,10 @@ DECISION (owner): G7 human UAT waived; the automated real-browser run is accepte
 
 ASSUMPTION: branch `hybrid/phase-8-cutover` is created from `hybrid/phase-7-reads-writes`, which already contains `hybrid/phase-6-identity` (merged in Phase 7), so the tree equals "phase 6 plus phase 7 merged". The draft PR base is `hybrid/phase-7-reads-writes`.
 DECISION (owner): finish all Phase 8 work packages and rehearsals first, then do the production operations through the gates. The owner will supply production inputs (GO READ PROD, domain/DNS, TLS, mailbox, off-host backup and age key, sign-offs) when asked.
+
+## Phase 8A: migration tools (2026-11-20)
+
+FACT: `apps/nxerp_platform/nxerp/cutover.py` (identity_export/import, prune_helpdesk_site, reconcile, reserve_naming_series_offset, delta_export/import, feed_head), `tests/test_cutover.py`, `docs/architecture-isolation/rehearsal-dev.md`. `shared/feed.py` gained an unguarded `feed_head()` (a pure refactor: `head()` calls it after the reader check).
+EVIDENCE: `bench --site phase3.localhost run-tests --app nxerp --module nxerp.tests.test_cutover` Ran 19 OK; `test_feed` Ran 21 OK; `ruff check apps/nxerp_platform` All checks passed; `python scripts/check_architecture.py` OK (94 WARN as before).
+DECISION: the source encryption key comes from `NXERP_CUTOVER_SOURCE_ENCRYPTION_KEY`, never the file; prune keeps rows with no reference and also prunes Address (see rehearsal-dev.md).
+UNVERIFIED: `uninstall-app` and prune on a restored real copy (rehearsal 1); whether pruning leaves orphan files (measured there).
