@@ -11,12 +11,12 @@ from helpdesk.integrations.erpnext.utils import (
     cascade_rename,
     in_cascade,
     map_source_to_target_values,
-)
-from helpdesk.integrations.erpnext.utils import should_sync as should_sync_with_erpnext
-from helpdesk.integrations.erpnext.utils import (
     sync_related_fields,
     validate_rename_conflict,
 )
+from helpdesk.integrations.erpnext.utils import should_sync as should_sync_with_erpnext
+from helpdesk.integrations.shared.settings import is_on as shared_read_on
+from helpdesk.integrations.shared.settings import refuse_customer_write
 from helpdesk.utils import agent_only, get_customers, is_agent
 
 CUSTOMER_ROLES = ("HD Customer", "HD Customer Manager")
@@ -378,7 +378,9 @@ class HDCustomer(Document):
             self.create_customer_in_erpnext()
 
     def create_customer_in_erpnext(self):
-        if self.erpnext_customer:
+        if shared_read_on():
+            refuse_customer_write()  # Helpdesk never creates a customer once NXERP owns them (integrations/shared)
+        if self.customer_ref_id:
             return
 
         erpnext_customer_exists = frappe.db.exists(
@@ -401,7 +403,7 @@ class HDCustomer(Document):
         frappe.db.set_value(
             "HD Customer",
             self.name,
-            "erpnext_customer",
+            "customer_ref_id",
             erp_doc.name,
             update_modified=False,
         )

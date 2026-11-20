@@ -21,6 +21,16 @@ Rules (each is a failure, exit code 1):
              `safe_target`, `authorised_target`). The logo images under `public/nxerp_login/images` stay in
              Helpdesk on purpose (ADR-004 amendment 1).
 
+  R5  Another app's code does not touch a DocType owned by a different app (the boundary of ADR-009: shared data is read through the
+      Read API and changed through the owner's command API, never through the owner's tables). In every app under apps/ other than
+      the platform, a call of frappe.get_doc / get_all / get_list / get_cached_doc / get_last_doc / new_doc / delete_doc, of
+      frappe.db.get_value / get_values / exists / count / set_value / delete / sql, or of frappe.qb.from_ / DocType whose DocType
+      name is a string literal in the foreign set fails the run with file:line. The foreign set is the `source_doctype` of every
+      ownership contract whose owner is another app (nxerp/shared/contracts, minus Frappe's own core DocTypes) plus a fixed list
+      (Customer, Sales Invoice, GL Entry, Employee, Company). A DocType name that is not a literal (a variable) cannot be decided:
+      it is printed as a WARN with file:line and does not fail. LEGACY_ALLOW lists the exact files that still reach ERPNext and
+      that Phase 8 work package 8D removes: nothing else is exempt.
+
 `--root PATH` checks another tree with the same layout (used by the negative tests, which build a synthetic one).
 """
 
@@ -59,6 +69,48 @@ PLATFORM_SYMBOLS = {
 	"can_access_app",
 	"safe_target",
 	"authorised_target",
+}
+
+
+# R5: DocTypes owned by another app, in addition to the contract owners (fixed: the ones the programme knows are ERPNext's)
+FIXED_FOREIGN_DOCTYPES = {"Customer", "Sales Invoice", "GL Entry", "Employee", "Company"}
+
+# Frappe's own core DocTypes are shared by every app even where a contract names one as an entity's source (a Contact is Frappe's)
+FRAPPE_CORE_DOCTYPES = {"Contact", "User", "Address", "Dynamic Link", "Role", "File", "Comment"}
+
+# Calls whose first argument (or `doctype=`) names a DocType (R5)
+DOCTYPE_CALLS = {
+	"get_doc",
+	"get_all",
+	"get_list",
+	"get_cached_doc",
+	"get_last_doc",
+	"new_doc",
+	"delete_doc",
+	"get_value",
+	"get_values",
+	"exists",
+	"count",
+	"set_value",
+	"delete",
+	"from_",
+	"DocType",
+}
+
+# Exact files that still reach ERPNext today (the old integration). Phase 8 work package 8D deletes them; nothing else is exempt.
+LEGACY_ALLOW = {
+	"apps/helpdesk/helpdesk/integrations/erpnext/api.py",
+	"apps/helpdesk/helpdesk/integrations/erpnext/customer.py",
+	"apps/helpdesk/helpdesk/integrations/erpnext/doc_share.py",
+	"apps/helpdesk/helpdesk/integrations/erpnext/mirror_sync.py",
+	"apps/helpdesk/helpdesk/integrations/erpnext/user_permission.py",
+	"apps/helpdesk/helpdesk/integrations/erpnext/utils.py",
+	"apps/helpdesk/helpdesk/integrations/erpnext/test_utils.py",
+	"apps/helpdesk/helpdesk/integrations/erpnext/test_erpnext_integration.py",
+	"apps/helpdesk/helpdesk/helpdesk/doctype/hd_customer/hd_customer.py",
+	"apps/helpdesk/helpdesk/helpdesk/doctype/hd_customer/test_hd_customer.py",
+	# an old one-off patch that reads ERPNext customers to set a default type; it has already run on every existing site
+	"apps/helpdesk/helpdesk/patches/set_default_customer_type.py",
 }
 
 
@@ -222,21 +274,129 @@ def check_other_app(name: str, app_root: Path) -> list:
 	return errors
 
 
-def check(root: Path = ROOT, app_paths: dict | None = None) -> list:
-	"""All violations as strings; an empty list means the tree is clean."""
+def contract_owners(root: Path) -> dict:
+	"""{source_doctype: owner_app} from the ownership contracts (JSON read directly: this script imports nothing of the platform)."""
+	owners = {}
+	folder = platform_root(root) / "nxerp" / "shared" / "contracts"
+	if folder.is_dir():
+		for path in sorted(folder.glob("*.json")):
+			try:
+				contract = json.loads(path.read_text(encoding="utf-8"))
+			except ValueError:
+				continue
+			if contract.get("source_doctype") and contract.get("owner_app"):
+				owners[contract["source_doctype"]] = contract["owner_app"]
+	return owners
+
+
+def foreign_doctypes(root: Path, app_name: str) -> set:
+	"""DocTypes owned by an app other than `app_name`: the contract owners plus the fixed list, minus Frappe's core DocTypes."""
+	derived = {d for d, owner in contract_owners(root).items() if owner != app_name}
+	return (derived | FIXED_FOREIGN_DOCTYPES) - FRAPPE_CORE_DOCTYPES
+
+
+def _called_name(node: ast.Call) -> str:
+	func = node.func
+	return func.attr if isinstance(func, ast.Attribute) else getattr(func, "id", "")
+
+
+def _doctype_argument(node: ast.Call):
+	"""The expression naming the DocType in a call: `doctype=`, the first positional argument, or the `doctype` key of a dict."""
+	for keyword in node.keywords:
+		if keyword.arg in ("doctype", "dt"):
+			return keyword.value
+	if not node.args:
+		return None
+	first = node.args[0]
+	if isinstance(first, ast.Dict):
+		for key, value in zip(first.keys, first.values, strict=False):
+			if isinstance(key, ast.Constant) and key.value == "doctype":
+				return value
+		return None
+	return first
+
+
+def check_foreign_doctypes(label: str, app_root: Path, repo_root: Path, foreign: set, allow: set) -> tuple:
+	"""R5 for one app: (errors, warnings). Reads files only; no network, no database."""
+	errors, warnings = [], []
+	table_names = {f"tab{name}": name for name in foreign}
+	for path in iter_files(app_root, ".py"):
+		rel = (
+			path.relative_to(repo_root).as_posix()
+			if repo_root in path.parents
+			else f"{label}/{path.relative_to(app_root).as_posix()}"
+		)
+		if rel in allow:
+			continue
+		try:
+			tree = parse(path)
+		except SyntaxError:
+			continue  # R3 already reports a file that cannot be parsed
+		for node in ast.walk(tree):
+			if not isinstance(node, ast.Call):
+				continue
+			name = _called_name(node)
+			if (
+				name == "sql"
+				and node.args
+				and isinstance(node.args[0], ast.Constant)
+				and isinstance(node.args[0].value, str)
+			):
+				text = node.args[0].value
+				for table, doctype in table_names.items():
+					if table in text:
+						errors.append(
+							f"R5 {rel}:{node.lineno}: raw SQL on the tables of {doctype}, which another app owns"
+						)
+				continue
+			if name not in DOCTYPE_CALLS:
+				continue
+			argument = _doctype_argument(node)
+			if argument is None:
+				continue
+			if isinstance(argument, ast.Constant) and isinstance(argument.value, str):
+				if argument.value in foreign:
+					errors.append(
+						f"R5 {rel}:{node.lineno}: {name}() on {argument.value}, a DocType another app owns"
+					)
+			elif isinstance(argument, ast.Name | ast.Attribute | ast.JoinedStr | ast.Call) and name in (
+				"get_doc",
+				"get_all",
+				"get_list",
+				"from_",
+				"DocType",
+			):
+				warnings.append(
+					f"R5 {rel}:{node.lineno}: {name}() with a DocType name that is not a literal; cannot be decided"
+				)
+	return errors, warnings
+
+
+def run_checks(root: Path = ROOT, app_paths: dict | None = None) -> tuple:
+	"""(errors, warnings): every violation as a string, and the cases the check could not decide."""
 	forbidden = forbidden_apps(root)
-	errors = []
+	errors, warnings = [], []
 	if not (platform_root(root) / "nxerp").is_dir():
-		return [f"R1 {root}: no nxerp/ package to check"]
+		return [f"R1 {root}: no nxerp/ package to check"], warnings
 	errors += check_platform_imports(root, forbidden)
 	errors += check_required_apps(root, forbidden)
 	errors += check_second_app_in_repo(root)
 	for name, path in (app_paths or {}).items():
 		if not Path(path).is_dir():
 			errors.append(f"R3 --app-path {name}={path}: not a directory")
-		else:
-			errors += check_other_app(name, Path(path))
-	return errors
+			continue
+		errors += check_other_app(name, Path(path))
+		found, warned = check_foreign_doctypes(
+			name, Path(path), root, foreign_doctypes(root, name), LEGACY_ALLOW
+		)
+		errors += found
+		warnings += warned
+	return errors, warnings
+
+
+def check(root: Path = ROOT, app_paths: dict | None = None) -> list:
+	"""All violations as strings; an empty list means the tree is clean."""
+	return run_checks(root, app_paths)[0]
 
 
 def parse_app_paths(values, env: str | None) -> dict:
@@ -265,7 +425,12 @@ def main(argv=None) -> int:
 	app_paths = parse_app_paths(args.app_path, os.environ.get("NXERP_APP_PATHS"))
 
 	app_paths = {**discover_apps(Path(args.root)), **app_paths}
-	errors = check(Path(args.root), app_paths)
+	errors, warnings = run_checks(Path(args.root), app_paths)
+	if warnings:
+		print("\n".join(f"WARN: {w}" for w in warnings))
+		print(
+			f"WARN: {len(warnings)} DocType name(s) could not be decided; a person reviews them (they do not fail the run)"
+		)
 	if errors:
 		print("\n".join(f"ERROR: {e}" for e in errors))
 		return 1

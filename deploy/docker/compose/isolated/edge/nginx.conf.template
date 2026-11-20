@@ -1,0 +1,19 @@
+# The SHARED part of the edge configuration (Phase 5C). deploy/scripts/edge-gen.sh writes edge/generated/default.conf.template from this
+# file plus one rendered server.block.template per stack in deploy/env/isolated/stacks.list. Do not edit the generated file by hand.
+#
+# HTTP only: TLS is terminated by the host's reverse proxy (certbot) in front of this container, which binds 127.0.0.1 only.
+# Upstreams are resolved through Docker's DNS on each request (cached 10 s), so a restarted backend gets its new address.
+resolver 127.0.0.11 valid=10s ipv6=off;
+
+# websocket upgrade header: "upgrade" only for upgrade requests
+map $http_upgrade $nxerp_connection_upgrade {
+  default upgrade;
+  ""      close;
+}
+
+# any host name that is not a stack's: refuse it (no stack is reachable by IP or by an unknown name)
+server {
+  listen 8080 default_server;
+  server_name _;
+  return 404;
+}

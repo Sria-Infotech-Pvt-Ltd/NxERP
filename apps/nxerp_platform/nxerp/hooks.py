@@ -103,6 +103,8 @@ doc_events = {
 	"User": {
 		"validate": "nxerp.guard.validate_user",
 		"on_trash": "nxerp.guard.on_trash_user",
+		# Phase 6: queue a provisioning row when a grant changes (no-op unless nxerp_site_role is "identity")
+		"on_update": "nxerp.federation.outbox.on_user_change",
 	}
 }
 
@@ -116,9 +118,16 @@ for _doctype, _events in _shared_registry.capture_events().items():
 		{_event: f"nxerp.shared.capture.{_event}" for _event in _events}
 	)
 
-# The relay gives committed outbox rows a sequence number every minute; the prune job removes acknowledged rows daily.
-# Both return at their first line unless the site sets `nxerp_shared_publish`. A change here needs `bench migrate`.
+# Scheduled work (a change here needs `bench migrate`):
+#  - the shared-entity relay gives committed outbox rows a sequence number every minute, the prune job removes acknowledged rows daily;
+#    both return at their first line unless the site sets `nxerp_shared_publish`;
+#  - Phase 6 federation: deliver queued grants to the app sites ("all") and repair drift (daily); both are no-ops unless nxerp_site_role is "identity".
 scheduler_events = {
-	"cron": {"* * * * *": ["nxerp.shared.relay.assign_sequence"]},
-	"daily": ["nxerp.shared.relay.prune"],
+	"all": ["nxerp.federation.outbox.process"],
+	"cron": {
+		"* * * * *": ["nxerp.shared.relay.assign_sequence"],
+		# Phase 7: remove command-API idempotency rows older than 24 hours
+		"30 3 * * *": ["nxerp.shared.command.prune_log"],
+	},
+	"daily": ["nxerp.shared.relay.prune", "nxerp.federation.reconcile.run"],
 }

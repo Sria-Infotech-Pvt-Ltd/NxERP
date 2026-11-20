@@ -122,7 +122,7 @@
 			"items": {
 				"type": "object",
 				"additionalProperties": false,
-				"required": ["name", "writable_fields", "needs_role"],
+				"required": ["name", "writable_fields", "needs_role", "callers"],
 				"properties": {
 					"name": {"type": "string", "pattern": "^[a-z_]+\\.[a-z_]+$"},
 					"writable_fields": {
@@ -132,6 +132,13 @@
 						"uniqueItems": true
 					},
 					"needs_role": {"type": "string", "minLength": 1},
+					"callers": {
+						"description": "Registry keys of the apps that may call this command on the owner. A command with no caller listed here cannot be called by anyone.",
+						"type": "array",
+						"minItems": 1,
+						"items": {"type": "string", "pattern": "^[a-z][a-z0-9_]{1,40}$"},
+						"uniqueItems": true
+					},
 					"note": {"type": "string"}
 				}
 			}

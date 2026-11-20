@@ -362,7 +362,9 @@ class TestFeed(IntegrationTestCase):
 			if not page["next_after_id"]:
 				break
 			after = page["next_after_id"]
-		self.assertEqual(seen, sorted(set(seen)), "ordered by name, no repeats")
+		# the order is the DATABASE's (collation: an underscore sorts before letters there, not in Python), and nothing repeats
+		self.assertEqual(seen, frappe.get_all("Customer", pluck="name", order_by="name asc"))
+		self.assertEqual(len(seen), len(set(seen)))
 		self.assertGreaterEqual(len(seen), 3)
 
 	def test_the_entity_type_selects_a_contract_and_nothing_else(self):

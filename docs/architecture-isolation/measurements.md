@@ -175,13 +175,17 @@ NXERP_SITE=<site> NXERP_COMPOSE_PROJECT=nxerp-scratch NXERP_ENV_FILES=<env> scri
 
 ## Phase 5: Tests T1 to T6
 
-Filled in during Phase 5. Leave empty now.
+Run 2026-11-19 on Docker Desktop (Windows), image `nxerp:0.0.1-8a4910610a5b-dirty`, fake data, domain `example.test`: **rehearsal on a developer machine, not on the server** (the server steps are behind GATE G5). Outputs are PASS lines only: no secret is printed. Command: `scripts/isolation_audit.sh cross-read reach published hostnames stacks` (three stacks), and the same without `stacks` with six sites (three throwaway stand-ins `app3`, `app4`, `app5`, removed afterwards).
 
 | Test | Date | Command | Redacted output | PASS / FAIL |
 | --- | --- | --- | --- | --- |
-| T1 |  |  |  |  |
-| T2 |  |  |  |  |
-| T3 |  |  |  |  |
-| T4 |  |  |  |  |
-| T5 |  |  |  |  |
-| T6 |  |  |  |  |
+| T1 | 2026-11-19 | `isolation_audit.sh cross-read` (SELECT as one stack's login on every other stack's database) | 3 stacks: 6 lines `PASS cross-read-<a>-cannot-SELECT-<b> (error 1142)`; 6 sites: 30 lines, all error 1142 | PASS |
+| T2 | 2026-11-19 | same (`DELETE ... WHERE 1=0`) | 3 stacks: 6 lines error 1142; 6 sites: 30 lines, all error 1142 (60 cross-read checks in total for 6 sites = the full 6 by 6 matrix) | PASS |
+| T3 | 2026-11-19 | `isolation_audit.sh stacks` (grants) | per stack: `PASS grants-one-database-level-grant`, `-no-global-privilege`, `-no-grant-option`, `-host-not-wildcard`; `mysql.user` shows hosts `172.30.10.%` (id, hd) and `172.30.20.%` (erp), none `%` | PASS |
+| T4 | 2026-11-19 | `isolation_audit.sh stacks` (root-env) | per stack: `PASS root-env-backend`, `-websocket`, `-queue-worker`, `-scheduler` (value length 0) | PASS |
+| T5 | 2026-11-19 | `isolation_audit.sh reach` | each stack to the other tier's database server, to `shared-db` and to every other stack's redis-cache and redis-queue: `PASS reach-...` (blocked); 3 stacks: 18 lines | PASS |
+| T6 | 2026-11-19 | `isolation_audit.sh published` | `PASS published-nxerp-db-none`, `-nxerp-id-none`, `-nxerp-hd-none`, `-nxerp-erp-none`, `PASS published-nxerp-edge-loopback-only` | PASS |
+| hostnames | 2026-11-19 | `isolation_audit.sh hostnames` | per host: `PASS hostnames-<stack>-ping`, `PASS hostnames-<stack>-feed-hidden` (`/api/method/nxerp.shared.feed.head` answers 404 through the edge) | PASS |
+
+Totals: three stacks 65 PASS, 0 FAIL, 0 UNVERIFIED; six sites (cross-read, reach, published, hostnames) 152 PASS, 0 FAIL, 0 UNVERIFIED; 39 long-running containers from the new projects (db 2, edge 1, six stacks with 6 each) as the footprint table predicts. After removal of the stand-ins: 41 PASS, 21 long-running containers of the new projects.
+Note: `id` and `hd` share one database server, so a TCP connection between them is possible by design; their isolation is the account grants (T1 and T2), not the network.

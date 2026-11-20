@@ -5,6 +5,7 @@
          per-element bottom padding. -->
     <div class="shrink-0 space-y-4 p-4">
       <TicketContact />
+      <TicketCustomerCard />
       <TicketSLA />
     </div>
 
@@ -183,6 +184,7 @@ import Tags from "../tag/Tags.vue";
 import TicketField from "../TicketField.vue";
 import AssignTo from "./AssignTo.vue";
 import TicketContact from "./TicketContact.vue";
+import TicketCustomerCard from "./TicketCustomerCard.vue";
 import TicketFeedback from "./TicketFeedback.vue";
 import TicketSLA from "./TicketSLA.vue";
 

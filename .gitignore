@@ -45,3 +45,8 @@ backups/
 deploy/env/shared/shared.env
 deploy/env/shared/sources.json
 deploy/env/shared/secrets/
+
+# Isolated stacks (Phase 5): real env files hold passwords; generated edge files are rebuilt by deploy/scripts/edge-gen.sh
+deploy/env/isolated/*.env
+deploy/env/isolated/stacks.list
+deploy/docker/compose/isolated/edge/generated/

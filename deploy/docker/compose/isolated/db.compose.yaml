@@ -1,0 +1,66 @@
+name: nxerp-db
+
+# The two database servers of the isolated stacks (Phase 5A). Each app stack has its OWN database and login on one of them:
+#   mariadb-standard    for the identity (id) and Helpdesk (hd) stacks     network nxerp-db-standard
+#   mariadb-restricted  for the ERP (erp) stack, which holds class S3 data  network nxerp-db-restricted
+# The shared read database (Phase 4) runs on its own server in its own project and is not here.
+#
+# Both networks are internal (no route to or from the outside) and no port is published: only containers attached to a
+# tier's network can reach that tier. The root passwords are used only by the one-shot `create-site` of a stack; no long-running
+# service of an app stack receives them.
+#
+#   cp deploy/env/isolated/db.env.example deploy/env/isolated/db.env      # then fill in the passwords (git-ignored)
+#   deploy/scripts/stack.sh db up        # or: docker compose --env-file deploy/env/isolated/db.env -f <this file> up -d
+#
+# The command flags and the healthcheck are the ones of the staging-like stack (deploy/docker/compose/staging-like/compose.yaml).
+
+x-mariadb: &mariadb
+  image: ${MARIADB_IMAGE:-mariadb:11.8}
+  restart: unless-stopped
+  security_opt: ["no-new-privileges:true"]
+  command:
+    - --character-set-server=utf8mb4
+    - --collation-server=utf8mb4_unicode_ci
+    - --skip-character-set-client-handshake
+  healthcheck:
+    test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+    interval: 5s
+    timeout: 5s
+    retries: 30
+
+services:
+  mariadb-standard:
+    <<: *mariadb
+    environment:
+      MARIADB_ROOT_PASSWORD: ${NXERP_DB_ROOT_PASSWORD_STANDARD:?set NXERP_DB_ROOT_PASSWORD_STANDARD in deploy/env/isolated/db.env}
+      MARIADB_AUTO_UPGRADE: "1"
+    volumes:
+      - mariadb-standard-data:/var/lib/mysql
+    networks: [standard]
+
+  mariadb-restricted:
+    <<: *mariadb
+    environment:
+      MARIADB_ROOT_PASSWORD: ${NXERP_DB_ROOT_PASSWORD_RESTRICTED:?set NXERP_DB_ROOT_PASSWORD_RESTRICTED in deploy/env/isolated/db.env}
+      MARIADB_AUTO_UPGRADE: "1"
+    volumes:
+      - mariadb-restricted-data:/var/lib/mysql
+    networks: [restricted]
+
+volumes:
+  mariadb-standard-data:
+  mariadb-restricted-data:
+
+networks:
+  standard:
+    name: nxerp-db-standard
+    internal: true
+    ipam:
+      config:
+        - subnet: ${NXERP_DB_SUBNET_STANDARD:-172.30.10.0/24}
+  restricted:
+    name: nxerp-db-restricted
+    internal: true
+    ipam:
+      config:
+        - subnet: ${NXERP_DB_SUBNET_RESTRICTED:-172.30.20.0/24}

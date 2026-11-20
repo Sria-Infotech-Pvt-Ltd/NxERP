@@ -1,0 +1,22 @@
+name: nxerp-edge
+
+# The single edge proxy (Phase 5C): routes by host name to every stack, owns no data, publishes ONE port on 127.0.0.1 only.
+# The host's reverse proxy (certbot/TLS) forwards public traffic to 127.0.0.1:${NXERP_EDGE_PORT}.
+#
+# The configuration is GENERATED: deploy/scripts/edge-gen.sh reads deploy/env/isolated/stacks.list and writes
+#   edge/generated/default.conf.template          (the nginx config, one server block per stack)
+#   edge/generated/edge.networks.override.yaml    (joins this container to every stack's default network)
+# deploy/scripts/stack.sh edge up runs the generator first and passes both files; do not edit them by hand.
+# The edge refuses /api/method/nxerp.shared.* and nxerp.federation.* from outside: those endpoints live on the nxerp-api network only.
+
+services:
+  edge:
+    image: ${NGINX_IMAGE:-nginx:1.27-alpine}
+    restart: unless-stopped
+    security_opt: ["no-new-privileges:true"]
+    volumes:
+      - ./edge/generated/default.conf.template:/etc/nginx/templates/default.conf.template:ro
+    ports:
+      - "127.0.0.1:${NXERP_EDGE_PORT:-8080}:8080"
+    networks:
+      - default

@@ -31,7 +31,7 @@ def in_sync() -> bool:
     Sync is a no-op in this state; the UI uses this to gate the 'Sync Customers'
     button.
     """
-    if frappe.db.count("HD Customer", {"erpnext_customer": ["is", "not set"]}):
+    if frappe.db.count("HD Customer", {"customer_ref_id": ["is", "not set"]}):
         return False
     if frappe.db.count("Customer", {"hd_customer": ["is", "not set"]}):
         return False
@@ -80,7 +80,7 @@ def sync_all_customers():
     for erp in unlinked_erp:
         existing_hd = frappe.db.get_value(
             "HD Customer",
-            {"name": erp.name, "erpnext_customer": ["is", "not set"]},
+            {"name": erp.name, "customer_ref_id": ["is", "not set"]},
             "name",
         )
         if existing_hd:
@@ -90,7 +90,7 @@ def sync_all_customers():
                 {
                     "doctype": "HD Customer",
                     "customer_name": erp.name,
-                    "erpnext_customer": erp.name,
+                    "customer_ref_id": erp.name,
                     "image": erp.image,
                 }
             )
@@ -101,7 +101,7 @@ def sync_all_customers():
     # HD → ERP
     unlinked_hd = frappe.get_all(
         "HD Customer",
-        filters={"erpnext_customer": ["is", "not set"]},
+        filters={"customer_ref_id": ["is", "not set"]},
         fields=["name", "customer_name", "image"],
     )
     for hd in unlinked_hd:

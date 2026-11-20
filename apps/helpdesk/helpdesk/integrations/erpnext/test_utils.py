@@ -112,7 +112,7 @@ def link_customers(
     """Create a linked HD/ERP pair with distinct names ("<base> HD" / "<base> ERP"),
     register cleanups on the test case, return (hd, erp)."""
     erp = make_erpnext_customer(f"{base_name} ERP")
-    hd = make_hd_customer(f"{base_name} HD", erpnext_customer=erp.name)
+    hd = make_hd_customer(f"{base_name} HD", customer_ref_id=erp.name)
     frappe.db.set_value("Customer", erp.name, "hd_customer", hd.name)
     test_case.addCleanup(frappe.delete_doc, "Customer", erp.name, force=True)
     test_case.addCleanup(frappe.delete_doc, "HD Customer", hd.name, force=True)
@@ -127,7 +127,7 @@ def make_linked_pair(
     erp_name = erp_name or hd_name
     hd = make_hd_customer(hd_name)
     erp = make_erpnext_customer(erp_name, hd_customer=hd.name)
-    frappe.db.set_value("HD Customer", hd.name, "erpnext_customer", erp.name)
+    frappe.db.set_value("HD Customer", hd.name, "customer_ref_id", erp.name)
     return hd, erp
 
 

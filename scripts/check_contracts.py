@@ -15,6 +15,7 @@ Rules (every violation is one line on stderr; the exit code is 1 if there is any
       EXCEPTIONS below, never silently;
   C6  consumers are registered or planned apps and list only shared fields of this entity;
   C7  the id field is never a shared field, and writable_fields of a command are shared fields other than the id;
+  C9  every command lists its callers: distinct registered or planned apps, never the owner itself;
   C8  no module path of erpnext, helpdesk, telephony or payments appears in any contract value.
 
 This file never imports the apps it checks, nor `frappe`: it parses nxerp/registry.py with `ast`.
@@ -216,9 +217,19 @@ def check_contract(contract, label: str, registered: set) -> list:
 	# C7 commands
 	if isinstance(contract["commands"], list):
 		for command in contract["commands"]:
-			if not isinstance(command, dict) or not {"name", "writable_fields", "needs_role"} <= set(command):
-				err("C1 every command needs name, writable_fields and needs_role")
+			if not isinstance(command, dict) or not {"name", "writable_fields", "needs_role", "callers"} <= set(command):
+				err("C1 every command needs name, writable_fields, needs_role and callers")
 				continue
+			# C9 callers: registered or planned apps, no duplicates, never the owner calling itself
+			callers = command["callers"]
+			if not isinstance(callers, list) or not callers or len(set(callers)) != len(callers):
+				err(f"C9 command '{command['name']}' needs a non-empty list of distinct callers")
+			else:
+				for caller in callers:
+					if caller not in allowed_consumers:
+						err(f"C9 command '{command['name']}' caller '{caller}' is not a registered or planned app")
+					if caller == contract["owner_app"]:
+						err(f"C9 command '{command['name']}' lists the owner '{caller}' as its own caller")
 			for name in command["writable_fields"]:
 				if name not in shared_names:
 					err(

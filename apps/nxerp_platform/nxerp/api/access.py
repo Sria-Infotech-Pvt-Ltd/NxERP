@@ -28,7 +28,8 @@ def _target_user(user: str):
 
 
 def _entry(app_key: str):
-	entry = registry.get_entry(app_key) if isinstance(app_key, str) else None
+	# an identity site holds no app: its entries are the registered peers (registry.active_entries); elsewhere that is the installed apps
+	entry = registry.active_entry(app_key) if isinstance(app_key, str) else None
 	if not entry:
 		frappe.throw(_("Unknown or uninstalled application"), frappe.ValidationError)
 	return entry
@@ -67,4 +68,12 @@ def set_app_access(user: str, app_key: str, grant: int = 1) -> dict:
 
 	# always write the audit trail: Frappe skips Version records when `in_test` unless asked
 	doc.save(ignore_version=False)
-	return get_user_access(user)
+	result = get_user_access(user)
+	if registry.site_role() == "identity":
+		from nxerp.federation import (
+			outbox,  # imported here: the federation package is only used on an identity site
+		)
+
+		outbox.queue_current(user, entry.key)
+		result["provisioning"] = "queued"
+	return result

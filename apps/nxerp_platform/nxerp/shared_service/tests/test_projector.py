@@ -13,6 +13,7 @@ from unittest.mock import patch
 PLATFORM = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PLATFORM))
 
+from nxerp.shared import registry
 from nxerp.shared_service import projector as projector_module
 from nxerp.shared_service.config import Source
 from nxerp.shared_service.feedclient import FeedClient
@@ -37,7 +38,10 @@ class TestApplyRules(OwnerTestCase):
 			(row["display_name"], row["customer_type"], row["disabled"], row["tenant_id"]),
 			("Example Ltd", "Company", 0, "ORG-001"),
 		)
-		self.assertEqual((row["source_app"], row["last_seq"], row["contract_version"]), ("erpnext", 1, 1))
+		self.assertEqual(
+			(row["source_app"], row["last_seq"], row["contract_version"]),
+			("erpnext", 1, registry.get_contract("customer")["contract_version"]),
+		)
 		self.assertEqual(self.cursor(), {"last_seq": 2, "state": "live"})
 		self.assertEqual(self.owner.acked, 2)
 		self.assertEqual(self.metric("applied"), 2)

@@ -80,7 +80,7 @@ def sync_shared_docs():
     # HD → ERP
     for share in hd_customer_shares:
         erpnext_customer = frappe.db.get_value(
-            "HD Customer", share.share_name, "erpnext_customer"
+            "HD Customer", share.share_name, "customer_ref_id"
         )
         if not erpnext_customer:
             continue

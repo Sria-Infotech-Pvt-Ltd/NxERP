@@ -105,7 +105,7 @@ class TestArchitectureRules(unittest.TestCase):
 	def test_the_cli_passes_on_the_repository_and_says_what_it_skipped(self):
 		code, output = self.run_cli("--root", str(REPO))
 		self.assertEqual(code, 0, output)
-		self.assertTrue(output.startswith("OK:"))
+		self.assertTrue(output.strip().splitlines()[-1].startswith("OK:"))  # R5 may print WARN lines (undecidable DocType names) first
 		# without --app-path the other-app rules are verified only for apps found under apps/ (none in the older layout)
 		self.assertTrue("SKIPPED" in output or "checked other apps" in output)
 
@@ -243,6 +243,137 @@ class TestArchitectureRules(unittest.TestCase):
 		self.assertEqual(code, 1)
 		self.assertIn("R3", output)
 		self.assertNotIn("SKIPPED", output)
+
+
+@unittest.skipUnless(CHECKER.is_file(), "scripts/check_architecture.py is not part of this deployment")
+class TestForeignDoctypeRule(unittest.TestCase):
+	"""R5: another app's code does not touch a DocType another app owns (ADR-009). Sample sources only; no network, no database."""
+
+	@classmethod
+	def setUpClass(cls):
+		cls.checker = load_checker()
+
+	def setUp(self):
+		self._tmp = tempfile.TemporaryDirectory()
+		self.addCleanup(self._tmp.cleanup)
+		self.root = Path(self._tmp.name)
+		platform_tree(
+			self.root,
+			extra={
+				"nxerp/shared/contracts/org_unit.json": '{"source_doctype": "Company", "owner_app": "erpnext"}'
+			},
+		)
+
+	def scan(self, source: str, rel="helpdesk/helpdesk/api.py", allow=frozenset()) -> tuple:
+		write(self.root / "apps" / "helpdesk", {rel: source})
+		foreign = self.checker.foreign_doctypes(self.root, "helpdesk")
+		return self.checker.check_foreign_doctypes(
+			"helpdesk", self.root / "apps" / "helpdesk", self.root, foreign, set(allow)
+		)
+
+	def test_a_literal_foreign_doctype_in_each_call_form_fails_with_file_and_line(self):
+		cases = {
+			'frappe.get_all("Customer", fields=["name"])': "get_all() on Customer",
+			'frappe.get_list("Sales Invoice")': "get_list() on Sales Invoice",
+			'frappe.get_doc("GL Entry", name)': "get_doc() on GL Entry",
+			'frappe.get_doc({"doctype": "Customer", "customer_name": "x"})': "get_doc() on Customer",
+			'frappe.db.get_value("Employee", name, "email")': "get_value() on Employee",
+			'frappe.db.exists("Company", name)': "exists() on Company",
+			'frappe.db.set_value("Customer", name, "territory", "x")': "set_value() on Customer",
+			'frappe.new_doc("Customer")': "new_doc() on Customer",
+			'frappe.delete_doc("Customer", name)': "delete_doc() on Customer",
+			'frappe.qb.DocType("Sales Invoice")': "DocType() on Sales Invoice",
+			'frappe.qb.from_("Customer")': "from_() on Customer",
+			'frappe.get_all(doctype="Customer")': "get_all() on Customer",
+		}
+		for source, expected in cases.items():
+			errors, _ = self.scan(f"import frappe\nx = {source}\n")
+			self.assertEqual(len(errors), 1, source)
+			self.assertIn(
+				"R5 apps/helpdesk/helpdesk/helpdesk/api.py:2:", errors[0].replace("\\", "/"), source
+			)
+			self.assertIn(expected, errors[0], source)
+
+	def test_raw_sql_on_a_foreign_table_fails(self):
+		errors, _ = self.scan(
+			'import frappe\nrows = frappe.db.sql("SELECT name FROM `tabCustomer` WHERE 1")\n'
+		)
+		self.assertEqual(len(errors), 1)
+		self.assertIn("raw SQL on the tables of Customer", errors[0])
+		self.assertEqual(
+			self.scan('import frappe\nframe = frappe.db.sql("SELECT name FROM `tabHD Ticket`")\n')[0], []
+		)
+
+	def test_the_contract_owners_add_to_the_fixed_list(self):
+		# org_unit's source DocType is Company in this sample: owned by erpnext, so foreign for helpdesk; not foreign for erpnext
+		self.assertIn("Company", self.checker.foreign_doctypes(self.root, "helpdesk"))
+		write(
+			self.root / "nxerp/shared/contracts",
+			{"x.json": '{"source_doctype": "Widget", "owner_app": "erpnext"}'},
+		)
+		self.assertIn("Widget", self.checker.foreign_doctypes(self.root, "helpdesk"))
+		self.assertNotIn("Widget", self.checker.foreign_doctypes(self.root, "erpnext"))
+		self.assertIn(
+			"Customer", self.checker.foreign_doctypes(self.root, "helpdesk"), "the fixed list always applies"
+		)
+
+	def test_an_apps_own_doctypes_and_frappe_core_doctypes_are_fine(self):
+		source = (
+			"import frappe\n"
+			'a = frappe.get_all("HD Ticket")\n'
+			'b = frappe.get_doc("HD Customer", name)\n'
+			'c = frappe.get_all("Contact")\n'
+			'd = frappe.get_doc("User", user)\n'
+			'e = frappe.db.get_value("Dynamic Link", name, "link_name")\n'
+		)
+		self.assertEqual(self.scan(source), ([], []))
+
+	def test_a_doctype_name_that_is_not_a_literal_warns_and_does_not_fail(self):
+		source = "import frappe\nrows = frappe.get_all(doctype_name)\nother = frappe.get_doc(frappe.form_dict.doctype, name)\nok = frappe.db.get_value(var, 'a', 'b')\n"
+		errors, warnings = self.scan(source)
+		self.assertEqual(errors, [])
+		self.assertEqual(len(warnings), 2)
+		self.assertIn("R5 apps/helpdesk/helpdesk/helpdesk/api.py:2:", warnings[0].replace("\\", "/"))
+		self.assertIn("cannot be decided", warnings[0])
+
+	def test_the_legacy_allow_list_exempts_only_the_exact_path(self):
+		source = 'import frappe\nx = frappe.get_all("Customer")\n'
+		path = "apps/helpdesk/helpdesk/helpdesk/api.py"
+		self.assertEqual(self.scan(source, allow={path})[0], [], "the listed file is exempt")
+		other = "helpdesk/helpdesk/api_copy.py"
+		errors, _ = self.scan(source, rel=other, allow={path})
+		self.assertEqual(len(errors), 1, "any other file with the same content is not")
+		self.assertTrue(
+			all(isinstance(p, str) and p.startswith("apps/helpdesk/") for p in self.checker.LEGACY_ALLOW)
+		)
+		self.assertNotIn("apps/helpdesk/helpdesk/integrations/shared", " ".join(self.checker.LEGACY_ALLOW))
+
+	def test_the_check_fails_the_run_through_the_cli_and_names_the_line(self):
+		write(
+			self.root / "apps" / "helpdesk",
+			{
+				"helpdesk/hooks.py": "app_name = 'helpdesk'\n",
+				"helpdesk/__init__.py": "",
+				"helpdesk/bad.py": 'import frappe\nx = frappe.get_all("Customer")\n',
+			},
+		)
+		out = io.StringIO()
+		with (
+			patch.dict(
+				os.environ, {k: v for k, v in os.environ.items() if k != "NXERP_APP_PATHS"}, clear=True
+			),
+			contextlib.redirect_stdout(out),
+		):
+			code = self.checker.main(["--root", str(self.root)])
+		text = out.getvalue()
+		self.assertEqual(code, 1, text)
+		self.assertIn("ERROR: R5", text)
+		self.assertIn("bad.py:2", text)
+
+	def test_the_repository_has_no_new_reach_and_prints_its_undecided_cases(self):
+		errors, warnings = self.checker.run_checks(REPO, self.checker.discover_apps(REPO))
+		self.assertEqual([e for e in errors if e.startswith("R5")], [])
+		self.assertTrue(all(w.startswith("R5 ") and ":" in w for w in warnings))
 
 
 if __name__ == "__main__":

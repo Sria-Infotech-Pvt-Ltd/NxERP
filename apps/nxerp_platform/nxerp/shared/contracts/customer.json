@@ -1,6 +1,6 @@
 {
 	"entity_type": "customer",
-	"contract_version": 1,
+	"contract_version": 2,
 	"owner_app": "erpnext",
 	"source_doctype": "Customer",
 	"id_field": "name",
@@ -76,10 +76,14 @@
 		{
 			"name": "customer.request_change",
 			"writable_fields": [
-				"display_name"
+				"customer_group",
+				"territory"
 			],
 			"needs_role": "NXERP Access: ERPNext",
-			"note": "Helpdesk asks, ERPNext validates and applies as the acting user. Role is a placeholder to confirm with the owner."
+			"callers": [
+				"helpdesk"
+			],
+			"note": "Helpdesk asks, ERPNext validates and applies as the acting user. ERPNext's own rules guard the values (a Customer Group and a Territory must exist). Role is a placeholder to confirm with the owner."
 		}
 	],
 	"status": "active"

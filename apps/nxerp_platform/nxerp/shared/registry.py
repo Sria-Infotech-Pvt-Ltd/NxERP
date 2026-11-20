@@ -47,6 +47,15 @@ def consumers_of(entity_type: str) -> dict:
 	return dict(contract["consumers"]) if contract else {}
 
 
+def command_for(entity_type: str, command: str) -> dict | None:
+	"""The command of an ACTIVE contract named `command` (`request_change` or the full `customer.request_change`), or None."""
+	contract = get_contract(entity_type)
+	if not contract or contract["status"] != "active" or not isinstance(command, str):
+		return None
+	full = command if "." in command else f"{entity_type}.{command}"
+	return next((c for c in contract["commands"] if c["name"] == full), None)
+
+
 def contracts_for_doctype(doctype: str) -> list:
 	"""Active contracts whose source DocType is `doctype` (planned contracts are never captured)."""
 	return [

@@ -17,14 +17,14 @@ def sync_customer_type_from_erpnext():
         "HD Customer",
         filters={
             "customer_type": ["is", "not set"],
-            "erpnext_customer": ["is", "set"],
+            "customer_ref_id": ["is", "set"],
         },
-        fields=["name", "erpnext_customer"],
+        fields=["name", "customer_ref_id"],
     )
     if not linked_customers:
         return
 
-    erpnext_names = list({customer.erpnext_customer for customer in linked_customers})
+    erpnext_names = list({customer.customer_ref_id for customer in linked_customers})
     customer_types = dict(
         frappe.get_all(
             "Customer",
@@ -36,7 +36,7 @@ def sync_customer_type_from_erpnext():
 
     hd_names_by_type: dict[str, list[str]] = {}
     for customer in linked_customers:
-        customer_type = customer_types.get(customer.erpnext_customer)
+        customer_type = customer_types.get(customer.customer_ref_id)
         if customer_type:
             hd_names_by_type.setdefault(customer_type, []).append(customer.name)
 
