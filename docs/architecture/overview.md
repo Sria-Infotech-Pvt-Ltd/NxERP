@@ -11,7 +11,7 @@ test or document that shows it is named next to it. Decisions are in [`../adr/`]
 flowchart TB
   user([Browser: employee / agent / manager / customer])
 
-  subgraph NXERP["NXDESK platform (app nxerp): one site, one login, one identity"]
+  subgraph NXERP["NXDESK platform (app nxerp): one identity per person, one site and one database per app"]
     direction TB
     subgraph PLAT["nxerp  (platform app, this repo)"]
       registry["registry.py<br/>the list of apps (ERPNext, Helpdesk)"]
@@ -175,7 +175,7 @@ CI (`.github/workflows/ci.yml`) is authored but, per `docs/PROGRESS.md`, has not
 
 ## Rules this overview implies
 
-1. One login (Frappe `/login`), one identity per person. Authentication, authorisation, application visibility and routing are four separate concerns.
+1. One identity and one credential set per person: the person signs in once at the identity site (`id`), and each app (ERPNext on `erp`, Helpdesk on `hd`) trusts that sign-in through its own sign-in page (ADR-004 amendment 2). Each app has its own site, database and login; they do not share a Frappe site. Authentication, authorisation, application visibility and routing are four separate concerns.
 2. The platform app does not import apps and apps do not import the platform (ADR-005). Enforced by `scripts/check_architecture.py` and `apps/nxerp_platform/nxerp/tests/test_architecture.py`.
 3. Hiding an icon is not security: enforcement happens on the server ([`../research/frappe-access-and-routing.md`](../research/frappe-access-and-routing.md) has the surface-by-surface table).
 4. A unified experience is not merged code: Frappe and ERPNext are pinned upstream tags, Helpdesk is a pinned company fork, `nxerp` is our own app.
@@ -220,3 +220,17 @@ flowchart LR
 - **Change:** `nxerp.shared.command.apply` on the owner ([command-api-v1.md](command-api-v1.md)); the owner's own permissions and validations run as the acting person; the owner publishes the result through its outbox.
 - **The wall:** `scripts/check_architecture.py` rule R5 fails the build when an app's code touches a DocType another app owns (the contracts say who owns what), and `scripts/shared_audit.sh phase7` checks the network and database walls on the staging stacks.
 - **Switch:** Helpdesk uses this path when its site config `nxerp_shared_read` is set; unset is today's behaviour. See [ADR-003 amendment 2](../adr/ADR-003-amendment-2.md), Phase 7 addendum.
+
+## Topology after the cutover (Phase 8)
+
+Before the cutover one site served everything. After it (once decision point D has passed):
+
+| Stack | Site | Holds | Database tier |
+| --- | --- | --- | --- |
+| `id` | `id.<domain>` | users, roles, password hashes and 2FA secrets; the sign-in page | standard |
+| `hd` | `hd.<domain>` | Helpdesk (tickets, communications, files); no ERP tables | standard |
+| `erp` | `erp.<domain>` | ERPNext (finance data) | restricted |
+| shared | internal | the derived read database, the projector and the Read API | its own |
+| `edge` | all host names | routes by host name; redirects old `/helpdesk` links from the old host to `hd`; publishes one port on 127.0.0.1 | none |
+
+Apps read each other only through the shared Read API and change each other only through the owner's command API. During the transition the old single site is attached to the sync network as the interim ERP app (`deploy/docker/compose/isolated/legacy-erp.override.yaml`). The steps are in [`../runbooks/isolation-cutover.md`](../runbooks/isolation-cutover.md), the way back in [`../runbooks/isolation-rollback.md`](../runbooks/isolation-rollback.md).

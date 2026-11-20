@@ -107,6 +107,18 @@ The repository cannot decide these; the owner did. On 2026-11-18 the owner repli
 | A12 | The shared layer is read-only reference data, not a reporting warehouse; financial amounts are not copied. Open sub-question: may Helpdesk see a derived `has_overdue_invoice` flag (default off) | accepted | default accepted 2026-11-18 |
 | A13 | "Royal HRMS" (`CLAUDE.md`, ADR-008) and "AIRA HRMS" (`nxerp/public_catalog.py`) are the same planned product; the repository does not say so | accepted | default accepted 2026-11-18; still open, see unresolved item 7 |
 
+## Migration and rollback decisions (Phase 8)
+
+Added 2026-11-20 with the Phase 8 tools. The status of this ADR is unchanged.
+
+- **The old site is not changed until decision point D.** Rollback is real only because of that. The source receives maintenance mode, disabled incoming mailboxes and one site-config flag, all removed or restored by `cutover.sh unfreeze`. Reverting code does not reverse database changes.
+- **Copy, then compare.** Helpdesk is cloned from a verified backup, ERP-only rows are pruned by an allow-list read from Module Def, and `reconcile` compares per-DocType counts, name-set hashes, the file SHA-256 manifest and the email message-id set with zero tolerance (only the SLA status of a ticket may differ for one cycle). Reports hold counts and hashes, never values.
+- **Identity moves by copy, not by login.** Password hashes are portable. API and 2FA secrets are encrypted with each site's own key, so the import takes the source key from the environment (a pipe between containers in `cutover.sh`, never a file) and encrypts again with the identity site's key.
+- **Writes made on the new site before D are replayed, not overwritten.** `delta-import` adds what is missing, skips what is identical and reports what differs. Ticket numbers on the new site start above the source's counter by a gap, so a rollback cannot collide.
+- **The shared layer is rebuilt, never migrated.** After each move its sources are re-pointed and it is rebuilt from the owners' feeds; the cursor of a re-pointed source starts from the rebuild. Publish is switched on before read, and read only after drift is 0.
+- **Cutover is gated by people.** The freeze, the canary result, opening to customers and decision D are each an explicit owner reply; destructive tool steps need `--yes` and a typed phrase.
+- **After D there is no rollback.** Finalising the ERP side removes Helpdesk from the old site only with a verified RP-final and an explicit D. The old ERP stack is kept stopped for 30 days.
+
 ## Open points (not decided here)
 
 - **Hosting:** one Docker host or several; where the restricted (ERPNext, HRMS, Budget) database server runs; off-site backup storage and retention (owner-action-list item 18).
