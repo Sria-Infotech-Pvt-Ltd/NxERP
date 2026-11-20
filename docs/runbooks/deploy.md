@@ -57,3 +57,8 @@ Maintenance mode shows users a "site is being updated" page for the duration of 
   the nginx template passes `nginx -t` in the `nginx:1.27-alpine` image.
 - **Not tested:** starting the staging-like stack (needs the image), `deploy.sh`, `rollback.sh` execution, the SSH/registry steps, TLS, the
   GitHub Environment approval.
+
+## Isolated stacks
+
+One authoritative stack per app (identity, ERP, Helpdesk, ...), two database tiers and a generated edge proxy, next to the existing stack: see
+[deploy/docker/compose/isolated/README.md](../../deploy/docker/compose/isolated/README.md) (stacks, edge proxy, starting order) and `deploy/scripts/stack.sh`. Not yet used for production.

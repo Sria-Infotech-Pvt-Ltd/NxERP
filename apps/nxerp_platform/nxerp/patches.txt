@@ -7,3 +7,4 @@
 nxerp.patches.create_access_roles
 nxerp.patches.create_feed_role
 nxerp.patches.enable_signup_when_configured
+nxerp.patches.create_federation_roles

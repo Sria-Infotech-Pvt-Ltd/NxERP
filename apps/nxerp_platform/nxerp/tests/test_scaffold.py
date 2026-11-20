@@ -3,6 +3,8 @@ import os
 import frappe
 from frappe.tests import IntegrationTestCase
 
+from nxerp.shared import registry as _shared_registry
+
 PLATFORM_MODULE = "NXERP Platform"
 
 
@@ -65,6 +67,29 @@ class TestScaffold(IntegrationTestCase):
 					)
 				),
 			],
+		)
+		# Phase 6: login federation. Both hooks are no-ops unless the site config key nxerp_site_role is "identity" (nxerp/federation).
+		# on_update queues a provisioning row when a grant changes; the scheduler delivers rows and repairs drift.
+		# Phase 3: the shared-entity capture hooks are generated from the ownership contracts (no-ops unless nxerp_shared_publish).
+		doc_events = hooks.get("doc_events") or {}
+		self.assertEqual(
+			doc_events.get("User"),
+			{
+				"validate": ["nxerp.guard.validate_user"],
+				"on_trash": ["nxerp.guard.on_trash_user"],
+				"on_update": ["nxerp.federation.outbox.on_user_change"],
+			},
+		)
+		for doctype, events in _shared_registry.capture_events().items():
+			for event in events:
+				self.assertIn(f"nxerp.shared.capture.{event}", doc_events[doctype][event], (doctype, event))
+		self.assertEqual(
+			hooks.get("scheduler_events"),
+			{
+				"all": ["nxerp.federation.outbox.process"],
+				"cron": {"* * * * *": ["nxerp.shared.relay.assign_sequence"]},
+				"daily": ["nxerp.shared.relay.prune", "nxerp.federation.reconcile.run"],
+			},
 		)
 		# nothing else reaches into requests or sessions
 		for hook in ("before_request", "on_login", "on_logout"):
