@@ -37,3 +37,21 @@
 - The OAuth Client secret is a clear-text `Data` field of 10 hex characters when Frappe generates it (spike item (a1)): setup supplies its own 32+
   character secret (`nxerp.federation.setup`, from an environment variable), and the identity database is treated as holding application credentials.
 - Off by default: nothing in this amendment has any effect on a site that has not set `nxerp_site_role`.
+
+
+## Phase 7 addendum (2026-11-20): the Customer bridge exception ends
+
+Until Phase 7, Helpdesk reached ERPNext directly: Helpdesk's hooks created and mirrored `Customer`, `User Permission` and `DocShare` rows and read ERPNext tables
+(the "Customer bridge", `helpdesk/integrations/erpnext/`). That was an explicit exception to "an app touches only its own DocTypes". **The exception ends.**
+
+- **Reads.** Helpdesk reads a customer or a contact only through the NXDESK Read API (`GET /v1/customer/{id}`, `/v1/contact/{id}`, per-app token, per-field grant, audit). It shows how
+  old the answer is (`synced_at`) and degrades with a banner when the Read API is down: a ticket never depends on it.
+- **Writes.** Helpdesk changes NXERP's data only through the owner's command API (`nxerp.shared.command.apply`, `docs/architecture/command-api-v1.md`): one idempotency key per user
+  action, the acting agent applied on NXERP's side with NXERP's own permissions and validations, only the fields the contract lists as writable. Helpdesk never creates, renames or
+  deletes a customer; with the switch on, a path that would is refused with "Ask NXERP".
+- **Ownership.** Helpdesk owns tickets, messages, SLAs and its support record of a customer (`HD Customer`: `customer_ref_id`, a plain reference, plus support-only fields and a cached
+  name that is never authoritative). NXERP owns customers and contacts.
+- **Switch.** Site config `nxerp_shared_read`. Unset means today's behaviour exactly (the old bridge). The old bridge code stays until Phase 8 work package 8D deletes it; until then
+  `scripts/check_architecture.py` rule R5 lists its files by exact path (`LEGACY_ALLOW`) and fails on any other file of any app that touches a DocType owned by another app.
+- **Permissions of the person.** A command runs as the acting user on NXERP and needs that user to exist there, be enabled, hold the command's `needs_role` and have the DocType permission.
+  Mapping a Helpdesk agent to an NXERP user is the identity site's job (Phase 6: one person, one identity).

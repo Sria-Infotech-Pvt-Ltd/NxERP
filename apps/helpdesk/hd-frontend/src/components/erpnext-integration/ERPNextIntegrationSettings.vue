@@ -23,6 +23,29 @@
       >
         <LoadingIndicator class="w-4" />
       </div>
+      <!-- Shared customer data is on: customers come from NXERP through the Read API and changes go through its command API -->
+      <div v-else-if="sharedRead" class="flex flex-col gap-3">
+        <span class="text-base-medium text-ink-gray-8">
+          {{ __("Customers are managed in NXERP") }}
+        </span>
+        <span class="text-p-sm text-ink-gray-6">
+          {{
+            __(
+              "Helpdesk reads customer details from NXERP and asks NXERP to change them. It does not create, rename or delete customers."
+            )
+          }}
+        </span>
+        <div class="flex flex-col gap-1 text-p-sm text-ink-gray-7">
+          <span>
+            {{ __("Reading customer details") }}:
+            {{ sharedStatus.data?.read_configured ? __("configured") : __("not configured") }}
+          </span>
+          <span>
+            {{ __("Changing customer details") }}:
+            {{ sharedStatus.data?.commands_configured ? __("configured") : __("not configured") }}
+          </span>
+        </div>
+      </div>
       <div v-else class="flex flex-col gap-4">
         <!-- ERPNext not installed -->
         <div class="flex items-center justify-between gap-4">
@@ -163,7 +186,16 @@ const syncInfoResource = createResource({
   },
 });
 
-const installed = window.apps?.includes("erpnext") ?? false;
+// With the shared-read setting on, Helpdesk does not use ERPNext at all (customers come from NXERP through the Read API), so the
+// screen shows the status of that path and never looks at which apps are installed on this site.
+const sharedStatus = createResource({
+  url: "helpdesk.integrations.shared.api.get_status",
+  auto: true,
+});
+const sharedRead = computed(() => Boolean(sharedStatus.data?.enabled));
+const installed = computed(() =>
+  sharedRead.value ? true : (window.apps?.includes("erpnext") ?? false)
+);
 const inSync = computed(() => Boolean(syncInfoResource.data?.in_sync));
 
 const saveResource = createResource({

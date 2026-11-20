@@ -97,3 +97,20 @@ Nothing is granted by this layer: Frappe's DocType, field and record permissions
 
 For either: add one registry entry in `nxerp/registry.py`, add the access grants, reserve a `/<app>` route
 (`docs/architecture/routes.md`), write an ADR, and add `CODEOWNERS` entries for its folder.
+
+
+## Sharing data with another app: the contract steps (Phase 7)
+
+An app never reads or writes another app's DocTypes. When an app needs data another app owns, or must change it, the owner publishes a contract and the
+caller goes through the Read API and the command API. The steps, for an owner adding an entity or a command and for a new consumer:
+
+| Step | What you do | Where |
+| --- | --- | --- |
+| 1 | Write or extend the ownership contract: owner app, source DocType, the allow-listed fields with their sensitivity class (S3 data is never shared), the events, which apps may read which fields (`consumers`) | `apps/nxerp_platform/nxerp/shared/contracts/<entity>.json` |
+| 2 | For a change by another app, add a command: its writable fields (shared fields only, never the id), the role the acting user needs, and the `callers` (registered apps) | the same file, `commands` |
+| 3 | Bump `contract_version` and run the lint | `python scripts/check_contracts.py` |
+| 4 | Create the consuming app's Read API token (`deploy/scripts/shared.sh tokens create --app <app>`) and, for commands, a service user with the role `NXERP Command Caller`, mapped to the app in the owner's site config `nxerp_command_callers` | owner site |
+| 5 | In the consuming app: read through a small client (timeouts, a short cache, a stale flag, never raise into a page) and change through a command client (one idempotency key per user action, reused by retries); both behind a site setting that is off by default | e.g. `apps/helpdesk/helpdesk/integrations/shared/` |
+| 6 | Add the consumer-contract tests (they run from the contracts) and run the boundary check | `shared_service/tests/test_consumer_contracts.py`, `python scripts/check_architecture.py` |
+
+`scripts/check_architecture.py` rule R5 fails if the new app's code touches a DocType another app owns; the only exemptions are exact file paths in `LEGACY_ALLOW`.

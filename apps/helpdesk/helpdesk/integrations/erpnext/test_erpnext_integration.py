@@ -65,7 +65,7 @@ class TestERPNextIntegration(FrappeTestCase):
         self.addCleanup(frappe.delete_doc, "HD Customer", doc.name, force=True)
 
         doc.reload()
-        self.assertTrue(doc.erpnext_customer)
+        self.assertTrue(doc.customer_ref_id)
         self.assertTrue(frappe.db.exists("Customer", {"hd_customer": doc.name}))
 
     def test_no_duplicate_when_erp_already_linked(self):
@@ -584,7 +584,7 @@ class TestERPNextIntegration(FrappeTestCase):
         frappe.db.set_value(
             "HD Customer",
             hd.name,
-            "erpnext_customer",
+            "customer_ref_id",
             erp_new.name,
             update_modified=False,
         )
@@ -1018,7 +1018,7 @@ class TestERPNextIntegration(FrappeTestCase):
         self.assertTrue(frappe.db.exists("Customer", "Cascade HD New"))
         self.assertFalse(frappe.db.exists("Customer", erp1.name))
         self.assertEqual(
-            frappe.db.get_value("HD Customer", "Cascade HD New", "erpnext_customer"),
+            frappe.db.get_value("HD Customer", "Cascade HD New", "customer_ref_id"),
             "Cascade HD New",
         )
         self.assertEqual(
@@ -1040,7 +1040,7 @@ class TestERPNextIntegration(FrappeTestCase):
         )
         self.assertTrue(frappe.db.exists("HD Customer", "Cascade ERP New"))
         self.assertEqual(
-            frappe.db.get_value("HD Customer", "Cascade ERP New", "erpnext_customer"),
+            frappe.db.get_value("HD Customer", "Cascade ERP New", "customer_ref_id"),
             "Cascade ERP New",
         )
 
@@ -1108,7 +1108,7 @@ class TestERPNextIntegration(FrappeTestCase):
         self.assertFalse(frappe.db.exists("Customer", erp_foo.name))
         self.assertTrue(frappe.db.exists("Customer", hd_bar.name))
         self.assertEqual(
-            frappe.db.get_value("HD Customer", hd_bar.name, "erpnext_customer"),
+            frappe.db.get_value("HD Customer", hd_bar.name, "customer_ref_id"),
             hd_bar.name,
         )
         self.assertEqual(
@@ -1168,7 +1168,7 @@ class TestERPNextIntegration(FrappeTestCase):
         self.assertTrue(frappe.db.exists("HD Customer", hd_bar.name))
         self.assertTrue(frappe.db.exists("Customer", erp_bar.name))
         self.assertEqual(
-            frappe.db.get_value("HD Customer", hd_bar.name, "erpnext_customer"),
+            frappe.db.get_value("HD Customer", hd_bar.name, "customer_ref_id"),
             erp_bar.name,
         )
         self.assertEqual(

@@ -85,7 +85,7 @@ def sync_user_permissions():
     # HD → ERP
     for perm in hd_customer_user_perms:
         erpnext_customer = frappe.db.get_value(
-            "HD Customer", perm.for_value, "erpnext_customer"
+            "HD Customer", perm.for_value, "customer_ref_id"
         )
         if not erpnext_customer:
             continue

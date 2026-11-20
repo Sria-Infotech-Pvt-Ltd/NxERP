@@ -3,6 +3,8 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.model.rename_doc import rename_doc
 
+from helpdesk.integrations.shared.settings import is_on as shared_read_on
+
 CASCADE_FLAG = "erpnext_hd_cascade_in_progress"
 
 # Doctypes whose hooks the integration touches. Anything else is a no-op.
@@ -17,6 +19,10 @@ FIELDS_TO_SYNC: tuple[tuple[str, str], ...] = (
 
 
 def should_sync():
+    # With the shared-read setting on, Helpdesk never mirrors with ERPNext: every mirror hook, the customer sync and the
+    # HD Customer hooks go through this one function (integrations/shared/settings.py)
+    if shared_read_on():
+        return False
     return "erpnext" in frappe.get_installed_apps() and frappe.db.get_single_value(
         "ERPNext HD Settings", "enabled"
     )
@@ -26,7 +32,7 @@ def set_links(erpnext_customer_name: str, hd_customer_name: str):
     frappe.db.set_value(
         "HD Customer",
         hd_customer_name,
-        "erpnext_customer",
+        "customer_ref_id",
         erpnext_customer_name,
         update_modified=False,
     )
@@ -68,7 +74,7 @@ def in_cascade() -> bool:
 def _other_side(self_doctype: str) -> tuple[str, str]:
     if self_doctype == "HD Customer":
         return "Customer", "hd_customer"
-    return "HD Customer", "erpnext_customer"
+    return "HD Customer", "customer_ref_id"
 
 
 def validate_rename_conflict(
@@ -172,7 +178,7 @@ def _resync_data_fields(self_doctype: str, self_name: str, other_name: str) -> N
         frappe.db.set_value(
             "HD Customer",
             hd_name,
-            "erpnext_customer",
+            "customer_ref_id",
             erp_name,
             update_modified=False,
         )
@@ -226,6 +232,6 @@ def find_target_for(doctype: str | None, value: str | None) -> tuple[str, str] |
         erp = frappe.db.get_value("Customer", {"hd_customer": value}, "name")
         return ("Customer", erp) if erp else None
     if doctype == "Customer":
-        hd = frappe.db.get_value("HD Customer", {"erpnext_customer": value}, "name")
+        hd = frappe.db.get_value("HD Customer", {"customer_ref_id": value}, "name")
         return ("HD Customer", hd) if hd else None
     return None

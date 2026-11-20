@@ -200,3 +200,23 @@ CI (`.github/workflows/ci.yml`) is authored but, per `docs/PROGRESS.md`, has not
 - **Branded outgoing email** (Frappe still titles login mail "Login To Frappe") and **a screen-reader accessibility audit** (only automated basics exist).
 - **Production deployment**: a production image, registry, staging and secrets management are being added under `deploy/` in Phase 4 by their owners; this page does not claim they work. Nothing has been deployed anywhere.
 - **Anything on GitHub beyond pushes to `develop`**: pushes to `develop` have been verified (2026-11-05, local and remote hashes equal by `git ls-remote`); no PR, no branch protection and no CI run has been verified (see the owner action list in `docs/governance/owner-action-list.md`).
+
+
+## Shared data, reads and changes between apps (Phase 7)
+
+Each app keeps its own authoritative database. Apps never read or write each other's tables:
+
+```mermaid
+flowchart LR
+  hd["Helpdesk<br/>(own database)"]
+  erp["NXERP / ERPNext<br/>(own database)"]
+  shared["Shared read layer<br/>derived, rebuildable"]
+  hd -- "reads: Read API<br/>(token, field grant, audit)" --> shared
+  erp -- "outbox, relay, feed (pull)" --> shared
+  hd -- "changes: command API<br/>(idempotent, acting user)" --> erp
+```
+
+- **Read:** `GET /v1/customer/{id}` and `/v1/contact/{id}` on the Read API ([read-api-v1.md](read-api-v1.md)); eventually consistent, every answer carries its age.
+- **Change:** `nxerp.shared.command.apply` on the owner ([command-api-v1.md](command-api-v1.md)); the owner's own permissions and validations run as the acting person; the owner publishes the result through its outbox.
+- **The wall:** `scripts/check_architecture.py` rule R5 fails the build when an app's code touches a DocType another app owns (the contracts say who owns what), and `scripts/shared_audit.sh phase7` checks the network and database walls on the staging stacks.
+- **Switch:** Helpdesk uses this path when its site config `nxerp_shared_read` is set; unset is today's behaviour. See [ADR-003 amendment 2](../adr/ADR-003-amendment-2.md), Phase 7 addendum.

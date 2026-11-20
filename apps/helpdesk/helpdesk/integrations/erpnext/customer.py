@@ -16,14 +16,14 @@ def after_insert(doc: Document, method: str | None = None):
     if not should_sync() or doc.flags.get("ignore_erpnext_sync"):
         return
 
-    if frappe.db.exists("HD Customer", {"erpnext_customer": doc.name}):
+    if frappe.db.exists("HD Customer", {"customer_ref_id": doc.name}):
         return
 
     hd_doc = frappe.get_doc(
         {
             "doctype": "HD Customer",
             "customer_name": doc.customer_name,
-            "erpnext_customer": doc.name,
+            "customer_ref_id": doc.name,
             **map_source_to_target_values(doc),
         }
     )
@@ -56,10 +56,10 @@ def on_trash(doc: Document, method: str | None = None):
         return
 
     hd_customer = frappe.db.get_value(
-        "HD Customer", {"erpnext_customer": doc.name}, "name"
+        "HD Customer", {"customer_ref_id": doc.name}, "name"
     )
     if hd_customer:
         # Clear the back-link first so HD Customer's on_trash won't try to
         # delete this Customer again (it's already being deleted).
-        frappe.db.set_value("HD Customer", hd_customer, "erpnext_customer", None)
+        frappe.db.set_value("HD Customer", hd_customer, "customer_ref_id", None)
         frappe.delete_doc("HD Customer", hd_customer, ignore_permissions=True)

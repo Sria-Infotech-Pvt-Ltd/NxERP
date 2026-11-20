@@ -11,7 +11,8 @@
   "customer_name",
   "customer_type",
   "domain",
-  "erpnext_customer",
+  "customer_ref_id",
+  "customer_name_cache",
   "country",
   "column_break_fead",
   "primary_contact",
@@ -59,10 +60,19 @@
    "label": "Contact HTML"
   },
   {
-   "fieldname": "erpnext_customer",
+   "description": "The id of this customer in the system that owns customers (NXERP). Not an authoritative copy of anything else.",
+   "fieldname": "customer_ref_id",
    "fieldtype": "Data",
    "hidden": 1,
-   "label": "ERPNext Customer",
+   "label": "Customer Reference",
+   "read_only": 1
+  },
+  {
+   "description": "Last customer name read through the shared Read API, shown when it is unavailable. A cache, never authoritative.",
+   "fieldname": "customer_name_cache",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Customer Name (cached)",
    "read_only": 1
   },
   {
