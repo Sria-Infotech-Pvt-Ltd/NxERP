@@ -145,7 +145,7 @@ def flow(id_site: Site, hd_site: Site, label: str, want_claims: bool = False):
 		say(
 			f"[{label}] authorize url query keys={sorted(urllib.parse.parse_qs(urllib.parse.urlparse(links[0]).query))}"
 		)
-	host, path = split_location(links[0])
+	_host, path = split_location(links[0])
 	status, headers, page = id_site.call("GET", path)
 	location = headers.get("Location", "")
 	if status not in (302, 303):
