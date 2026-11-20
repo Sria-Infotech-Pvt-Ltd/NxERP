@@ -547,6 +547,15 @@ class TestIdentityOutbox(IdentityCase):
 		doc.first_name = f"x{frappe.generate_hash(length=4)}"
 		doc.save(ignore_permissions=True)
 
+	def test_a_disable_for_a_user_the_identity_site_does_not_know_is_still_delivered(self):
+		"""The reconcile can find a user on a peer that the identity site never had: it must be disabled there, not left because no User row exists here."""
+		with identity_site(), patched(self.fake):
+			outbox.queue("ghost@example.test", "dummy-a", "Disable")
+			self.assertEqual(outbox.process()["sent"], 1)
+			self.assertEqual(self.fake.calls[0][0], "deprovision_user")
+			self.assertEqual(self.fake.calls[0][1]["email"], "ghost@example.test")
+			self.assertEqual(self.rows(user="ghost@example.test")[0].status, "Sent")
+
 	def test_the_peer_origins_and_the_five_apps_are_the_provisioning_targets(self):
 		everyone = self.user(*(e.access_role for e in (*registry.APPS, *DUMMIES)))
 		with identity_site(), patched(self.fake):

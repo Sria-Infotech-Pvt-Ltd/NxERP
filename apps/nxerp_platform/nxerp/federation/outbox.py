@@ -108,11 +108,9 @@ def _deliver(row):
 	entry = registry.active_entry(row.app_key)
 	if not peer or not entry:
 		return _fail(row, "no enabled peer for this app", final=True)
-	user = frappe.db.exists("User", row.user)
-	if not user:
-		return _fail(row, "user no longer exists", final=True)
-	user_doc = frappe.get_doc("User", row.user)
-	# decide from the identity site's state NOW, not from when the row was written: the peer never ends up with more than we allow
+	# decide from the identity site's state NOW, not from when the row was written: the peer never ends up with more than we allow.
+	# A user the identity site does not know (the reconcile found it on the peer) is simply not allowed: the answer is Disable.
+	user_doc = frappe.get_doc("User", row.user) if frappe.db.exists("User", row.user) else None
 	action = "Enable" if allowed(user_doc, entry) else "Disable"
 	if action != row.action:
 		row.action = action
@@ -137,7 +135,7 @@ def _deliver(row):
 				peer,
 				"POST",
 				"deprovision_user",
-				data={"email": user_doc.name, "idempotency_key": row.idempotency_key},
+				data={"email": row.user, "idempotency_key": row.idempotency_key},
 			)
 	except Exception as exc:
 		return _fail(row, _safe_error(exc))
@@ -176,12 +174,19 @@ def process() -> dict:
 			limit=BATCH,
 		)
 		for name in names:
-			row = frappe.get_doc(DOCTYPE, name)
-			if _deliver(row):
-				sent += 1
-			else:
-				failed += 1
+			# a fresh snapshot per row: MariaDB 11.8 refuses to update a row another transaction changed after ours began
 			frappe.db.commit()
+			try:
+				row = frappe.get_doc(DOCTYPE, name)
+				if row.status != "Pending":
+					continue
+				if _deliver(row):
+					sent += 1
+				else:
+					failed += 1
+				frappe.db.commit()
+			except frappe.QueryDeadlockError:
+				frappe.db.rollback()  # the row stays Pending and is picked up again on the next run
 	finally:
 		lock.release()
 	audit.log_event("federation_process", None, None, sent=sent, failed=failed)
