@@ -350,3 +350,53 @@ class TestCrossOriginRouting(IdentityCase):
 				self.assertEqual(routing.route(everyone, target), target, entry.key)
 			self.assertEqual(access.resolve_landing(everyone)["mode"], "launcher")
 			self.assertEqual(len(access.resolve_landing(everyone)["apps"]), 5)
+
+	def test_the_single_sign_on_continuation_is_kept_on_an_identity_site_only(self):
+		"""A person who signs in at the identity site to finish an app's single sign-on must come back to Frappe's authorize endpoint."""
+		hd = self.user("NXERP Access: Helpdesk")
+		url = (
+			routing.OAUTH_AUTHORIZE_PATH
+			+ "?client_id=abc&redirect_uri=https%3A%2F%2Fhd.example.test%2Fcb&response_type=code&state=xyz"
+		)
+		with identity_site():
+			self.assertEqual(routing.route(hd, url), url)
+			self.assertIsNone(routing.authorised_target("Guest", url))
+			# no other API path is ever honoured
+			for other in (
+				"/api/method/frappe.client.get_list",
+				"/api/method/frappe.integrations.oauth2.get_token",
+				"/api/resource/User",
+			):
+				self.assertNotEqual(routing.route(hd, other), other, other)
+		# an app site, or a site with no role, never honours it
+		self.assertNotEqual(routing.route(hd, url), url)
+		with patch.dict(frappe.conf, {"nxerp_site_role": "app"}):
+			self.assertNotEqual(routing.route(hd, url), url)
+
+	def test_the_absolute_continuation_of_this_identity_site_becomes_a_plain_path(self):
+		"""Frappe attaches the continuation to /login as an absolute URL of this very site: keep it, as a same-site path, and nothing else."""
+		query = "client_id=abc&redirect_uri=https%3A%2F%2Fhd.example.test%2Fcb&response_type=code&state=xyz"
+		own = f"https://id.example.test{routing.OAUTH_AUTHORIZE_PATH}?{query}"
+		with identity_site(), patch.object(routing, "_own_hosts", return_value={"id.example.test"}):
+			self.assertEqual(routing.safe_target(own), f"{routing.OAUTH_AUTHORIZE_PATH}?{query}")
+			self.assertEqual(
+				routing.safe_target(own.replace("https://id.example.test", "http://id.example.test:8080")),
+				f"{routing.OAUTH_AUTHORIZE_PATH}?{query}",
+			)
+			for bad in (
+				own.replace("id.example.test", "evil.test"),  # another host
+				own.replace("https://id.example.test", "https://id.example.test@evil.test"),  # user-info
+				own.replace("https://id.example.test", "https://evil.test@id.example.test"),
+				f"https://id.example.test/api/method/frappe.client.get_list?{query}",  # another endpoint
+				f"https://id.example.test.evil.test{routing.OAUTH_AUTHORIZE_PATH}?{query}",
+				f"javascript://id.example.test{routing.OAUTH_AUTHORIZE_PATH}?{query}",
+			):
+				self.assertIsNone(routing.safe_target(bad), bad)
+		# off the identity site it is refused like any other absolute URL
+		with patch.object(routing, "_own_hosts", return_value={"id.example.test"}):
+			self.assertIsNone(routing.safe_target(own))
+		with (
+			patch.dict(frappe.conf, {"nxerp_site_role": "app"}),
+			patch.object(routing, "_own_hosts", return_value={"id.example.test"}),
+		):
+			self.assertIsNone(routing.safe_target(own))
