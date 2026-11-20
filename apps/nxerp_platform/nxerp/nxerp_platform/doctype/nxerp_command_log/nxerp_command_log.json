@@ -1,0 +1,92 @@
+{
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "module": "NXERP Platform",
+ "actions": [],
+ "links": [],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "owner": "Administrator",
+ "modified_by": "Administrator",
+ "creation": "2026-11-20 09:00:00.000000",
+ "modified": "2026-11-20 09:00:00.000000",
+ "name": "NXERP Command Log",
+ "autoname": "hash",
+ "in_create": 1,
+ "field_order": [
+  "idempotency_key",
+  "caller_app",
+  "caller_user",
+  "entity_type",
+  "entity_id",
+  "command",
+  "result"
+ ],
+ "fields": [
+  {
+   "fieldname": "idempotency_key",
+   "fieldtype": "Data",
+   "label": "Idempotency key",
+   "reqd": 1,
+   "unique": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "caller_app",
+   "fieldtype": "Data",
+   "label": "Caller app",
+   "reqd": 1,
+   "in_list_view": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "caller_user",
+   "fieldtype": "Data",
+   "label": "Caller user",
+   "read_only": 1
+  },
+  {
+   "fieldname": "entity_type",
+   "fieldtype": "Data",
+   "label": "Entity type",
+   "reqd": 1,
+   "in_list_view": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "entity_id",
+   "fieldtype": "Data",
+   "label": "Entity id",
+   "reqd": 1,
+   "in_list_view": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "command",
+   "fieldtype": "Data",
+   "label": "Command",
+   "reqd": 1,
+   "in_list_view": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "result",
+   "fieldtype": "JSON",
+   "label": "Result",
+   "read_only": 1,
+   "description": "The stored answer, returned again for a repeat of the same key. Never field values."
+  }
+ ],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 0,
+   "share": 0,
+   "email": 0,
+   "print": 0
+  }
+ ]
+}

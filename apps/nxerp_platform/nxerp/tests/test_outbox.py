@@ -178,7 +178,8 @@ class TestOutbox(IntegrationTestCase):
 		row = events_for(doc.name)[0]
 		uuid.UUID(row.name)  # the event id is a UUID
 		self.assertEqual(
-			(row.status, row.seq, row.source_app, row.contract_version), ("pending", None, "erpnext", 1)
+			(row.status, row.seq, row.source_app, row.contract_version),
+			("pending", None, "erpnext", registry.get_contract("customer")["contract_version"]),
 		)
 		self.assertEqual(row.payload_hash, digest.payload_hash(json.loads(row.payload)))
 

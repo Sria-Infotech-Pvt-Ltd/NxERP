@@ -87,7 +87,10 @@ class TestScaffold(IntegrationTestCase):
 			hooks.get("scheduler_events"),
 			{
 				"all": ["nxerp.federation.outbox.process"],
-				"cron": {"* * * * *": ["nxerp.shared.relay.assign_sequence"]},
+				"cron": {
+					"* * * * *": ["nxerp.shared.relay.assign_sequence"],
+					"30 3 * * *": ["nxerp.shared.command.prune_log"],
+				},
 				"daily": ["nxerp.shared.relay.prune", "nxerp.federation.reconcile.run"],
 			},
 		)

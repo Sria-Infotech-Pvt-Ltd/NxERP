@@ -1,6 +1,6 @@
 {
 	"entity_type": "contact",
-	"contract_version": 1,
+	"contract_version": 2,
 	"owner_app": "erpnext",
 	"source_doctype": "Contact",
 	"id_field": "name",
@@ -74,7 +74,10 @@
 				"phone"
 			],
 			"needs_role": "NXERP Access: ERPNext",
-			"note": "Role is a placeholder to confirm with the owner."
+			"callers": [
+				"helpdesk"
+			],
+			"note": "email and phone change the contact's primary email and phone rows; full_name is split into first and last name. Role is a placeholder to confirm with the owner."
 		}
 	],
 	"status": "active"

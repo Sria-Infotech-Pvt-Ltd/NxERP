@@ -201,6 +201,31 @@ class TestLintRejectsBadContracts(unittest.TestCase):
 		contract["commands"][0]["writable_fields"] = ["credit_limit"]
 		self.assertViolation(violations(contract), "C7", "credit_limit")
 
+	def test_a_command_must_list_its_callers(self):
+		contract = self.customer()
+		del contract["commands"][0]["callers"]
+		self.assertViolation(violations(contract), "C1", "callers")
+		contract = self.customer()
+		contract["commands"][0]["callers"] = []
+		self.assertViolation(violations(contract), "C9", "non-empty")
+
+	def test_a_command_caller_must_be_a_registered_app_not_the_owner_and_not_repeated(self):
+		contract = self.customer()
+		contract["commands"][0]["callers"] = ["mystery"]
+		self.assertViolation(violations(contract), "C9", "mystery")
+		contract = self.customer()
+		contract["commands"][0]["callers"] = ["erpnext"]
+		self.assertViolation(violations(contract), "C9", "its own caller")
+		contract = self.customer()
+		contract["commands"][0]["callers"] = ["helpdesk", "helpdesk"]
+		self.assertViolation(violations(contract), "C9", "distinct")
+
+	def test_the_shipped_commands_name_helpdesk_as_their_only_caller(self):
+		for entity in ("customer", "contact"):
+			commands = registry.get_contract(entity)["commands"]
+			self.assertEqual([c["callers"] for c in commands], [["helpdesk"]], entity)
+			self.assertEqual(registry.get_contract(entity)["contract_version"], 2, entity)
+
 	def test_the_id_field_cannot_be_a_shared_field(self):
 		contract = self.customer()
 		contract["fields"].append(

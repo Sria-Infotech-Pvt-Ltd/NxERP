@@ -124,6 +124,10 @@ for _doctype, _events in _shared_registry.capture_events().items():
 #  - Phase 6 federation: deliver queued grants to the app sites ("all") and repair drift (daily); both are no-ops unless nxerp_site_role is "identity".
 scheduler_events = {
 	"all": ["nxerp.federation.outbox.process"],
-	"cron": {"* * * * *": ["nxerp.shared.relay.assign_sequence"]},
+	"cron": {
+		"* * * * *": ["nxerp.shared.relay.assign_sequence"],
+		# Phase 7: remove command-API idempotency rows older than 24 hours
+		"30 3 * * *": ["nxerp.shared.command.prune_log"],
+	},
 	"daily": ["nxerp.shared.relay.prune", "nxerp.federation.reconcile.run"],
 }
