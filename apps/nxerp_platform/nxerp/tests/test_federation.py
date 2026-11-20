@@ -627,6 +627,9 @@ class TestSetupHelpers(IdentityCase):
 			("Deny", 1, "https://id.example.test", "abc123client"),
 		)
 		self.assertEqual(key.redirect_url, setup_module.REDIRECT_PATH)
+		self.assertEqual(
+			key.custom_base_url, 1, "without it the sign-in link stays relative and points at the app itself"
+		)
 		self.assertEqual(frappe.db.get_single_value("System Settings", "disable_user_pass_login"), before)
 
 	def test_no_secret_appears_in_a_result_a_log_or_the_output(self):

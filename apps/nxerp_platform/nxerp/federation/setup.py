@@ -33,6 +33,9 @@ SOCIAL_FIELDS = {
 	"auth_url_data": '{"response_type": "code", "scope": "openid"}',
 	"enable_social_login": 1,
 	"sign_ups": "Deny",
+	# without this Frappe does NOT join `base_url` onto the three URLs above: the button's link would stay relative and point at the app
+	# itself (found in a real browser at the Phase 6 gate)
+	"custom_base_url": 1,
 }
 
 

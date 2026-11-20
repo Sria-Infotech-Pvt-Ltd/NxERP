@@ -82,8 +82,8 @@ NXERP_PASSTHROUGH="NXERP_IDENTITY_ORIGIN NXERP_SSO_CLIENT_ID NXERP_SSO_CLIENT_SE
 It creates the Social Login Key named `frappe`: provider Frappe, Base URL = the identity origin, Authorize URL `/api/method/frappe.integrations.oauth2.authorize`,
 Access Token URL `/api/method/frappe.integrations.oauth2.get_token`, Redirect URL `/api/method/frappe.integrations.oauth2_logins.login_via_frappe`,
 API Endpoint `/api/method/frappe.integrations.oauth2.openid_profile`, Auth URL Data `{"response_type": "code", "scope": "openid"}`, Enable Social Login on,
-**Sign ups = Deny**. Desk alternative: `https://hd.<domain>/app/social-login-key/new` with those values.
-**Check:** `https://hd.<domain>/login` shows a "Sign in with NXERP" button. **Undo:** untick Enable Social Login.
+**Sign ups = Deny**, **Custom Base URL ticked** (without it the button's link points at the app itself and sign-in loops). Desk alternative: `https://hd.<domain>/app/social-login-key/new` with those values.
+**Check:** `https://hd.<domain>/login` shows a "Sign in with NXERP" button AND its link starts with `https://id.<domain>/` (right-click, copy link address). **Undo:** untick Enable Social Login.
 
 ## Step 6.7 Test single sign-on with a fake user
 

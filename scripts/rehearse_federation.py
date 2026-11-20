@@ -10,6 +10,7 @@ Secrets for the helpers travel in this process's environment and are forwarded i
 
 import json
 import os
+import re
 import secrets
 import subprocess
 import sys
@@ -286,6 +287,12 @@ def main() -> int:
 		status == 200 and "Sign in with NXERP" in page,
 		f"status {status}",
 	)
+	links = re.findall(r'href="([^"]*oauth2[.]authorize[^"]*)"', page.replace("&amp;", "&"))
+	check(
+		"6.6 the button's link goes to the IDENTITY site (an absolute URL on its origin), not to the app itself",
+		bool(links) and all(link.startswith(ORIGIN["id"] + "/") for link in links),
+		str([link[:60] for link in links[:1]]),
+	)
 
 	# 6.7 a grant on the identity site reaches the app site
 	flow.execute(
@@ -357,9 +364,7 @@ def main() -> int:
 		"erp", "frappe.utils.oauth.get_oauth2_authorize_url", provider="frappe", redirect_to="/desk/home"
 	)
 	status, _, _body = (
-		id_site.call("GET", flow.split_location(ORIGIN["id"] + str(url))[1])
-		if isinstance(url, str)
-		else (0, None, "")
+		id_site.call("GET", flow.split_location(str(url))[1]) if isinstance(url, str) else (0, None, "")
 	)
 	check(
 		"6.4 (check 6.4) no ERP grant: the identity site refuses the sign-in to erp",
