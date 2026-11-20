@@ -10,6 +10,7 @@ from frappe import _
 
 from helpdesk.integrations.shared import command_client, read_client
 from helpdesk.integrations.shared.settings import is_on
+from helpdesk.utils import is_agent
 
 CUSTOMER_FIELDS = (
     "display_name",
@@ -39,6 +40,13 @@ def _require(hd_customer: str, ptype: str) -> str:
         )
     if not hd_customer or not frappe.db.exists("HD Customer", hd_customer):
         frappe.throw(_("No such customer"), frappe.DoesNotExistError)
+    # the change goes to NXERP, not to Helpdesk's own record: the person must be a Helpdesk agent who can see this customer
+    # (NXERP then applies its own permissions to the same person)
+    if not is_agent():
+        frappe.throw(
+            _("Only Helpdesk agents can change customer details"),
+            frappe.PermissionError,
+        )
     frappe.has_permission("HD Customer", ptype, hd_customer, throw=True)
     reference = _reference(hd_customer)
     if not reference:
@@ -81,9 +89,11 @@ def get_customer_card(hd_customer: str) -> dict:
             row["display_name"],
             update_modified=False,
         )
+    contact = _contact_of(row, result)
     return {
         "enabled": True,
         "linked": True,
+        "contact": contact,
         "name": name,
         "fields": {k: v for k, v in (row or {}).items() if k not in SYSTEM_FIELDS},
         "version": (row or {}).get("source_modified"),
@@ -91,8 +101,27 @@ def get_customer_card(hd_customer: str) -> dict:
         "stale": result["stale"],
         "error": result["error"],
         "banner": bool(
-            result["stale"] or result["error"]
+            result["stale"]
+            or result["error"]
+            or (contact or {}).get("error")
+            or (contact or {}).get("stale")
         ),  # "customer details may be out of date"
+    }
+
+
+def _contact_of(customer_row: dict | None, customer_result: dict) -> dict | None:
+    """The customer's primary contact (name, email, phone) from the Read API, with its own freshness. Never raises."""
+    contact_id = (customer_row or {}).get("primary_contact_id")
+    if not contact_id:
+        return None
+    result = read_client.get_contact(contact_id)
+    row = result["data"] or {}
+    return {
+        "id": contact_id,
+        "fields": {k: row.get(k) for k in CONTACT_FIELDS if row},
+        "version": row.get("source_modified"),
+        "stale": result["stale"],
+        "error": result["error"],
     }
 
 
@@ -128,7 +157,7 @@ def update_customer(
     expected_version: str | None = None,
 ) -> dict:
     """Ask NXERP to change the customer's group or territory. Send the SAME `idempotency_key` when you retry a request."""
-    reference = _require(hd_customer, "write")
+    reference = _require(hd_customer, "read")
     values = _clean(fields, ("customer_group", "territory"))
     key = idempotency_key or command_client.new_key()
     try:
@@ -159,7 +188,7 @@ def update_contact(
     expected_version: str | None = None,
 ) -> dict:
     """Ask NXERP to change the customer's primary contact (name, email, phone)."""
-    reference = _require(hd_customer, "write")
+    reference = _require(hd_customer, "read")
     values = _clean(fields, CONTACT_FIELDS)
     card = read_client.get_customer(reference)
     contact_id = ((card["data"] or {}).get("primary_contact_id")) or None

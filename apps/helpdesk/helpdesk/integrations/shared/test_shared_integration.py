@@ -66,10 +66,16 @@ class SharedCase(FrappeTestCase):
         patcher = patch.dict("os.environ", ENV)
         patcher.start()
         self.addCleanup(patcher.stop)
-        conf = patch.dict(frappe.conf, {"nxerp_shared_read": 1})
+        # a site that really is configured (staging) must not leak its own settings into these tests: blank them, the environment patch supplies the values
+        conf = patch.dict(
+            frappe.conf,
+            {"nxerp_shared_read": 1, **dict.fromkeys([*ENV, "NXDESK_NXERP_SITE"], "")},
+        )
         conf.start()
         self.addCleanup(conf.stop)
         self.customer_id = f"CUST-{frappe.generate_hash(length=8)}"
+        frappe.cache.delete_value("nxdesk_shared:health")
+        frappe.cache.delete_value("nxdesk_shared:contact:CONTACT-0001")
         frappe.cache.delete_value(f"nxdesk_shared:customer:{self.customer_id}")
         self.addCleanup(
             frappe.cache.delete_value, f"nxdesk_shared:customer:{self.customer_id}"
@@ -96,23 +102,52 @@ class SharedCase(FrappeTestCase):
         return doc
 
 
+def metrics(lag: float = 0.0, seconds_since_success: float = 1.0) -> dict:
+    import time
+
+    return {
+        "projector": {
+            "erpnext.lag_seconds": lag,
+            "erpnext.last_success": time.time() - seconds_since_success,
+        }
+    }
+
+
+def route(customer=None, health=None):
+    """A stand-in for requests.get that answers by path: the customer row and the Read API's /v1/metrics."""
+
+    def fake_get(url, **kwargs):
+        if url.endswith("/v1/metrics"):
+            value = health if health is not None else response(200, metrics())
+        else:
+            value = customer if customer is not None else response(200, {"data": row()})
+        if isinstance(value, Exception):
+            raise value
+        return value
+
+    return fake_get
+
+
+def customer_calls(get):
+    return [c for c in get.call_args_list if "/v1/customer/" in c.args[0]]
+
+
 class TestReadClient(SharedCase):
     def test_a_read_calls_the_read_api_with_the_token_and_returns_the_row_with_its_age(
         self,
     ):
-        with patch.object(
-            read_client.requests, "get", return_value=response(200, {"data": row()})
-        ) as get:
+        with patch.object(read_client.requests, "get", side_effect=route()) as get:
             result = read_client.get_customer(self.customer_id)
-        url = get.call_args.args[0]
+        call = customer_calls(get)[0]
         self.assertEqual(
-            url, f"http://shared-api.example.test:8080/v1/customer/{self.customer_id}"
+            call.args[0],
+            f"http://shared-api.example.test:8080/v1/customer/{self.customer_id}",
         )
         self.assertEqual(
-            get.call_args.kwargs["headers"]["Authorization"],
+            call.kwargs["headers"]["Authorization"],
             f"Bearer {ENV['NXDESK_SHARED_API_TOKEN']}",
         )
-        self.assertEqual(get.call_args.kwargs["timeout"], (2, 3))
+        self.assertEqual(call.kwargs["timeout"], (2, 3))
         self.assertEqual(
             (result["data"]["display_name"], result["error"], result["stale"]),
             ("Example Co", None, False),
@@ -120,37 +155,55 @@ class TestReadClient(SharedCase):
         self.assertIsNotNone(result["synced_at"])
 
     def test_a_second_read_inside_60_seconds_is_served_from_the_cache(self):
-        with patch.object(
-            read_client.requests, "get", return_value=response(200, {"data": row()})
-        ) as get:
+        with patch.object(read_client.requests, "get", side_effect=route()) as get:
             read_client.get_customer(self.customer_id)
             again = read_client.get_customer(self.customer_id)
-        self.assertEqual(get.call_count, 1)
+        self.assertEqual(len(customer_calls(get)), 1)
         self.assertTrue(again["from_cache"])
 
     def test_min_version_bypasses_the_cache_and_is_sent(self):
-        with patch.object(
-            read_client.requests, "get", return_value=response(200, {"data": row()})
-        ) as get:
+        with patch.object(read_client.requests, "get", side_effect=route()) as get:
             read_client.get_customer(self.customer_id)
             read_client.get_customer(
                 self.customer_id, min_version="2026-11-20 10:00:00.000000"
             )
-        self.assertEqual(get.call_count, 2)
+        calls = customer_calls(get)
+        self.assertEqual(len(calls), 2)
         self.assertEqual(
-            get.call_args.kwargs["params"],
-            {"min_version": "2026-11-20 10:00:00.000000"},
+            calls[-1].kwargs["params"], {"min_version": "2026-11-20 10:00:00.000000"}
         )
 
-    def test_a_row_the_shared_layer_wrote_over_5_minutes_ago_is_flagged_stale(self):
+    def test_an_old_row_is_not_stale_when_the_shared_layer_is_healthy(self):
+        """A customer nobody touched for a month is not 'out of date': staleness is about the layer, not the row."""
+        old = response(200, {"data": row(seconds_ago=30 * 24 * 3600)})
+        with patch.object(read_client.requests, "get", side_effect=route(customer=old)):
+            result = read_client.get_customer(self.customer_id)
+        self.assertFalse(result["stale"])
+        self.assertGreater(result["row_age_seconds"], 3600)
+
+    def test_the_answer_is_stale_when_the_projector_lags_or_has_gone_quiet(self):
+        for health in (
+            response(200, metrics(lag=600)),
+            response(200, metrics(seconds_since_success=900)),
+        ):
+            frappe.cache.delete_value("nxdesk_shared:health")
+            frappe.cache.delete_value(f"nxdesk_shared:customer:{self.customer_id}")
+            with patch.object(
+                read_client.requests, "get", side_effect=route(health=health)
+            ):
+                result = read_client.get_customer(self.customer_id)
+            self.assertTrue(result["stale"])
+            self.assertIsNone(result["error"])
+
+    def test_unknown_health_does_not_flag_a_good_answer(self):
+        frappe.cache.delete_value("nxdesk_shared:health")
         with patch.object(
             read_client.requests,
             "get",
-            return_value=response(200, {"data": row(seconds_ago=400)}),
+            side_effect=route(health=requests.exceptions.Timeout()),
         ):
             result = read_client.get_customer(self.customer_id)
-        self.assertTrue(result["stale"])
-        self.assertIsNone(result["error"])
+        self.assertEqual((result["error"], result["stale"]), (None, False))
 
     def test_a_timeout_is_retried_once_then_reported_without_raising(self):
         with patch.object(
@@ -165,12 +218,18 @@ class TestReadClient(SharedCase):
             response(429, headers={"Retry-After": "1"}),
             response(200, {"data": row()}),
         ]
+
+        def fake_get(url, **kwargs):
+            if url.endswith("/v1/metrics"):
+                return response(200, metrics())
+            return answers.pop(0)
+
         with (
-            patch.object(read_client.requests, "get", side_effect=answers) as get,
+            patch.object(read_client.requests, "get", side_effect=fake_get) as get,
             patch.object(read_client.time, "sleep") as sleep,
         ):
             result = read_client.get_customer(self.customer_id)
-        self.assertEqual(get.call_count, 2)
+        self.assertEqual(len(customer_calls(get)), 2)
         sleep.assert_called_once()
         self.assertEqual(result["data"]["display_name"], "Example Co")
 
@@ -178,7 +237,7 @@ class TestReadClient(SharedCase):
         with patch.object(
             read_client.requests,
             "get",
-            return_value=response(200, {"data": row("Last Known Co")}),
+            side_effect=route(customer=response(200, {"data": row("Last Known Co")})),
         ):
             read_client.get_customer(self.customer_id)
         cached = frappe.cache.get_value(f"nxdesk_shared:customer:{self.customer_id}")
@@ -394,6 +453,26 @@ class TestCommandClient(SharedCase):
     def test_each_user_action_gets_its_own_key(self):
         self.assertEqual(len({command_client.new_key() for _ in range(50)}), 50)
 
+    def test_the_site_name_header_is_sent_only_when_it_is_configured(self):
+        for site, expected in (("erp.example.test", "erp.example.test"), ("", None)):
+            with (
+                patch.dict("os.environ", {"NXDESK_NXERP_SITE": site}),
+                patch.object(
+                    command_client.requests, "post", return_value=response(200, OK_BODY)
+                ) as post,
+            ):
+                command_client.apply(
+                    "customer",
+                    "CUST-1",
+                    "request_change",
+                    {"territory": "North"},
+                    idempotency_key="hd-key-0007-abcdef",
+                    acting_user="a@example.test",
+                )
+            self.assertEqual(
+                post.call_args.kwargs["headers"].get("X-Frappe-Site-Name"), expected
+            )
+
 
 class TestCustomerCardAndActions(SharedCase):
     def test_t20_with_the_setting_on_the_card_shows_the_fields_from_the_read_api(self):
@@ -414,6 +493,48 @@ class TestCustomerCardAndActions(SharedCase):
             frappe.db.get_value("HD Customer", hd.name, "customer_name_cache"),
             "Example Co",
         )
+
+    def test_the_card_includes_the_primary_contact_from_the_read_api(self):
+        hd = self.hd_customer()
+        contact_row = {
+            "entity_id": "CONTACT-0001",
+            "source_modified": "2026-11-20 10:00:00.000000",
+            "synced_at": now_stamp(1),
+            "full_name": "Ada Fixture",
+            "email": "ada@example.test",
+            "phone": "+10000000001",
+        }
+
+        def fake_get(url, **kwargs):
+            if url.endswith("/v1/metrics"):
+                return response(200, metrics())
+            if "/v1/contact/" in url:
+                return response(200, {"data": contact_row})
+            return response(200, {"data": row("Example Co")})
+
+        with patch.object(read_client.requests, "get", side_effect=fake_get):
+            card = api.get_customer_card(hd.name)
+        self.assertEqual(card["contact"]["id"], "CONTACT-0001")
+        self.assertEqual(card["contact"]["fields"]["phone"], "+10000000001")
+        self.assertFalse(card["banner"])
+
+    def test_a_contact_that_cannot_be_read_raises_the_banner_but_keeps_the_customer(
+        self,
+    ):
+        hd = self.hd_customer()
+
+        def fake_get(url, **kwargs):
+            if url.endswith("/v1/metrics"):
+                return response(200, metrics())
+            if "/v1/contact/" in url:
+                raise requests.exceptions.ConnectionError()
+            return response(200, {"data": row("Example Co")})
+
+        with patch.object(read_client.requests, "get", side_effect=fake_get):
+            card = api.get_customer_card(hd.name)
+        self.assertEqual(card["name"], "Example Co")
+        self.assertTrue(card["banner"])
+        self.assertEqual(card["contact"]["error"], "unavailable")
 
     def test_t21_a_read_api_timeout_shows_the_cached_name_and_the_banner_and_never_raises(
         self,

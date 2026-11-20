@@ -6,8 +6,10 @@ from the environment first, then site config, like every external integration he
   * timeouts: 2 s to connect, 3 s to read; one retry on HTTP 429 or a timeout;
   * a 60 second cache in Helpdesk's own Redis keyed by entity and id; the last good answer is kept 24 hours so that a Read API outage
     still shows the last known details;
-  * the answer always says how old it is: `synced_at` from the shared layer, and `stale` when that is older than 5 minutes or when the
-    answer is the cached copy served because the Read API could not be reached;
+  * the answer always says how fresh it is: `synced_at` (when the shared layer last wrote the row, which only moves when the row changes),
+    `row_age_seconds`, and `stale`. DECISION: `stale` means the SHARED LAYER is behind, not that the row is old: the projector's lag is over
+    5 minutes or the projector has reported no success for 5 minutes (read from /v1/metrics, cached 60 s), or the answer is the cached copy
+    served because the Read API could not be reached. A customer nobody has touched for a month is not stale;
   * it never raises into a page: a failure is `{"data": None, "error": "<kind>"}` (or the cached copy with the error kind).
 
 The shared layer is eventually consistent: after a command pass `min_version` (the `source_modified` the command returned) to wait for it.
@@ -114,20 +116,74 @@ def _age_seconds(synced_at) -> float | None:
     return (datetime.now(UTC) - written).total_seconds()
 
 
+def _fetch_json(path: str) -> dict:
+    """GET a Read API path whose answer is the whole JSON object (like /v1/metrics). Raises ReadFailed."""
+    base = get_setting(URL_NAME).rstrip("/")
+    token = get_setting(TOKEN_NAME)
+    if not base or not token:
+        raise ReadFailed("not_configured")
+    try:
+        response = requests.get(
+            f"{base}{path}",
+            headers={"Authorization": f"Bearer {token}", "Accept": "application/json"},
+            timeout=(CONNECT_TIMEOUT, READ_TIMEOUT),
+            allow_redirects=False,
+        )
+        if response.status_code != 200:
+            raise ReadFailed("unavailable")
+        body = response.json()
+    except requests.exceptions.RequestException:
+        raise ReadFailed("unavailable") from None
+    except ValueError:
+        raise ReadFailed("bad_answer") from None
+    if not isinstance(body, dict):
+        raise ReadFailed("bad_answer")
+    return body
+
+
+def layer_is_behind() -> bool | None:
+    """True when the shared layer is behind (projector lag over 5 minutes, or no projector success for 5 minutes); None when unknown.
+
+    Read from /v1/metrics and cached for CACHE_SECONDS, so a page does not call it twice."""
+    key = "nxdesk_shared:health"
+    cached = frappe.cache.get_value(key)
+    if cached and time.time() - cached["fetched_at"] < CACHE_SECONDS:
+        return cached["behind"]
+    try:
+        gauges = _fetch_json("/v1/metrics").get("projector") or {}
+    except ReadFailed:
+        return None
+    lags = [v for k, v in gauges.items() if k.endswith(".lag_seconds")]
+    successes = [v for k, v in gauges.items() if k.endswith(".last_success")]
+    if not lags and not successes:
+        behind = None
+    else:
+        behind = bool(
+            (lags and max(lags) > STALE_AFTER_SECONDS)
+            or (successes and time.time() - max(successes) > STALE_AFTER_SECONDS)
+        )
+    frappe.cache.set_value(
+        key, {"behind": behind, "fetched_at": time.time()}, expires_in_sec=KEEP_SECONDS
+    )
+    return behind
+
+
 def _result(
     row: dict | None,
     *,
     stale: bool = False,
     error: str | None = None,
     from_cache: bool = False,
+    check_health: bool = False,
 ) -> dict:
     synced_at = row.get("synced_at") if row else None
-    if row and not stale:
-        age = _age_seconds(synced_at)
-        stale = age is not None and age > STALE_AFTER_SECONDS
+    age = _age_seconds(synced_at) if row else None
+    if row and not stale and check_health:
+        stale = bool(layer_is_behind())
     return {
         "data": row,
         "synced_at": synced_at,
+        "row_age_seconds": age,
         "stale": bool(stale),
         "error": error,
         "from_cache": from_cache,
@@ -145,7 +201,7 @@ def get_entity(entity: str, entity_id: str, min_version: str | None = None) -> d
         and not min_version
         and time.time() - cached["fetched_at"] < CACHE_SECONDS
     ):
-        return _result(cached["data"], from_cache=True)
+        return _result(cached["data"], from_cache=True, check_health=True)
     try:
         row = _fetch(f"/v1/{entity}/{entity_id}", {"min_version": min_version})
     except ReadFailed as failure:
@@ -157,7 +213,7 @@ def get_entity(entity: str, entity_id: str, min_version: str | None = None) -> d
     frappe.cache.set_value(
         key, {"data": row, "fetched_at": time.time()}, expires_in_sec=KEEP_SECONDS
     )
-    return _result(row)
+    return _result(row, check_health=True)
 
 
 def get_customer(customer_id: str, min_version: str | None = None) -> dict:

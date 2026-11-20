@@ -22,6 +22,7 @@ from helpdesk.integrations.external.client import get_setting
 URL_NAME = "NXDESK_NXERP_URL"
 KEY_NAME = "NXDESK_COMMAND_API_KEY"
 SECRET_NAME = "NXDESK_COMMAND_API_SECRET"
+SITE_NAME = "NXDESK_NXERP_SITE"  # optional: sent as X-Frappe-Site-Name when NXERP is called directly on its backend
 CONNECT_TIMEOUT = 3
 READ_TIMEOUT = 15
 METHOD_PATH = "/api/method/nxerp.shared.command.apply"
@@ -74,6 +75,8 @@ def apply(
         "Idempotency-Key": idempotency_key,
         "Accept": "application/json",
     }
+    if site := get_setting(SITE_NAME):
+        headers["X-Frappe-Site-Name"] = site
 
     response = None
     for attempt in (1, 2):
