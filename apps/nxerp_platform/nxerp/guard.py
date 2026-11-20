@@ -52,6 +52,13 @@ def _named_admins(exclude: str | None = None) -> list:
 	return result
 
 
+def _provisioning_allows(changed: set) -> bool:
+	"""True only inside `nxerp.federation.api` (a verified NXERP Provisioner), and only for the access roles of the apps installed on THIS
+	site. The flag is set by server code, never by a request parameter."""
+	owned = {entry.access_role for entry in registry.installed_entries()}
+	return bool(frappe.flags.get("nxerp_provisioning")) and changed <= owned
+
+
 def _skip() -> bool:
 	return bool(frappe.flags.in_install or frappe.flags.in_patch or frappe.flags.in_migrate)
 
@@ -66,7 +73,7 @@ def validate_user(doc, method=None):
 	# rule 1: grant changes need a platform administrator
 	grants = _access_roles()
 	changed = (_roles_of(doc) ^ _before_roles(doc)) & grants
-	if changed and not access.is_platform_admin(frappe.session.user):
+	if changed and not access.is_platform_admin(frappe.session.user) and not _provisioning_allows(changed):
 		frappe.throw(_("Only a System Manager can change application access"), frappe.PermissionError)
 
 	# rule 2: the last named administrator keeps the role and stays enabled

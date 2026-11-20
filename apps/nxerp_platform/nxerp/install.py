@@ -8,7 +8,13 @@ from nxerp import registry
 def ensure_access_roles():
 	"""One role per installed registry app. desk_access is off: holding an access role must not turn a
 	website user into a system user, and must not change anyone's user type."""
-	for entry in registry.installed_entries():
+	# an identity site holds the access role of EVERY app it can grant (the apps are not installed there); an app site only its own
+	entries = (
+		[e for e in registry.get_registry() if not e.test_only]
+		if registry.site_role() == "identity"
+		else registry.installed_entries()
+	)
+	for entry in entries:
 		if frappe.db.exists("Role", entry.access_role):
 			continue
 		frappe.get_doc(

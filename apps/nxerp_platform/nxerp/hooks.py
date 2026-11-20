@@ -103,5 +103,13 @@ doc_events = {
 	"User": {
 		"validate": "nxerp.guard.validate_user",
 		"on_trash": "nxerp.guard.on_trash_user",
+		# Phase 6: queue a provisioning row when a grant changes (no-op unless nxerp_site_role is "identity")
+		"on_update": "nxerp.federation.outbox.on_user_change",
 	}
+}
+
+# Phase 6: deliver queued grants to the app sites and repair drift (both no-ops unless nxerp_site_role is "identity")
+scheduler_events = {
+	"all": ["nxerp.federation.outbox.process"],
+	"daily": ["nxerp.federation.reconcile.run"],
 }

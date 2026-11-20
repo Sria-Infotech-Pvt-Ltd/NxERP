@@ -66,6 +66,25 @@ class TestScaffold(IntegrationTestCase):
 				),
 			],
 		)
+		# Phase 6: login federation. Both hooks are no-ops unless the site config key nxerp_site_role is "identity" (nxerp/federation).
+		# on_update queues a provisioning row when a grant changes; the scheduler delivers rows and repairs drift. Nothing else.
+		self.assertEqual(
+			hooks.get("doc_events"),
+			{
+				"User": {
+					"validate": ["nxerp.guard.validate_user"],
+					"on_trash": ["nxerp.guard.on_trash_user"],
+					"on_update": ["nxerp.federation.outbox.on_user_change"],
+				}
+			},
+		)
+		self.assertEqual(
+			hooks.get("scheduler_events"),
+			{
+				"all": ["nxerp.federation.outbox.process"],
+				"daily": ["nxerp.federation.reconcile.run"],
+			},
+		)
 		# nothing else reaches into requests or sessions
 		for hook in ("before_request", "on_login", "on_logout"):
 			self.assertFalse(hooks.get(hook), f"{hook} is not expected")
