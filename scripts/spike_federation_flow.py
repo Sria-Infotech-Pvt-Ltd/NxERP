@@ -22,7 +22,12 @@ EDGE = ("127.0.0.1", 8180)
 DOMAIN = "example.test"
 PORT_IN_URL = 8080  # the edge listens on 8080 inside the containers; host names carry it so server-to-server calls reach the edge
 ID_HOST, HD_HOST = f"id.{DOMAIN}", f"hd.{DOMAIN}"
-USER, USER2, USER3, USER4 = "user@example.test", "unknown@example.test", "disabled@example.test", "norole@example.test"
+USER, USER2, USER3, USER4 = (
+	"user@example.test",
+	"unknown@example.test",
+	"disabled@example.test",
+	"norole@example.test",
+)
 GATE_ROLE = "NXERP Access: Helpdesk"
 OUT = []
 
@@ -37,8 +42,18 @@ SITES = {"id": f"id.{DOMAIN}", "hd": f"hd.{DOMAIN}"}
 
 def bench(stack: str, *args: str) -> str:
 	"""bench for the stack's site through `docker exec` with an argument list (no shell, so JSON arguments stay intact)."""
-	proc = subprocess.run(  # noqa: S603
-		["docker", "exec", "-w", "/home/frappe/frappe-bench", f"nxerp-{stack}-backend-1", "bench", "--site", SITES[stack], *args],  # noqa: S607
+	proc = subprocess.run(
+		[
+			"docker",
+			"exec",
+			"-w",
+			"/home/frappe/frappe-bench",
+			f"nxerp-{stack}-backend-1",
+			"bench",
+			"--site",
+			SITES[stack],
+			*args,
+		],
 		capture_output=True,
 		text=True,
 		check=False,
@@ -52,12 +67,14 @@ def bench(stack: str, *args: str) -> str:
 
 
 def execute(stack: str, method: str, **kwargs) -> object:
-	out = bench(stack, "execute", method, "--kwargs", repr(kwargs))  # bench evaluates kwargs as Python, not JSON
+	out = bench(
+		stack, "execute", method, "--kwargs", repr(kwargs)
+	)  # bench evaluates kwargs as Python, not JSON
 	text = out.strip()
 	if not text:
 		return None
 	for candidate in (text, text.splitlines()[-1].strip()):
-		if candidate[:1] in "[{\"" or candidate in ("null", "true", "false"):
+		if candidate[:1] in '[{"' or candidate in ("null", "true", "false"):
 			try:
 				return json.loads(candidate)
 			except ValueError:
@@ -113,19 +130,29 @@ def flow(id_site: Site, hd_site: Site, label: str, want_claims: bool = False):
 	"""Start at the app site's login page, go through the identity site, come back. Returns (status, location or title, hd_site)."""
 	hd_site.cookies.clear()
 	status, _, html = hd_site.call("GET", "/login")
-	say(f"[{label}] hd /login status={status}, page links to the identity site's authorize endpoint={'oauth2.authorize' in html.replace('&amp;', '&')}")
+	say(
+		f"[{label}] hd /login status={status}, page links to the identity site's authorize endpoint={'oauth2.authorize' in html.replace('&amp;', '&')}"
+	)
 	# the stock Frappe login page builds this link; the NXERP login page does not (yet), so ask the same function the page would call
-	url = execute("hd", "frappe.utils.oauth.get_oauth2_authorize_url", provider="frappe", redirect_to="/helpdesk")
+	url = execute(
+		"hd", "frappe.utils.oauth.get_oauth2_authorize_url", provider="frappe", redirect_to="/helpdesk"
+	)
 	links = [url] if isinstance(url, str) else []
-	say(f"[{label}] authorize url built by frappe.utils.oauth.get_oauth2_authorize_url: {'yes' if links else 'NO'}")
+	say(
+		f"[{label}] authorize url built by frappe.utils.oauth.get_oauth2_authorize_url: {'yes' if links else 'NO'}"
+	)
 	if links:
-		say(f"[{label}] authorize url query keys={sorted(urllib.parse.parse_qs(urllib.parse.urlparse(links[0]).query))}")
+		say(
+			f"[{label}] authorize url query keys={sorted(urllib.parse.parse_qs(urllib.parse.urlparse(links[0]).query))}"
+		)
 	host, path = split_location(links[0])
 	status, headers, page = id_site.call("GET", path)
 	location = headers.get("Location", "")
 	if status not in (302, 303):
 		say(f"[{label}] authorize body = {' '.join(re.sub('<[^>]+>', ' ', page).split())[:300]}")
-	say(f"[{label}] id authorize status={status}, redirects to host={split_location(location)[0] if location else None}")
+	say(
+		f"[{label}] id authorize status={status}, redirects to host={split_location(location)[0] if location else None}"
+	)
 	if status not in (302, 303) or not location:
 		return None
 	query = urllib.parse.parse_qs(urllib.parse.urlparse(location).query)
@@ -133,13 +160,17 @@ def flow(id_site: Site, hd_site: Site, label: str, want_claims: bool = False):
 	if want_claims:
 		claims_flow(id_site, location)
 		return "claims"
-	host, path = split_location(location)
+	_host, path = split_location(location)
 	status, headers, body = hd_site.call("GET", path)
 	title = re.search(r"<title>([^<]*)</title>", body)
-	say(f"[{label}] hd callback status={status}, title={title.group(1).strip() if title else None}, sid cookie attributes={sid_attributes(hd_site)}")
+	say(
+		f"[{label}] hd callback status={status}, title={title.group(1).strip() if title else None}, sid cookie attributes={sid_attributes(hd_site)}"
+	)
 	if status in (302, 303):
 		_, _, who = hd_site.call("GET", "/api/method/frappe.auth.get_logged_user")
-		say(f"[{label}] hd logged user after callback = {json.loads(who).get('message') if who.startswith('{') else who[:40]}")
+		say(
+			f"[{label}] hd logged user after callback = {json.loads(who).get('message') if who.startswith('{') else who[:40]}"
+		)
 	else:
 		text = re.sub(r"<[^>]+>", " ", body)
 		say(f"[{label}] hd page text = {' '.join(text.split())[:160]}")
@@ -167,7 +198,9 @@ def claims_flow(id_site: Site, location: str) -> None:
 	say(f"[claims] token endpoint status={status}, response keys={sorted(data)}")
 	if "access_token" in data:
 		status, _, body = anon.call(
-			"GET", "/api/method/frappe.integrations.oauth2.openid_profile", headers={"Authorization": f"Bearer {data['access_token']}"}
+			"GET",
+			"/api/method/frappe.integrations.oauth2.openid_profile",
+			headers={"Authorization": f"Bearer {data['access_token']}"},
 		)
 		profile = json.loads(body) if body.startswith("{") else {}
 		say(f"[claims] openid_profile status={status}, claim names={sorted(profile)}")
@@ -189,11 +222,22 @@ def main() -> int:
 	for stack in ("id", "hd"):
 		for email in (USER, USER2, USER3, USER4):
 			if execute(stack, "frappe.db.exists", dt="User", dn=email):
-				execute(stack, "frappe.delete_doc", doctype="User", name=email, force=1, ignore_permissions=True)
+				execute(
+					stack, "frappe.delete_doc", doctype="User", name=email, force=1, ignore_permissions=True
+				)
 	for name in execute("id", "frappe.get_all", doctype="OAuth Client", pluck="name") or []:
-		execute("id", "frappe.delete_doc", doctype="OAuth Client", name=name, force=1, ignore_permissions=True)
+		execute(
+			"id", "frappe.delete_doc", doctype="OAuth Client", name=name, force=1, ignore_permissions=True
+		)
 	if execute("hd", "frappe.db.exists", dt="Social Login Key", dn="frappe"):
-		execute("hd", "frappe.delete_doc", doctype="Social Login Key", name="frappe", force=1, ignore_permissions=True)
+		execute(
+			"hd",
+			"frappe.delete_doc",
+			doctype="Social Login Key",
+			name="frappe",
+			force=1,
+			ignore_permissions=True,
+		)
 	for stack in ("id", "hd"):
 		execute(stack, "frappe.db.commit")
 	for stack, host in (("id", ID_HOST), ("hd", HD_HOST)):
@@ -203,14 +247,52 @@ def main() -> int:
 	# fake user with a password on the identity site
 	# the identity site must hold the app's access role (Phase 6C makes install create all of them there)
 	if not execute("id", "frappe.db.exists", dt="Role", dn=GATE_ROLE):
-		execute("id", "frappe.client.insert", doc={"doctype": "Role", "role_name": GATE_ROLE, "desk_access": 0, "is_custom": 1})
+		execute(
+			"id",
+			"frappe.client.insert",
+			doc={"doctype": "Role", "role_name": GATE_ROLE, "desk_access": 0, "is_custom": 1},
+		)
 	for email in (USER, USER2, USER3, USER4):
 		roles = [] if email == USER4 else [{"role": GATE_ROLE}]
-		execute("id", "frappe.client.insert", doc={"doctype": "User", "email": email, "first_name": "Spike", "send_welcome_email": 0, "user_type": "System User", "enabled": 1, "roles": roles})
+		execute(
+			"id",
+			"frappe.client.insert",
+			doc={
+				"doctype": "User",
+				"email": email,
+				"first_name": "Spike",
+				"send_welcome_email": 0,
+				"user_type": "System User",
+				"enabled": 1,
+				"roles": roles,
+			},
+		)
 		execute("id", "frappe.utils.password.update_password", user=email, pwd=password)
 	# the same person on the app site, with no password (as provisioning will create it)
-	execute("hd", "frappe.client.insert", doc={"doctype": "User", "email": USER, "first_name": "Spike", "send_welcome_email": 0, "user_type": "Website User", "enabled": 1})
-	execute("hd", "frappe.client.insert", doc={"doctype": "User", "email": USER3, "first_name": "Spike", "send_welcome_email": 0, "user_type": "Website User", "enabled": 0})
+	execute(
+		"hd",
+		"frappe.client.insert",
+		doc={
+			"doctype": "User",
+			"email": USER,
+			"first_name": "Spike",
+			"send_welcome_email": 0,
+			"user_type": "Website User",
+			"enabled": 1,
+		},
+	)
+	execute(
+		"hd",
+		"frappe.client.insert",
+		doc={
+			"doctype": "User",
+			"email": USER3,
+			"first_name": "Spike",
+			"send_welcome_email": 0,
+			"user_type": "Website User",
+			"enabled": 0,
+		},
+	)
 	# OAuth Client on id
 	client = execute(
 		"id",
@@ -234,8 +316,12 @@ def main() -> int:
 	# v16.53.0: client_secret is a plain Data field, generated as frappe.generate_hash(length=10) when empty (10 hex characters, stored in clear)
 	CLIENT["id"] = client["client_id"]
 	CLIENT["secret"] = client.get("client_secret") or ""
-	say(f"OAuth Client auto-generated secret length={len(CLIENT['secret'])} characters, stored as plain Data (not a Password field)")
-	say(f"OAuth Client fields set by the insert response: {sorted(k for k in client if k in ('client_id', 'client_secret', 'client_name', 'scopes', 'grant_type', 'response_type', 'skip_authorization', 'default_redirect_uri', 'redirect_uris'))}")
+	say(
+		f"OAuth Client auto-generated secret length={len(CLIENT['secret'])} characters, stored as plain Data (not a Password field)"
+	)
+	say(
+		f"OAuth Client fields set by the insert response: {sorted(k for k in client if k in ('client_id', 'client_secret', 'client_name', 'scopes', 'grant_type', 'response_type', 'skip_authorization', 'default_redirect_uri', 'redirect_uris'))}"
+	)
 	# Social Login Key on hd
 	key = {
 		"doctype": "Social Login Key",
@@ -253,7 +339,9 @@ def main() -> int:
 		"sign_ups": "Deny",
 	}
 	made = execute("hd", "frappe.client.insert", doc=key)
-	say(f"Social Login Key created: {'yes, name=' + str(made.get('name')) if isinstance(made, dict) else 'NO'}")
+	say(
+		f"Social Login Key created: {'yes, name=' + str(made.get('name')) if isinstance(made, dict) else 'NO'}"
+	)
 	id_site, hd_site = Site(ID_HOST), Site(HD_HOST)
 	status, _, body = id_site.call("POST", "/api/method/login", form={"usr": USER, "pwd": password})
 	say(f"id login with password: status={status}, sid attributes={sid_attributes(id_site)}")
@@ -264,12 +352,28 @@ def main() -> int:
 	id2.call("POST", "/api/method/login", form={"usr": USER2, "pwd": password})
 	flow(id2, hd_site, "S2")
 	say("== S3 user unknown on hd, Sign ups = Allow")
-	execute("hd", "frappe.client.set_value", doctype="Social Login Key", name="frappe", fieldname="sign_ups", value="Allow")
+	execute(
+		"hd",
+		"frappe.client.set_value",
+		doctype="Social Login Key",
+		name="frappe",
+		fieldname="sign_ups",
+		value="Allow",
+	)
 	flow(id2, hd_site, "S3")
 	roles = execute("hd", "frappe.get_roles", username=USER2)
 	say(f"S3 roles of the auto-created user = {roles}")
-	say(f"S3 user_type = {execute('hd', 'frappe.db.get_value', doctype='User', filters=USER2, fieldname='user_type')}")
-	execute("hd", "frappe.client.set_value", doctype="Social Login Key", name="frappe", fieldname="sign_ups", value="Deny")
+	say(
+		f"S3 user_type = {execute('hd', 'frappe.db.get_value', doctype='User', filters=USER2, fieldname='user_type')}"
+	)
+	execute(
+		"hd",
+		"frappe.client.set_value",
+		doctype="Social Login Key",
+		name="frappe",
+		fieldname="sign_ups",
+		value="Deny",
+	)
 	say("== S4 user disabled on hd")
 	id3 = Site(ID_HOST)
 	id3.call("POST", "/api/method/login", form={"usr": USER3, "pwd": password})
@@ -281,15 +385,31 @@ def main() -> int:
 	say("== claims: what the identity site returns for the user (names only)")
 	flow(id_site, hd_site, "claims", want_claims=True)
 	say("== S5 disable_user_pass_login on hd")
-	execute("hd", "frappe.db.set_single_value", doctype="System Settings", fieldname="disable_user_pass_login", value=1)
+	execute(
+		"hd",
+		"frappe.db.set_single_value",
+		doctype="System Settings",
+		fieldname="disable_user_pass_login",
+		value=1,
+	)
 	execute("hd", "frappe.clear_cache")
 	probe = Site(HD_HOST)
 	status, _, body = probe.call("GET", "/login")
-	say(f"[S5] hd /login status={status}, has password field={'id=\"login_password\"' in body or 'name=\"pwd\"' in body}, has social button={'oauth2.authorize' in body.replace('&amp;', '&')}")
+	say(
+		f"[S5] hd /login status={status}, has password field={'id="login_password"' in body or 'name="pwd"' in body}, has social button={'oauth2.authorize' in body.replace('&amp;', '&')}"
+	)
 	status, _, body = probe.call("POST", "/api/method/login", form={"usr": USER, "pwd": "wrong-on-purpose"})
-	say(f"[S5] hd POST /api/method/login status={status}, sid issued={'sid' in probe.cookies and probe.cookies.get('sid') != 'Guest'}, message={json.loads(body).get('message', body[:60]) if body.startswith('{') else body[:60]}")
+	say(
+		f"[S5] hd POST /api/method/login status={status}, sid issued={'sid' in probe.cookies and probe.cookies.get('sid') != 'Guest'}, message={json.loads(body).get('message', body[:60]) if body.startswith('{') else body[:60]}"
+	)
 	flow(id_site, hd_site, "S5-sso-still-works")
-	execute("hd", "frappe.db.set_single_value", doctype="System Settings", fieldname="disable_user_pass_login", value=0)
+	execute(
+		"hd",
+		"frappe.db.set_single_value",
+		doctype="System Settings",
+		fieldname="disable_user_pass_login",
+		value=0,
+	)
 	execute("hd", "frappe.clear_cache")
 	say("== done")
 	return 0
