@@ -21,6 +21,14 @@ Every production change needs the owner's matching approval, a verified backup a
 
 The source is described by `NXERP_CUTOVER_SOURCE_PROJECT`, `NXERP_CUTOVER_SOURCE_SITE` and, when it is not the default, `NXERP_CUTOVER_SOURCE_COMPOSE_FILE`.
 
+## Before anything: what the rehearsals taught (2026-11-21)
+
+- The `hd`, `id` and `erp` images must already contain the Phase 8 code (`nxerp.cutover`): deploy the release first, or the tools are not found.
+- `clone-hd` stops the `hd` worker and scheduler while it works and purges the clone's queued jobs: uninstalling ERPNext queues hundreds of jobs, and a running worker made `migrate` fail. On the scratch bench the clone took 103 to 155 seconds; plan the window from a rehearsal on real volumes.
+- `delta-export --since` takes T0 exactly as `freeze` prints it (UTC, `...Z`) and converts it to the site's timezone.
+- Files move between containers through stdin and tar, never `docker cp` (root-owned leftovers).
+- While the old backend is attached to the sync network it holds the alias `erp-backend`: stop any other stack that holds it first.
+
 ## Step 8.1 Build the rehearsal environment (scratch machine)
 
 Repeat the Phase 5 stack steps with domain `localhost` and fresh secrets, then:

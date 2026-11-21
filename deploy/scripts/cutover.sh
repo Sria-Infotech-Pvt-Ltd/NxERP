@@ -144,27 +144,25 @@ erp_counts() { # TARGET: "<doctype> <count>" lines for a few finance tables
 	done
 }
 
-# copy the encryption key of a backup's site config into a stack's site, inside the container (the value is never printed)
+# copy the encryption key of a backup's site config into a stack's site, inside the container (the value is never printed). The backup's
+# config goes in through stdin: no temporary file is left in the container.
 copy_encryption_key() { # BACKUP_DIR STACK
-	local cfg cid site tmp="/tmp/nxerp-cutover-cfg.json"
+	local cfg cid site code
 	cfg="$(find "$1" -maxdepth 1 -name '*site_config_backup.json' | head -n 1)"
 	[ -n "$cfg" ] || { log "no site config copy in $1 (an encrypted backup must be unpacked first): the encryption key was NOT copied"; return 1; }
 	cid="$(stack_cid "$2")"
 	site="$(stack_site "$2")"
-	docker cp "$(cygpath -w "$cfg" 2>/dev/null || printf '%s' "$cfg")" "$cid:$tmp"
-	docker exec "$cid" bash -lc "cd $BENCH_DIR && env/bin/python - '$tmp' sites/$site/site_config.json <<'PY'
-import json, sys
-src = json.load(open(sys.argv[1]))
-path = sys.argv[2]
+	code='import json, sys
+src = json.load(sys.stdin)
+path = sys.argv[1]
 conf = json.load(open(path))
-if src.get('encryption_key') and conf.get('encryption_key') != src['encryption_key']:
-    conf['encryption_key'] = src['encryption_key']
-    json.dump(conf, open(path, 'w'), indent=1)
-    print('encryption key copied into the site config')
+if src.get("encryption_key") and conf.get("encryption_key") != src["encryption_key"]:
+    conf["encryption_key"] = src["encryption_key"]
+    json.dump(conf, open(path, "w"), indent=1)
+    print("encryption key copied into the site config")
 else:
-    print('encryption key already equal or absent in the backup')
-PY
-rm -f $tmp"
+    print("encryption key already equal or absent in the backup")'
+	docker exec -i -w "$BENCH_DIR" "$cid" env/bin/python -c "$code" "sites/$site/site_config.json" <"$cfg"
 }
 
 post_rebuild_hint() {
@@ -194,11 +192,13 @@ done
 
 # ---------------------------------------------------------------------------------------------------------------------------------
 cmd_preflight() {
-	local cid ok=1 running
+	local cid ok=1 running code
 	cid="$(stack_cid hd)"
 	if [ -n "$cid" ]; then
-		if docker exec "$cid" curl -s --max-time 10 -H "X-Frappe-Site-Name: ${SRC_SITE:-unset}" http://erp-backend:8000/api/method/ping | grep -q pong; then
-			log "OK   the owner site answers as erp-backend on the sync network"
+		# 200 = up; 503 = up and in maintenance mode (the freeze does that): both prove the site name resolves and the network path works
+		code="$(docker exec "$cid" curl -s -o /dev/null -w '%{http_code}' --max-time 10 -H "X-Frappe-Site-Name: ${SRC_SITE:-unset}" http://erp-backend:8000/api/method/ping || true)"
+		if [ "$code" = 200 ] || [ "$code" = 503 ]; then
+			log "OK   the owner site answers as erp-backend on the sync network (HTTP $code)"
 		else
 			log "FAIL the owner site (erp-backend:8000) does not answer from the hd backend; attach the old backend: docker compose -p $SRC_PROJECT -f $SRC_COMPOSE -f deploy/docker/compose/isolated/legacy-erp.override.yaml up -d backend"
 			ok=0
@@ -324,9 +324,16 @@ cmd_clone_hd() {
 	confirm "OVERWRITE HD SITE"
 	local hd_site
 	hd_site="$(stack_site hd)"
-	stk hd restore --yes --no-safety-backup "$arg1"
+	# the clone's scheduler is disabled on purpose (an earlier run, or the next steps, switch it off): do not let the health check fail on that
+	NXERP_REQUIRE_SCHEDULER=0 stk hd restore --yes --no-safety-backup "$arg1"
 	copy_encryption_key "$arg1" hd || die "the encryption key could not be copied: encrypted values (mail account passwords) would not open. Stopped."
 	local app
+	# Nothing may write behind the tools while they work: the scheduler is off and the worker and scheduler containers are stopped.
+	# Uninstalling an app queues one job per deleted document (hundreds, and Frappe refuses new work above max_queued_jobs), and a worker
+	# running them while `migrate` runs makes the database refuse updates (error 1020). The clone has no use for those jobs: they are purged.
+	stk hd bench disable-scheduler
+	docker compose -p nxerp-hd stop queue-worker scheduler
+	stk hd bench set-config max_queued_jobs 1000000
 	for app in erpnext payments; do
 		if stk hd bench list-apps | awk '{print $1}' | grep -qx "$app"; then
 			stk hd bench uninstall-app "$app" --yes --no-backup || die "uninstall-app $app failed on $hd_site (see the output; nothing was pruned). Undo: NXERP_ALLOW_DESTROY=1 deploy/scripts/stack.sh hd drop-site, then create-site and run clone-hd again."
@@ -334,9 +341,11 @@ cmd_clone_hd() {
 	done
 	exec_fn hd nxerp.cutover.prune_helpdesk_site '{"dry_run":0}'
 	exec_fn hd nxerp.cutover.reserve_naming_series_offset "{\"gap\":${NXERP_CUTOVER_TICKET_GAP:-100000}}"
+	stk hd bench purge-jobs
+	stk hd bench set-config max_queued_jobs 500
 	stk hd bench migrate
-	# after_migrate queues the search index rebuild (helpdesk.hooks); the scheduler stays off, so nothing else starts by itself
-	stk hd bench disable-scheduler
+	# after_migrate queues the search index rebuild (helpdesk.hooks); the worker starts again now, the scheduler stays off by its site flag
+	docker compose -p nxerp-hd start queue-worker scheduler
 	local name
 	while IFS= read -r name; do
 		[ -n "$name" ] || continue
@@ -386,10 +395,11 @@ cmd_reconcile() {
 	hd_site="$(stack_site hd)"
 	exec_fn source nxerp.cutover.reconcile "{\"snapshot_path\":\"/tmp/nxerp-snap-source.json\"}" >/dev/null
 	exec_fn hd nxerp.cutover.reconcile "{\"snapshot_path\":\"/tmp/nxerp-snap-hd.json\"}" >/dev/null
-	docker cp "$src_cid_v:/tmp/nxerp-snap-source.json" "$(cygpath -w "$dir" 2>/dev/null || printf '%s' "$dir")/source.json"
-	docker cp "$(cygpath -w "$dir/source.json" 2>/dev/null || printf '%s' "$dir/source.json")" "$hd_cid:/tmp/nxerp-snap-source.json"
+	# files travel through stdin and stdout, never `docker cp`: that leaves root-owned files the tools' user cannot remove
+	docker exec "$src_cid_v" cat /tmp/nxerp-snap-source.json >"$dir/source.json"
+	docker exec -i "$hd_cid" sh -c 'cat >/tmp/nxerp-snap-source.json' <"$dir/source.json"
 	exec_fn hd nxerp.cutover.reconcile '{"snapshot_path":"/tmp/nxerp-snap-source.json","mode":"compare","other":"/tmp/nxerp-snap-hd.json","report":"/tmp/nxerp-reconcile-report.md"}' >/dev/null || true
-	docker cp "$hd_cid:/tmp/nxerp-reconcile-report.md" "$(cygpath -w "$dir" 2>/dev/null || printf '%s' "$dir")/report.md"
+	docker exec "$hd_cid" cat /tmp/nxerp-reconcile-report.md >"$dir/report.md"
 	docker exec "$hd_cid" rm -f /tmp/nxerp-snap-source.json /tmp/nxerp-snap-hd.json /tmp/nxerp-reconcile-report.md
 	docker exec "$src_cid_v" rm -f /tmp/nxerp-snap-source.json
 	# the ERP side of the source must be unchanged since the freeze
@@ -408,7 +418,7 @@ cmd_reconcile() {
 }
 
 cmd_delta_export() {
-	[ -n "$since" ] || die "usage: cutover.sh delta-export --since <T0 timestamp, e.g. 2026-11-20 10:00:00> [--yes]"
+	[ -n "$since" ] || die "usage: cutover.sh delta-export --since <T0 as printed by freeze, e.g. 2026-11-20T10:00:00Z (converted to the site's timezone)> [--yes]"
 	if [ "$yes" != 1 ]; then
 		plan "would export everything created or changed on the Helpdesk site since $since into a bundle under $STATE_DIR/bundles"
 		plan "re-run with --yes to apply"
@@ -422,7 +432,8 @@ cmd_delta_export() {
 	hd_cid="$(stack_cid hd)"
 	mkdir -p "$STATE_DIR/bundles" && chmod 700 "$STATE_DIR/bundles" 2>/dev/null || true
 	exec_fn hd nxerp.cutover.delta_export "{\"since\":\"$since\",\"path\":\"$remote\"}"
-	docker cp "$hd_cid:$remote" "$(cygpath -w "$dir" 2>/dev/null || printf '%s' "$dir")"
+	docker exec "$hd_cid" tar -C /tmp -cf - "nxerp-delta-$ts" | tar -C "$STATE_DIR/bundles" -xf -
+	mv "$STATE_DIR/bundles/nxerp-delta-$ts" "$dir"
 	docker exec "$hd_cid" rm -rf "$remote"
 	step_done delta_export
 	log "bundle: $dir"
@@ -443,8 +454,8 @@ cmd_delta_import() {
 	confirm "REPLAY INTO SOURCE"
 	local cid remote out
 	cid="$(src_cid)"
-	remote="/tmp/nxerp-delta-import-$$"
-	docker cp "$(cygpath -w "$arg1" 2>/dev/null || printf '%s' "$arg1")" "$cid:$remote"
+	remote="/tmp/$(basename "$arg1")"
+	tar -C "$(dirname "$arg1")" -cf - "$(basename "$arg1")" | docker exec -i "$cid" tar -C /tmp -xf -
 	out="$(exec_fn source nxerp.cutover.delta_import "{\"path\":\"$remote\"}")"
 	printf '%s\n' "$out"
 	docker exec "$cid" rm -rf "$remote"

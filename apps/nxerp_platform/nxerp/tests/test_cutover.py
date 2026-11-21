@@ -334,6 +334,16 @@ class TestNamingGap(CutoverCase):
 		self.assertEqual(again["counter"], 71000)
 
 
+class TestSiteTime(CutoverCase):
+	def test_utc_and_offset_stamps_become_site_time_and_plain_ones_stay(self):
+		with patch("frappe.utils.get_system_timezone", return_value="Asia/Kolkata"):
+			self.assertEqual(cutover.site_time("2026-11-21T11:01:05Z"), "2026-11-21 16:31:05")
+			self.assertEqual(cutover.site_time("2026-11-21 11:01:05+00:00"), "2026-11-21 16:31:05")
+			self.assertEqual(cutover.site_time("2026-11-21 16:31:05"), "2026-11-21 16:31:05")
+		with patch("frappe.utils.get_system_timezone", return_value="America/New_York"):
+			self.assertEqual(cutover.site_time("2026-11-21T11:01:05Z"), "2026-11-21 06:01:05")
+
+
 class TestDelta(CutoverCase):
 	def test_import_adds_skips_and_reports_conflicts_but_never_overwrites(self):
 		since = add_to_date(now_datetime(), minutes=-1).strftime("%Y-%m-%d %H:%M:%S")
@@ -360,6 +370,21 @@ class TestDelta(CutoverCase):
 		added, _ = _run(cutover.delta_import, bundle)
 		self.assertGreaterEqual(added["counts"]["added"], 1)
 		self.assertEqual(frappe.db.get_value("HD Ticket Type", name, "description"), "first")
+
+	def test_tags_and_hidden_columns_travel_and_a_second_replay_is_all_skips(self):
+		since = add_to_date(now_datetime(), minutes=-1).strftime("%Y-%m-%d %H:%M:%S")
+		name = "FAKE-DELTA-" + frappe.generate_hash(length=6)
+		frappe.get_doc({"doctype": "HD Ticket Type", "name": name}).insert(ignore_permissions=True)
+		frappe.db.set_value("HD Ticket Type", name, "_user_tags", ",fake-tag", update_modified=False)
+		bundle = self.path("bundle")
+		_run(cutover.delta_export, since, bundle)
+		frappe.db.delete("HD Ticket Type", {"name": name})
+		first, _ = _run(cutover.delta_import, bundle)
+		self.assertGreaterEqual(first["counts"]["added"], 1)
+		self.assertEqual(frappe.db.get_value("HD Ticket Type", name, "_user_tags"), ",fake-tag")
+		second, _ = _run(cutover.delta_import, bundle)
+		self.assertEqual(second["counts"]["conflicts"], 0)
+		self.assertEqual(second["counts"]["added"], 0)
 
 	def test_a_file_travels_with_its_row_and_is_not_overwritten(self):
 		since = add_to_date(now_datetime(), minutes=-1).strftime("%Y-%m-%d %H:%M:%S")

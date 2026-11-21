@@ -19,6 +19,8 @@ How passwords and 2FA are stored (settles blueprint U9):
 import hashlib
 import json
 import os
+import re
+import zoneinfo
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 
@@ -534,10 +536,24 @@ def _delta_doctypes() -> list:
 	return _helpdesk_doctypes()
 
 
+def site_time(since: str) -> str:
+	"""A timestamp as the database stores it. Frappe stores `modified` in the site's own timezone, while `cutover.sh freeze` prints T0 in UTC
+	(`...Z`): a timestamp with `Z` or an offset is converted to the site timezone, a plain one is taken as site time already. Getting this
+	wrong would skip (site behind UTC) or repeat (site ahead) the first hours of changes."""
+	text = str(since).strip().replace("T", " ")
+	zoned = text.endswith("Z") or re.search(r"\d[+-]\d\d:?\d\d$", text)
+	if not zoned:
+		return text
+	stamp = datetime.fromisoformat(text.replace("Z", "+00:00"))
+	local = stamp.astimezone(zoneinfo.ZoneInfo(frappe.utils.get_system_timezone()))
+	return local.strftime("%Y-%m-%d %H:%M:%S")
+
+
 def delta_export(since: str, path: str):
 	"""Every Helpdesk DocType plus Communication, File (rows and files), Comment and ToDo created or modified after
 	`since` (a timestamp), into a directory bundle: bundle.json and files/. Counts only on screen."""
 	_require_allowed()
+	since = site_time(since)
 	hd = _delta_doctypes()
 	bundle = {"format": FORMAT_VERSION, "since": since, "docs": []}
 	counts = {}
@@ -556,6 +572,7 @@ def delta_export(since: str, path: str):
 			("Comment", "reference_doctype"),
 			("ToDo", "reference_type"),
 			("File", "attached_to_doctype"),
+			("Tag Link", "document_type"),
 		):
 			for name in frappe.get_all(
 				doctype,
@@ -575,6 +592,13 @@ def delta_export(since: str, path: str):
 						fd = os.open(target, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
 						with os.fdopen(fd, "wb") as out:
 							out.write(content)
+	# a Tag Link points at a Tag: bring the tags it uses, so the link means something in the source
+	for tag in sorted({d["tag"] for d in bundle["docs"] if d["doctype"] == "Tag Link" and d.get("tag")}):
+		if frappe.db.exists("Tag", tag):
+			bundle["docs"].append(
+				frappe.get_doc("Tag", tag).as_dict(convert_dates_to_str=True, no_nulls=False)
+			)
+			counts["Tag"] = counts.get("Tag", 0) + 1
 	_write_private(os.path.join(path, "bundle.json"), json.dumps(bundle, default=_plain))
 	print("delta_export: " + json.dumps(counts))
 	return counts
@@ -622,6 +646,7 @@ def delta_import(path: str):
 		doc.db_insert()
 		for child in doc.get_all_children():
 			child.db_insert()
+		_restore_hidden_columns(raw)
 		if doctype == "File" and doc.file_url and not doc.is_folder:
 			_restore_file(path, doc)
 		counts["added"] += 1
@@ -632,6 +657,17 @@ def delta_import(path: str):
 		+ (" conflicts: " + ", ".join(conflicts[:20]) if conflicts else "")
 	)
 	return {"counts": counts, "conflicts": conflicts}
+
+
+HIDDEN_COLUMNS = ("_user_tags", "_comments", "_assign", "_liked_by")
+
+
+def _restore_hidden_columns(raw: dict):
+	"""The hidden columns Frappe keeps on every document table (tags, comment summary, assignment, likes): db_insert does not write them."""
+	columns = set(frappe.db.get_table_columns(raw["doctype"]))
+	values = {k: raw[k] for k in HIDDEN_COLUMNS if raw.get(k) and k in columns}
+	if values:
+		frappe.db.set_value(raw["doctype"], raw["name"], values, update_modified=False)
 
 
 def _restore_file(bundle_path: str, doc):
