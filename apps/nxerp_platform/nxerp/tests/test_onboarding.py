@@ -316,36 +316,43 @@ class TestAccountSignUp(IntegrationTestCase):
 		# Frappe's sanitize_redirect reads the request's host and scheme
 		frappe.local.request = frappe._dict(host="localhost:8000", scheme="http", headers={})
 		self.email = f"nxt-signup-{secrets.token_hex(4)}@example.test"
-		self.keep = (
-			frappe.conf.get("nxerp_enable_signup"),
-			frappe.db.get_single_value("Website Settings", "disable_signup"),
-		)
+		self.keep = frappe.db.get_single_value("Website Settings", "disable_signup")
 
 	def tearDown(self):
 		frappe.set_user("Administrator")
 		frappe.local.request = None
-		frappe.local.conf["nxerp_enable_signup"] = self.keep[0]
-		frappe.db.set_single_value("Website Settings", "disable_signup", self.keep[1])
+		frappe.db.set_single_value("Website Settings", "disable_signup", self.keep)
 		purge_test_users()
 		frappe.db.commit()
 
 	def enable(self):
-		frappe.local.conf["nxerp_enable_signup"] = 1
 		frappe.db.set_single_value("Website Settings", "disable_signup", 0)
 		frappe.clear_cache()
 
-	def test_signup_is_refused_and_creates_nothing_while_it_is_off(self):
-		frappe.local.conf["nxerp_enable_signup"] = 0
-		with self.assertRaises(frappe.PermissionError):
-			account_api.create_account(self.email, "Test Person", APP)
-		self.assertFalse(frappe.db.exists("User", self.email))
-		self.assertFalse(account_api.signup_available())
+	def test_signup_is_open_without_any_switch(self):
+		self.enable()
+		self.assertNotIn("nxerp_enable_signup", frappe.conf, "no operator switch exists any more")
+		self.assertTrue(account_api.signup_available())
+		account_api.create_account(self.email, "Test Person", APP)
+		self.assertTrue(frappe.db.exists("User", self.email))
 
-	def test_both_the_site_config_and_frappes_own_setting_must_agree(self):
-		frappe.local.conf["nxerp_enable_signup"] = 1
+	def test_only_an_administrator_ticking_frappes_own_setting_closes_it(self):
 		frappe.db.set_single_value("Website Settings", "disable_signup", 1)
 		frappe.clear_cache()
 		self.assertFalse(account_api.signup_available())
+		with self.assertRaises(frappe.PermissionError):
+			account_api.create_account(self.email, "Test Person", APP)
+		self.assertFalse(frappe.db.exists("User", self.email))
+
+	def test_open_signup_reopens_a_site_and_is_idempotent(self):
+		from nxerp.install import open_signup
+
+		frappe.db.set_single_value("Website Settings", "disable_signup", 1)
+		open_signup()
+		open_signup()
+		self.assertEqual(
+			frappe.utils.cint(frappe.db.get_single_value("Website Settings", "disable_signup")), 0
+		)
 
 	def test_signup_creates_a_website_user_with_no_staff_role_and_no_portal_role(self):
 		self.enable()

@@ -1,5 +1,5 @@
 """/signup?app=<key>: create an account (split shell). Public. Creates nothing by itself: the form posts to
-`nxerp.api.account.sign_up`, which is off until the operator sets `nxerp_enable_signup` (docs/runbooks/enable-signup.md)."""
+`nxerp.api.account.sign_up`, which is open to anyone (an administrator can close it with Frappe's own Disable Customer Signup; docs/features/signup-gate.md)."""
 
 from frappe import PageDoesNotExistError, _, form_dict, session
 

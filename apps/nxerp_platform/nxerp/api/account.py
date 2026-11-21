@@ -20,11 +20,10 @@ NEUTRAL_MESSAGE = "If the address can be used, a message with the next step is o
 
 
 def signup_available() -> bool:
-	"""Signup is open only when the operator switched it on (site config) and Frappe's own setting agrees."""
-	return bool(
-		frappe.utils.cint(frappe.conf.get("nxerp_enable_signup"))
-		and not frappe.utils.cint(frappe.get_website_settings("disable_signup"))
-	)
+	"""Signup is open to anyone. The only thing that closes it is Frappe's own Website Settings flag `disable_signup` ("Disable Customer
+	Signup" in Desk), which an administrator may tick. The operator switch `nxerp_enable_signup` that used to keep every site closed was
+	removed on purpose; how to bring a gate back is in docs/features/signup-gate.md."""
+	return not frappe.utils.cint(frappe.get_website_settings("disable_signup"))
 
 
 @frappe.whitelist(allow_guest=True, methods=["POST"])

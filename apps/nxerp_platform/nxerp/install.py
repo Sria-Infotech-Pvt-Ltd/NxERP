@@ -48,12 +48,10 @@ def ensure_platform_settings():
 		frappe.db.set_single_value("Portal Settings", "default_portal_home", "/nxerp/go")
 
 
-def sync_signup_setting():
-	"""Self-signup is off until an operator turns it on: site config `nxerp_enable_signup` = 1 enables it (Website
-	Settings `disable_signup` = 0). The default (0 or unset) never changes a site's setting, so a site that was
-	enabled by hand keeps working and a fresh site stays closed. Idempotent; runs on every migrate."""
-	if not frappe.utils.cint(frappe.conf.get("nxerp_enable_signup")):
-		return
+def open_signup():
+	"""Self-signup is open to anyone: make sure Frappe's own Website Settings `disable_signup` is 0. Run once on install and once on existing
+	sites (patch `open_signup_for_everyone`), never on every migrate, so an administrator who ticks "Disable Customer Signup" later is not
+	overruled. Idempotent. The old operator switch is gone: docs/features/signup-gate.md."""
 	if frappe.utils.cint(frappe.db.get_single_value("Website Settings", "disable_signup")):
 		frappe.db.set_single_value("Website Settings", "disable_signup", 0)
 
@@ -70,10 +68,10 @@ def after_install():
 	ensure_feed_role()
 	ensure_platform_settings()
 	ensure_navbar_items()
+	open_signup()
 
 
 def after_migrate():
 	ensure_access_roles()
 	ensure_feed_role()
 	ensure_platform_settings()
-	sync_signup_setting()

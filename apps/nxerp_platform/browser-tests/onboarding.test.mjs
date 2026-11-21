@@ -1,5 +1,5 @@
 // Phase 2, end to end with real pages and a real mail round trip (a local capture server stands in for the mail
-// provider; nothing leaves the machine): signup is closed by default; a visitor goes Products -> Get started ->
+// provider; nothing leaves the machine): signup is open by default (an administrator can close it); a visitor goes Products -> Get started ->
 // Create account -> verification link -> set password -> /welcome/helpdesk -> wizard -> request; the gate still keeps
 // them out; an administrator approves; the user can open the app. Also screenshots of every new screen at four widths.
 //
@@ -79,14 +79,14 @@ async function shotsAt(path, name, { scheme = ["light", "dark"], who = null, siz
 	}
 }
 
-test("signup is closed by default: the page says so, the API refuses, nothing is created", async () => {
+test("signup is closed only when an administrator closes it (Frappe's Disable Customer Signup): the page says so, the API refuses, nothing is created", async () => {
 	assert.ok(await until(async () => {
 		const { context, page } = await session(browser);
 		await open(page, "/signup?app=helpdesk");
 		const closed = (await page.locator("#nx-unavailable").count()) === 1;
 		await context.close();
 		return closed;
-	}), "the unavailable state is shown while nxerp_enable_signup is 0");
+	}), "the unavailable state is shown while an administrator has closed signup");
 	const { context, page } = await session(browser);
 	await open(page, "/signup?app=helpdesk");
 	assert.equal(await page.locator("#nx-signup-form").count(), 0);

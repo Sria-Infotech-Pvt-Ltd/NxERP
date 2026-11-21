@@ -218,14 +218,12 @@ def email_link_login(enabled: bool = True):
 
 
 def enable_signup(enabled: bool = True):
-	"""Site config `nxerp_enable_signup` (the operator's switch) and Frappe's own Website Settings flag, as the migrate hook sets them."""
+	"""Open signup (the default) or close it the way an administrator would: Frappe's own Website Settings flag."""
 	_guard()
-	from nxerp.install import sync_signup_setting
+	from nxerp.install import open_signup
 
-	update_site_config("nxerp_enable_signup", 1 if enabled else 0)
-	frappe.local.conf["nxerp_enable_signup"] = 1 if enabled else 0
 	if enabled:
-		sync_signup_setting()
+		open_signup()
 	else:
 		frappe.db.set_single_value("Website Settings", "disable_signup", 1)
 	frappe.db.commit()

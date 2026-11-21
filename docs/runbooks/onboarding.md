@@ -3,24 +3,11 @@
 Applies to the NXDESK public flow (Phase 2): `/signup`, `/get-started`, `/welcome/<key>` and the Desk queue **NXERP Access Request**.
 Self-signup never grants staff access by itself: an administrator decides every request.
 
-## 1. Enable signup (off by default)
+## 1. Signup is open to anyone
 
-Signup is closed on every site until an operator opens it. Two settings must agree, and `/signup` shows "Signup is not available" otherwise.
+Since 2026-11-21 nobody needs a permission step to sign up: `/signup` shows the form on every site, and there is no site config key to set. The decision and the plan to add a gate later are in [`../features/signup-gate.md`](../features/signup-gate.md).
 
-```bash
-bench --site <site> set-config nxerp_enable_signup 1
-bench --site <site> migrate            # or: bench --site <site> execute nxerp.install.sync_signup_setting
-```
-
-`sync_signup_setting` (also the patch `nxerp.patches.enable_signup_when_configured`, and run on every migrate) sets Website Settings
-`disable_signup` to 0 **only** when `nxerp_enable_signup` is 1; it never closes a site. To close signup again:
-
-```bash
-bench --site <site> set-config nxerp_enable_signup 0
-bench --site <site> set-value "Website Settings" "Website Settings" disable_signup 1     # or untick "Disable Customer Signup" in Desk
-```
-
-Site config is cached by each web worker for up to 60 seconds. Signup also needs working outgoing email (section 4).
+The only thing that closes signup is Frappe's own setting. To close it, an administrator ticks **Disable Customer Signup** in Website Settings (or `bench --site <site> set-value "Website Settings" "Website Settings" disable_signup 1`); the page then shows "Signup is not available" and the endpoint answers 403. To open it again: untick it, or run `bench --site <site> execute nxerp.install.open_signup`. A fresh install and the patch `open_signup_for_everyone` open it once; a normal migrate never changes it. Frappe caches site settings for up to 60 seconds. Signup also needs working outgoing email (section 4).
 
 ## 2. What a signup does
 

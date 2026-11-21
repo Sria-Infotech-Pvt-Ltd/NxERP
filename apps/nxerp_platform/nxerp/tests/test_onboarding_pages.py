@@ -57,15 +57,29 @@ class TestOnboardingPages(IntegrationTestCase):
 
 	# --- /signup ------------------------------------------------------------------------------
 
-	def test_signup_shows_the_unavailable_state_while_it_is_off(self):
-		if frappe.utils.cint(frappe.conf.get("nxerp_enable_signup")):
-			self.skipTest("this site has signup switched on")
+	def test_signup_shows_the_form_by_default(self):
+		frappe.db.set_single_value("Website Settings", "disable_signup", 0)
+		frappe.clear_cache()
 		r = self.get(f"/signup?app={APP}")
 		self.assertEqual(r.status_code, 200)
-		self.assertIn("Signup is not available", r.text)
-		self.assertNotIn("nx-signup-form", r.text)
+		self.assertIn("nx-signup-form", r.text)
+		self.assertNotIn("Signup is not available", r.text)
 		self.assertIn("nx-hero", r.text, "the same split layout")
 		self.assertIn("Support tickets", r.text, "the product's tagline is in the hero")
+
+	def test_signup_shows_the_unavailable_state_only_when_an_administrator_closed_it(self):
+		keep = frappe.db.get_single_value("Website Settings", "disable_signup")
+		self.addCleanup(
+			lambda: (
+				frappe.db.set_single_value("Website Settings", "disable_signup", keep),
+				frappe.clear_cache(),
+			)
+		)
+		frappe.db.set_single_value("Website Settings", "disable_signup", 1)
+		frappe.clear_cache()
+		r = self.get(f"/signup?app={APP}")
+		self.assertIn("Signup is not available", r.text)
+		self.assertNotIn("nx-signup-form", r.text)
 
 	def test_signup_needs_a_known_product(self):
 		self.assertEqual(self.get("/signup").status_code, 301)
@@ -77,15 +91,22 @@ class TestOnboardingPages(IntegrationTestCase):
 		r = self.get(f"/signup?app={APP}", self.plain)
 		self.assertEqual((r.status_code, location(r)), (301, f"/get-started?product={APP}"))
 
-	def test_the_sign_up_endpoint_refuses_while_signup_is_off(self):
-		if frappe.utils.cint(frappe.conf.get("nxerp_enable_signup")):
-			self.skipTest("this site has signup switched on")
+	def test_the_sign_up_endpoint_refuses_only_when_an_administrator_closed_signup(self):
+		keep = frappe.db.get_single_value("Website Settings", "disable_signup")
+		self.addCleanup(
+			lambda: (
+				frappe.db.set_single_value("Website Settings", "disable_signup", keep),
+				frappe.clear_cache(),
+			)
+		)
+		frappe.db.set_single_value("Website Settings", "disable_signup", 1)
+		frappe.clear_cache()
 		email = unique_email("never")
 		r = Client().post(
 			"/api/method/nxerp.api.account.sign_up",
 			json_body={"email": email, "full_name": "Nobody", "app": APP},
 		)
-		# 403 while signup is off; 429 once this IP has used its 10 calls an hour (Frappe's rate limiter, kept across test runs)
+		# 403 while closed; 429 once this IP has used its 10 calls an hour (Frappe's rate limiter, kept across test runs)
 		self.assertIn(r.status_code, (403, 429))
 		self.assertFalse(frappe.db.exists("User", email))
 		r = Client().get("/api/method/nxerp.api.account.sign_up")
