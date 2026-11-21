@@ -1,0 +1,38 @@
+{#- One themed page that says one thing (a message, "not found", an error) and offers one button. The page that includes it sets:
+    state_heading, state_text (already safe HTML or plain text), state_code (optional), state_href, state_label, state_details (optional, developer-only text). -#}
+<!doctype html>
+<html lang="{{ nx.lang | e }}">
+<head>
+	{% include "nxerp/templates/includes/nxdesk/shell_head.html" %}
+</head>
+<body>
+<div class="nx-shell nx-no-social">
+	{% include "nxerp/templates/includes/nxdesk/shell_hero.html" %}
+
+	<main class="nx-panel" id="main">
+		<h1 class="nx-sr-only">{{ state_heading | e }}</h1>
+		{% include "nxerp/templates/includes/nxdesk/shell_top.html" %}
+
+		<div class="nx-card">
+			<div class="nx-state">
+				<div class="nx-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16.5v.01"/></svg></div>
+				<h2>{{ state_heading | e }}</h2>
+				{% if state_text %}<div class="nx-sub">{{ state_text }}</div>{% endif %}
+				{% if state_code %}<p class="nx-fine">{{ _("Status: {0}").format(state_code) | e }}</p>{% endif %}
+				<div class="nx-stack">
+					<a class="btn btn-primary btn-login nx-linkbtn" href="{{ state_href | e }}">{{ state_label | e }}</a>
+				</div>
+				{% if state_details %}
+				<details class="nx-fine">
+					<summary>{{ _("Show error") }}</summary>
+					<pre><code>{{ state_details }}</code></pre>
+				</details>
+				{% endif %}
+			</div>
+		</div>
+		<p class="nx-panel-foot">{{ nx.tagline | e }}.</p>
+	</main>
+</div>
+{% include "nxerp/templates/includes/nxdesk/shell_scripts.html" %}
+</body>
+</html>

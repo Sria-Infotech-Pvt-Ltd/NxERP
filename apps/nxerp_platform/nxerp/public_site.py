@@ -213,3 +213,15 @@ def product(key) -> dict | None:
 def redirect(location: str):
 	frappe.local.flags.redirect_location = location
 	raise frappe.Redirect
+
+
+def platform_hero() -> dict:
+	"""The hero for pages that belong to no product (set password, messages, errors): the platform's own tagline and three promises."""
+	return frappe._dict(
+		key="",
+		title=branding.PLATFORM_NAME,
+		tagline=branding.TAGLINE,
+		summary="",
+		features=[_("One sign-in"), _("Access by role"), _("Checked on the server")],
+		logo=branding.FAVICON,
+	)
