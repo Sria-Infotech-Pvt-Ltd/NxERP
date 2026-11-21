@@ -114,3 +114,16 @@ has `snapshot_rows` and `tombstoned` per entity, `replayed`, `dead_letters` and 
 - **Interrupted** (the owner went down mid-way, the command was stopped): the source stays `rebuilding`; run the same command again. Everything it writes is idempotent.
 - **Read API during a rebuild**: it keeps serving what is there; rows appear as the snapshot streams in. Plan a rebuild outside peak hours for a large layer.
 - **Cursor behind the owner** after an owner restore: `rebuild --source <app_key>` (the source is stopped on a gap until then).
+
+## Re-point the sources to new owner sites, rebuild, and the order of switching on (Phase 8E)
+
+Used at the cutover (after the Helpdesk clone, and again after the ERP move). The shared layer is derived: it is **rebuilt, never migrated or restored**.
+
+1. **Re-point.** Write the new sources file for review (one entry per app, `base_url`, `key_file`, optional `host_header`; `https` only on a real host). Then:
+   `deploy/scripts/shared.sh repoint <reviewed file>`.
+   It checks the candidate in a one-shot container first (it must parse, name each app once, and every owner's feed head must answer) and refuses otherwise, changing nothing. Only then does it stop the projector, keep the old file as `sources.json.bak.<time>` next to it and put the new one in place. A re-point never leaves two sources for the same app. **Undo:** copy the `.bak` file back, then step 2.
+2. **Rebuild and verify.** `deploy/scripts/shared.sh rebuild-and-verify` rebuilds every source from its owner (snapshot, then replay; the cursor of a re-pointed source starts from this rebuild, never from an old cursor) and then reconciles in full. It exits non-zero unless drift is 0 everywhere, and does not start the projector. On success: `deploy/scripts/shared.sh start projector`. **Undo:** restore the previous sources file and run it again.
+3. **Switch on, in this order** (`deploy/scripts/shared.sh cutover-order` prints it): `nxerp_shared_publish` on each owner; wait for lag under 60 seconds and drift 0; only then `nxerp_shared_read` on Helpdesk.
+4. **Roll back, in this order:** unset `nxerp_shared_read` (Helpdesk is back on its own data), then `nxerp_shared_publish` on the owners; rebuild the shared layer.
+
+**Metrics and alerts.** The Read API's internal `/v1/metrics?format=text` (or `Accept: text/plain`) exposes `outbox_lag_seconds`, `outbox_pending`, `projector_errors`, `dead_letters`, `reconcile_drift`, `rebuild_age_seconds`, `read_api_requests` and `read_api_denied` (JSON stays the default, Helpdesk reads it). The rules are in `deploy/env/shared/alerts.example.yaml`: lag above 300 s, any dead letter, drift above 0 on two consecutive runs, projector login failure, no successful pull for 15 minutes. The endpoint needs a valid token and is on the internal network only; alert text carries counts and source names, never values.

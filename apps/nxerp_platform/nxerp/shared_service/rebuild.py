@@ -115,6 +115,7 @@ def _rebuild_source(connect, source, client_factory, metrics, page, relay_wait, 
 	result["dead_letters"] = _unresolved_dead_letters(connect, key)
 	metrics.set(key, "rebuilt_rows", sum(c["snapshot_rows"] for c in result["entities"].values()))
 	metrics.mark_success(key)
+	metrics.set(key, "rebuilt_at", time.time())
 	return result
 
 

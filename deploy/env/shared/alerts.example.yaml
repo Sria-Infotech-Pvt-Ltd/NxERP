@@ -1,0 +1,42 @@
+# Alert rules for the shared layer (Phase 8E), in the Prometheus rule format. Copy to your monitoring system's rules folder; nothing here
+# is loaded by the application. The metrics come from the Read API's internal /v1/metrics?format=text (never public).
+# Alert text carries counts and source names only: never a value, a key or a token.
+#
+# Test (step 8.13): stop the projector for 10 minutes (`deploy/scripts/shared.sh stop projector`) and watch SharedLayerLag fire; start it again
+# (`deploy/scripts/shared.sh start projector`). Backup age is an alert of the backup job, not of this layer.
+groups:
+  - name: nxerp-shared-layer
+    rules:
+      - alert: SharedLayerLag
+        expr: max by (source) (outbox_lag_seconds) > 300
+        for: 2m
+        labels: {severity: page}
+        annotations:
+          summary: "The shared layer is behind source {{ $labels.source }}"
+          detail: "The oldest waiting event has waited {{ $value }} seconds (limit 300)."
+      - alert: SharedLayerDeadLetter
+        expr: increase(dead_letters[15m]) > 0
+        labels: {severity: page}
+        annotations:
+          summary: "Events for source {{ $labels.source }} could not be applied"
+          detail: "{{ $value }} new dead letter(s) in 15 minutes. Run: deploy/scripts/shared.sh status"
+      - alert: SharedLayerDrift
+        # the reconciler runs hourly (recent) and nightly (full): two consecutive runs that both found drift
+        expr: min_over_time(reconcile_drift[150m]) > 0
+        labels: {severity: page}
+        annotations:
+          summary: "Source {{ $labels.source }} differs from the owner on two reconciliations in a row"
+          detail: "{{ $value }} difference(s) at the lowest of the last two runs."
+      - alert: SharedProjectorLoginFailure
+        # the projector counts every refused or failed call to an owner (a rejected feed key counts); rotate the key or fix the source
+        expr: increase(projector_errors[10m]) > 3
+        labels: {severity: page}
+        annotations:
+          summary: "The projector cannot read source {{ $labels.source }}"
+          detail: "{{ $value }} projector errors in 10 minutes. Check the feed key and the shared.sh logs."
+      - alert: SharedProjectorNoPull
+        expr: time() - projector_last_success_timestamp > 900
+        labels: {severity: page}
+        annotations:
+          summary: "No successful pull from source {{ $labels.source }} for 15 minutes"
+          detail: "{{ $value }} seconds since the last success."

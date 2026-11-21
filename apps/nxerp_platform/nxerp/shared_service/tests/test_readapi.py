@@ -355,6 +355,28 @@ class TestMethodsParametersAndLimits(ReadApiCase):
 		self.assertIn("api", body)
 		self.assertNotIn("Example A", json.dumps(body))
 
+	def test_metrics_in_text_form_name_every_metric_and_json_stays_the_default(self):
+		self.assertEqual(self.get("/v1/metrics?format=text", token=None).status_code, 401)
+		response = self.get("/v1/metrics?format=text")
+		self.assertEqual(response.status_code, 200)
+		self.assertTrue(response.content_type.startswith("text/plain"))
+		text = response.get_data(as_text=True)
+		for name in (
+			"outbox_lag_seconds",
+			"outbox_pending",
+			"projector_errors",
+			"dead_letters",
+			"reconcile_drift",
+			"rebuild_age_seconds",
+			"read_api_requests",
+			"read_api_denied",
+		):
+			self.assertIn(f"# TYPE {name} ", text, name)
+		self.assertNotIn("Example A", text)
+		self.assertIn("projector", self.get("/v1/metrics").get_json())  # the Helpdesk client still reads JSON
+		accepted = self.get("/v1/metrics", headers={"Accept": "text/plain"})
+		self.assertTrue(accepted.content_type.startswith("text/plain"))
+
 	def test_the_rate_limit_is_per_token(self):
 		api = self.new_api(rate_per_minute=3)
 		client = Client(api)

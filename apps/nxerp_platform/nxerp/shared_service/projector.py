@@ -232,10 +232,9 @@ class Projector:
 		self.metrics.inc(source.app_key, "dead_letters", counts["dead"])
 		self.metrics.mark_success(source.app_key)
 		try:
-			lag = client.head().get(
-				"oldest_pending_age_seconds", 0
-			)  # before the ack: how long the oldest event waited
-			self.metrics.set(source.app_key, "lag_seconds", lag)
+			head = client.head()  # before the ack: how long the oldest event waited, and how many wait
+			self.metrics.set(source.app_key, "lag_seconds", head.get("oldest_pending_age_seconds", 0))
+			self.metrics.set(source.app_key, "outbox_pending", head.get("pending_count", 0))
 		except FeedUnavailable:
 			pass
 		try:

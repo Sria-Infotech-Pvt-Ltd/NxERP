@@ -53,3 +53,4 @@ deploy/docker/compose/isolated/edge/generated/
 
 # Cutover state, reports and bundles (Phase 8): never commit
 deploy/env/cutover/
+deploy/env/shared/sources.json.bak.*
