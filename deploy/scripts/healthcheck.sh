@@ -40,8 +40,15 @@ for i in $(seq 1 "$retries"); do
 done
 if [ -n "$pong" ]; then log "OK   ping answers pong"; else log "FAIL ping"; fail=1; fi
 
-out=$(http_get /login || true)
-if [ "$(status_of "$out")" = 200 ]; then log "OK   /login 200"; else log "FAIL /login status $(status_of "$out")"; fail=1; fi
+# /login can answer 503 for a few seconds after a restore or a restart (the site's cache is rebuilt): retry before calling it a failure
+login=000
+for i in 1 2 3 4 5 6; do
+	out=$(http_get /login || true)
+	login=$(status_of "$out")
+	[ "$login" = 200 ] && break
+	[ "$i" = 6 ] || sleep 5
+done
+if [ "$login" = 200 ]; then log "OK   /login 200"; else log "FAIL /login status $login"; fail=1; fi
 
 apps=$(bench_site list-apps 2>/dev/null | awk 'NF {print $1}' | tr '\n' ' ' || true)
 for app in $expect; do

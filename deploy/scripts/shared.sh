@@ -13,6 +13,9 @@
 #   deploy/scripts/shared.sh tokens create|rotate|revoke|list --app <app>
 #   deploy/scripts/shared.sh rebuild --source <app> | --all
 #   deploy/scripts/shared.sh reconcile --recent | --full
+#   deploy/scripts/shared.sh repoint <file>       validate a reviewed sources file (every owner's feed head must answer), then replace the live one
+#   deploy/scripts/shared.sh rebuild-and-verify   rebuild --all, then reconcile --full; non-zero unless drift is 0 everywhere
+#   deploy/scripts/shared.sh cutover-order        print the safe order: publish on owners, lag under 60 s and drift 0, then read on Helpdesk
 #   deploy/scripts/shared.sh stop|start projector
 #   deploy/scripts/shared.sh status
 #   deploy/scripts/shared.sh test [unittest args]   run the shared_service tests in a one-shot container (needs SHARED_DEV_SRC)
@@ -163,9 +166,69 @@ cmd_status() {
 	tool shared-ops status || log "status unavailable (the accounts or migrations may not exist yet)"
 }
 
+# repoint FILE: replace the projector's sources with a reviewed file (Phase 8E). The candidate is validated first, in a one-shot
+# container that never touches the live file: it must parse, name each app once, and every owner's feed head must answer.
+cmd_repoint() {
+	local candidate="${1:-}" live stamp backup
+	[ -n "$candidate" ] || die "usage: shared.sh repoint <reviewed sources file>"
+	[ -f "$candidate" ] || die "no such file: $candidate"
+	need_env
+	normalise_paths
+	ensure_network
+	live="$SHARED_SOURCES_FILE"
+	log "checking the candidate (every owner's feed head must answer; nothing is changed yet)"
+	if ! sdc --profile tools run --rm -T -v "$(hostpath "$candidate"):/tmp/sources.candidate.json:ro" shared-ops \
+		"$PYTHON_IN_IMAGE" -m nxerp.shared_service check-sources --file /tmp/sources.candidate.json; then
+		die "the candidate was refused (see above). The live sources file and the projector were not touched."
+	fi
+	stamp="$(date -u +%Y%m%dT%H%M%SZ)"
+	backup="$live.bak.$stamp"
+	log "stopping the projector, so nothing reads while the sources change"
+	sdc stop shared-projector
+	cp "$live" "$backup"
+	cp "$candidate" "$live.new.$stamp"
+	mv "$live.new.$stamp" "$live"
+	log "sources replaced. Previous file kept as $backup"
+	log "UNDO: cp \"$backup\" \"$live\"   then   deploy/scripts/shared.sh rebuild-and-verify"
+	log "NEXT: deploy/scripts/shared.sh rebuild-and-verify   (the cursor of a re-pointed source starts from the rebuild; the projector stays stopped until it passes)"
+}
+
+# rebuild-and-verify: rebuild every source from its owner, then reconcile in full; non-zero unless no drift is left anywhere
+cmd_rebuild_and_verify() {
+	need_env
+	normalise_paths
+	ensure_network
+	log "rebuilding every source, then comparing everything with the owners"
+	if tool shared-ops verify "$@"; then
+		log "OK: drift 0. Start reading with: deploy/scripts/shared.sh start projector"
+		log "UNDO: point the sources back (the .bak file next to the sources file) and run this command again"
+	else
+		log "FAILED: drift or an unreachable owner remains. Nothing further was changed; the projector was not started."
+		log "UNDO: restore the previous sources file and run rebuild-and-verify again, or run: deploy/scripts/shared.sh rebuild --source <app>"
+		return 1
+	fi
+}
+
+# cutover-order: the safe order for switching things on (prints, changes nothing)
+cmd_cutover_order() {
+	cat >&2 <<'ORDER'
+Safe order to switch the shared layer on (publish before read):
+  1. On each OWNER site:      bench --site <owner site> set-config nxerp_shared_publish 1
+  2. Start the shared layer:  deploy/scripts/shared.sh up
+  3. Wait until the lag is under 60 seconds and the drift is 0:
+       deploy/scripts/shared.sh status          (lag per source)
+       deploy/scripts/shared.sh rebuild-and-verify
+  4. Only then on HELPDESK:   bench --site <helpdesk site> set-config nxerp_shared_read 1
+Undo, in this order:
+  1. bench --site <helpdesk site> set-config nxerp_shared_read 0     (Helpdesk is back on its own data)
+  2. bench --site <owner site> set-config nxerp_shared_publish 0     (on each owner)
+  3. deploy/scripts/shared.sh rebuild-and-verify                      (the shared layer is derived: rebuild, never restore)
+ORDER
+}
+
 main() {
 	local command="${1:-}"
-	[ -n "$command" ] || { sed -n '2,27p' "$0" | sed 's/^# \{0,1\}//' >&2; exit 2; }
+	[ -n "$command" ] || { sed -n '2,30p' "$0" | sed 's/^# \{0,1\}//' >&2; exit 2; }
 	shift
 	case "$command" in
 		init-env) cmd_init_env ;;
@@ -180,6 +243,9 @@ main() {
 		_tool) need_env; normalise_paths; ensure_network; sdc --profile tools run --rm -T "$1" "$PYTHON_IN_IMAGE" -m nxerp.shared_service.audit "${2:?check}" ;;
 		tokens) need_env; normalise_paths; ensure_network; tool shared-admin tokens "$@" ;;
 		rebuild) need_env; normalise_paths; ensure_network; tool shared-ops rebuild "$@" ;;
+		repoint) cmd_repoint "$@" ;;
+		rebuild-and-verify) cmd_rebuild_and_verify "$@" ;;
+		cutover-order) cmd_cutover_order ;;
 		reconcile) need_env; normalise_paths; ensure_network; tool shared-ops reconcile "$@" ;;
 		stop) need_env; normalise_paths; sdc stop "shared-${1:?stop projector|api}" ;;
 		start) need_env; normalise_paths; ensure_network; sdc start "shared-${1:?start projector|api}" ;;

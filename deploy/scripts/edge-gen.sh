@@ -5,7 +5,7 @@
 #
 # Reads:   deploy/env/isolated/stacks.list        one line per stack: <name> <host-prefix> <standard|restricted>
 #          deploy/env/isolated/<name>.env         NXERP_SITE of each stack
-#          deploy/env/isolated/edge.env           NXERP_DOMAIN (required), NXERP_LEGACY_HOST and NXERP_LEGACY_STACK (optional)
+#          deploy/env/isolated/edge.env           NXERP_DOMAIN (required), NXERP_LEGACY_HOST with NXERP_LEGACY_STACK, or with NXERP_LEGACY_SITE (optional)
 # Writes:  deploy/docker/compose/isolated/edge/generated/default.conf.template   shared part + one server block per stack
 #          deploy/docker/compose/isolated/edge/generated/edge.networks.override.yaml   joins the edge to every stack's network
 # Both are git-ignored and rebuilt on every run. No secret is read or written (only site names and host names).
@@ -66,14 +66,37 @@ done < <(tr -d '\015' <"$ENV_DIR/stacks.list")
 [ "$count" -ge 1 ] || fatal "$ENV_DIR/stacks.list lists no stack"
 
 legacy_host="$(env_value "$ENV_DIR/edge.env" NXERP_LEGACY_HOST)"
+legacy_redirect=0
 if [ -n "$legacy_host" ]; then
 	legacy_stack="$(env_value "$ENV_DIR/edge.env" NXERP_LEGACY_STACK)"
+	legacy_site="$(env_value "$ENV_DIR/edge.env" NXERP_LEGACY_SITE)"
 	[[ "$legacy_host" =~ ^[A-Za-z0-9.-]+$ ]] || fatal "NXERP_LEGACY_HOST is not a host name"
-	awk -v n="$legacy_stack" '$1 == n {found = 1} END {exit !found}' "$ENV_DIR/stacks.list" || fatal "NXERP_LEGACY_STACK '$legacy_stack' is not in stacks.list"
-	{
-		printf '\n# legacy host, routed to stack %s\n' "$legacy_stack"
-		render "$legacy_stack" "$legacy_host" "$(env_value "$ENV_DIR/$legacy_stack.env" NXERP_SITE)"
-	} >>"$conf"
+	if [ -n "$legacy_stack" ]; then
+		awk -v n="$legacy_stack" '$1 == n {found = 1} END {exit !found}' "$ENV_DIR/stacks.list" || fatal "NXERP_LEGACY_STACK '$legacy_stack' is not in stacks.list"
+		{
+			printf '\n# legacy host, routed to stack %s\n' "$legacy_stack"
+			render "$legacy_stack" "$legacy_host" "$(env_value "$ENV_DIR/$legacy_stack.env" NXERP_SITE)"
+		} >>"$conf"
+	else
+		# the OLD site: /helpdesk links redirect to the Helpdesk host, everything else goes to the old backend (Phase 8B)
+		[[ "$legacy_site" =~ ^[A-Za-z0-9.-]+$ ]] || fatal "NXERP_LEGACY_SITE (the old site's name) is required with NXERP_LEGACY_HOST when NXERP_LEGACY_STACK is empty"
+		hd_prefix="$(tr -d '\015' <"$ENV_DIR/stacks.list" | awk '$1 == "hd" && $1 !~ /^#/ {print $2}')"
+		hd_base="$(env_value "$ENV_DIR/edge.env" NXERP_LEGACY_HD_BASE)"
+		if [ -z "$hd_base" ]; then
+			[ -n "$hd_prefix" ] || fatal "stacks.list has no 'hd' stack to redirect old Helpdesk links to (or set NXERP_LEGACY_HD_BASE)"
+			hd_base="https://$hd_prefix.$domain"
+		fi
+		[[ "$hd_base" =~ ^https?://[A-Za-z0-9.:-]+$ ]] || fatal "the Helpdesk base URL '$hd_base' must look like https://host (no path)"
+		text="$(cat "$EDGE_DIR/legacy.block.template")"
+		text="${text//\$\{LEGACY_HOST\}/$legacy_host}"
+		text="${text//\$\{LEGACY_SITE\}/$legacy_site}"
+		text="${text//\$\{HD_BASE\}/$hd_base}"
+		{
+			printf '\n# legacy host: Helpdesk links redirect to %s, the rest goes to the old site %s\n' "$hd_base" "$legacy_site"
+			printf '%s\n' "$text"
+		} >>"$conf"
+		legacy_redirect=1
+	fi
 fi
 
 # The edge joins every stack's network and answers there to EVERY stack host name, so a stack's backend can call another stack's public
@@ -84,7 +107,10 @@ fi
 		printf '      nxerp-%s_default:\n        aliases:\n' "$name"
 		for host in "${stack_hosts[@]}"; do printf '          - %s\n' "$host"; done
 	done
+	# the old backend answers on the sync network as erp-backend (legacy-erp.override.yaml)
+	if [ "$legacy_redirect" = 1 ]; then printf '      nxerp-api: {}\n'; fi
 	printf 'networks:\n'
 	for name in "${stack_names[@]}"; do printf '  nxerp-%s_default:\n    external: true\n' "$name"; done
+	if [ "$legacy_redirect" = 1 ]; then printf '  nxerp-api:\n    external: true\n'; fi
 } >"$override"
 printf '[edge-gen.sh] wrote %s and %s (%s stack(s))\n' "$conf" "$override" "$count" >&2

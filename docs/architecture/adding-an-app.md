@@ -114,3 +114,15 @@ caller goes through the Read API and the command API. The steps, for an owner ad
 | 6 | Add the consumer-contract tests (they run from the contracts) and run the boundary check | `shared_service/tests/test_consumer_contracts.py`, `python scripts/check_architecture.py` |
 
 `scripts/check_architecture.py` rule R5 fails if the new app's code touches a DocType another app owns; the only exemptions are exact file paths in `LEGACY_ALLOW`.
+
+## Moving an existing app's data into its own stack (Phase 8)
+
+A new app starts empty in its own stack (section 1). An app that already lives in the old single site moves with the cutover tools instead:
+
+1. Create the stack (section 1) and its site; leave it stopped until the window.
+2. Take a verified backup of the old site (`deploy/scripts/cutover.sh backup-source`), restore it into the new site (`cutover.sh clone-hd` does this for Helpdesk; copy it for another app and change the list of apps to uninstall).
+3. Remove what does not belong: `bench uninstall-app` for the other apps, then `nxerp.cutover.prune_helpdesk_site` (the allow-list is read from Module Def, so it follows the app's modules).
+4. Copy the identity data with `cutover.sh build-id`, prove equality with `cutover.sh reconcile`, rehearse the way back (`delta-export`, `delta-import`) twice before the window.
+5. Re-point the shared layer's source for that app and rebuild it (`deploy/scripts/shared.sh repoint`, `rebuild-and-verify`).
+
+Full steps, gates and the undo of each: [`../runbooks/isolation-cutover.md`](../runbooks/isolation-cutover.md).

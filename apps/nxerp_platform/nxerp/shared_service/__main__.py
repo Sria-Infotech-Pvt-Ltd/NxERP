@@ -10,6 +10,8 @@
 	reconcile --recent|--full  compare with the owners and repair drift (owner to shared, never the reverse)
 	reconcile-loop             the reconciler process: recent scan hourly, full compare nightly
 	rebuild --source X|--all   snapshot every entity, replay the events since, and report the drift left
+	check-sources --file F     validate a candidate sources file and ask every owner's feed for its head (writes nothing)
+	verify                     rebuild --all, then reconcile --full; exit 1 unless no drift is left anywhere
 
 Output is JSON, one object per line, with counts and names only: never a password, a token or a payload value.
 """
@@ -210,6 +212,23 @@ def cmd_rebuild(args) -> int:
 	return 0 if all(s["drift_after"] == 0 for s in report["sources"].values()) else 1
 
 
+def cmd_check_sources(args) -> int:
+	from nxerp.shared_service.repoint import check_sources
+
+	report = check_sources(args.file)
+	emit(command="check-sources", **report)
+	return 0 if report["ok"] else 1
+
+
+def cmd_verify(args) -> int:
+	from nxerp.shared_service.repoint import rebuild_and_verify
+
+	connect, sources = _ops_setup()
+	report = rebuild_and_verify(connect, sources, relay_wait=args.relay_wait)
+	emit(command="verify", ok=report["ok"], drift=report["drift"], error=report.get("error"))
+	return 0 if report["ok"] else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
 	parser = argparse.ArgumentParser(prog="python -m nxerp.shared_service", description=__doc__)
 	sub = parser.add_subparsers(dest="command", required=True)
@@ -242,6 +261,12 @@ def build_parser() -> argparse.ArgumentParser:
 	rebuild_parser.add_argument(
 		"--relay-wait", type=float, default=90.0, help="seconds to wait for the owner's relay (default 90)"
 	)
+	check_parser = sub.add_parser("check-sources")
+	check_parser.add_argument("--file", required=True, help="the candidate sources file")
+	verify_parser = sub.add_parser("verify")
+	verify_parser.add_argument(
+		"--relay-wait", type=float, default=90.0, help="seconds to wait for the owners' relays (default 90)"
+	)
 	projector_parser = sub.add_parser("projector")
 	projector_parser.add_argument("--once", action="store_true", help="one pass over every source, then exit")
 	return parser
@@ -258,6 +283,8 @@ HANDLERS = {
 	"reconcile": cmd_reconcile,
 	"reconcile-loop": cmd_reconcile_loop,
 	"rebuild": cmd_rebuild,
+	"check-sources": cmd_check_sources,
+	"verify": cmd_verify,
 }
 
 

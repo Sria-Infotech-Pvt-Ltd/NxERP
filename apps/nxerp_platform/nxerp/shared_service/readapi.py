@@ -1,7 +1,8 @@
 """The Read API v1: the only way an app reads the shared read layer. A Werkzeug WSGI app served by the image's gunicorn. No frappe.
 
 	GET /v1/health                    liveness and database reachability (no token, no audit)
-	GET /v1/metrics                   projector metrics and this process's counters (a valid token, internal network only)
+	GET /v1/metrics                   projector metrics and this process's counters (a valid token, internal network only);
+	                                  JSON by default, Prometheus text with ?format=text or Accept: text/plain
 	GET /v1/{entity_type}             a page of rows:  fields, tenant, min_version, limit (max 200), after
 	GET /v1/{entity_type}/{id}        one row:         fields, tenant, min_version
 
@@ -34,6 +35,7 @@ from werkzeug.wrappers import Request, Response
 from nxerp.shared import payload as payload_module
 from nxerp.shared import registry
 from nxerp.shared_service import credentials, db, sqlutil
+from nxerp.shared_service import metrics as metrics_module
 from nxerp.shared_service.views import SYSTEM_COLUMNS, view_name
 
 log = logging.getLogger("nxerp.shared.api")
@@ -308,7 +310,7 @@ class ReadApi:
 		if parts[1] == "metrics" and len(parts) == 2:
 			call["entity_type"] = "-metrics"
 			call["outcome"] = "ok"
-			return self._metrics()
+			return self._metrics(request)
 		entity_type = parts[1]
 		call["entity_type"] = entity_type if ENTITY.match(entity_type) else "-invalid"
 		grant = self._grant_for(app, entity_type)
@@ -547,8 +549,12 @@ class ReadApi:
 		}
 		return self._json(body)
 
-	def _metrics(self) -> Response:
+	def _metrics(self, request) -> Response:
 		rows = self.query("SELECT source, name, value, updated_at FROM ctl_sync_metric ORDER BY source, name")
+		wants_text = request.args.get("format") == "text" or "text/plain" in request.headers.get("Accept", "")
+		if wants_text:
+			text = metrics_module.render_text(rows, self.stats, self.audit.dropped)
+			return Response(text, mimetype="text/plain", headers={"Cache-Control": "no-store"})
 		return self._json(
 			{
 				"projector": {f"{r['source']}.{r['name']}": r["value"] for r in rows},

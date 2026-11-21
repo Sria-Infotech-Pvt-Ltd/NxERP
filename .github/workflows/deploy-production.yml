@@ -7,6 +7,8 @@ name: Deploy production
 #
 # deploy:   checks (stable tag, published non-pre-release, successful staging deployment of the same commit) -> approval ->
 #           backup, maintenance mode, migrate, health check (rollback to the previous tag on failure) -> smoke.
+# stack:    (Phase 8C) default keeps today's single-site deploy; id, erp, hd, db, edge run through deploy/scripts/stack.sh on the host (DEPLOY_PATH
+#           then holds a checkout). Rollback of those stacks is by hand (docs/runbooks/isolation-rollback.md). Not run on GitHub.
 # rollback: switch back to a previous tag and restore the pre-migration backup (docs/runbooks/rollback.md).
 
 on:
@@ -23,6 +25,11 @@ on:
       backup_dir:
         description: "rollback only: backup directory on the host (default: the one recorded by the last migrate)"
         required: false
+      stack:
+        description: "Which stack: default (today's single site), id, erp or hd (app stacks), db or edge (isolated stacks, through deploy/scripts/stack.sh)"
+        type: choice
+        options: [default, id, erp, hd, db, edge]
+        default: default
 
 concurrency:
   group: deploy-production
@@ -58,6 +65,11 @@ jobs:
             echo "tag=$TAG"
             echo "version=${TAG#v}"
           } >> "$GITHUB_OUTPUT"
+      - name: A rollback of an isolated stack is done by hand
+        if: inputs.action == 'rollback' && inputs.stack != 'default'
+        run: |
+          echo "::error::rollback of the '${{ inputs.stack }}' stack is not automated: follow docs/runbooks/isolation-rollback.md (a code revert does not reverse database changes)"
+          exit 1
       - name: The release exists, is published and is not a pre-release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -95,6 +107,24 @@ jobs:
         with:
           ref: refs/tags/${{ needs.checks.outputs.tag }}
           persist-credentials: false
+      - name: Choose what to run on the host (stack input)
+        id: run
+        env:
+          STACK: ${{ inputs.stack }}
+          VERSION: ${{ needs.checks.outputs.version }}
+        run: |
+          set -euo pipefail
+          stack="${STACK:-default}"
+          case "$stack" in
+            default) cmd="./scripts/deploy.sh --tag $VERSION" ;;
+            id | erp | hd) cmd="./deploy/scripts/stack.sh $stack deploy --tag $VERSION" ;;
+            db | edge) cmd="./deploy/scripts/stack.sh $stack up" ;;
+            *) echo "::error::unknown stack '$stack'"; exit 1 ;;
+          esac
+          {
+            echo "cmd=$cmd"
+            echo "stack=$stack"
+          } >> "$GITHUB_OUTPUT"
       - name: Backup, migrate, health check; automatic rollback on failure
         if: inputs.action == 'deploy'
         uses: ./.github/actions/ssh-deploy
@@ -109,7 +139,7 @@ jobs:
           command: >-
             NXERP_SITE='${{ vars.NXERP_SITE }}'
             NXERP_BACKUP_DIR='${{ vars.NXERP_BACKUP_DIR || '/var/backups/nxerp' }}'
-            ./scripts/deploy.sh --tag '${{ needs.checks.outputs.version }}'
+            ${{ steps.run.outputs.cmd }}
       - name: Roll back to the earlier release and restore the pre-migration backup
         if: inputs.action == 'rollback'
         uses: ./.github/actions/ssh-deploy
@@ -130,6 +160,7 @@ jobs:
             case "$b" in /*) ;; *) echo "backup dir must be an absolute path"; exit 1 ;; esac;
             ./scripts/rollback.sh --yes --previous-tag "${{ needs.checks.outputs.version }}" --backup "$b"'
       - name: Smoke test from outside (anonymous behaviour)
+        if: inputs.stack == 'default' || inputs.stack == ''
         env:
           NXERP_BASE_URL: ${{ vars.PRODUCTION_URL }}
         run: deploy/scripts/smoke.sh
