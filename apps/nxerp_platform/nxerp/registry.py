@@ -249,6 +249,13 @@ def public_entry(key) -> AppEntry | None:
 	return next((e for e in public_entries() if e.key == key), None)
 
 
+def catalogue_entries() -> list:
+	"""The products the public pages may LIST. On an app site, or with no site role, exactly `public_entries()`. On an identity site the apps
+	are not installed, so the enabled peers' apps are listed, each carrying its origin: the tiles link to that app's own site, where
+	sign-up and sign-in work. Display only: sign-up and access requests still resolve an app through `public_entry` (installed here)."""
+	return [e for e in active_entries() if not e.test_only]
+
+
 def entry_for_package(package: str) -> AppEntry | None:
 	"""The entry owning a python package, e.g. the first segment of a whitelisted method path."""
 	return next((e for e in installed_entries() if package in e.owns), None)

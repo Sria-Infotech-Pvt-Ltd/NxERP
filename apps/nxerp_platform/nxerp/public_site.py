@@ -96,6 +96,13 @@ def present(entry, user: str | None = None) -> dict:
 	"""One product as the public templates read it. `href` and `cta` depend on whether the viewer holds it."""
 	user = user or frappe.session.user
 	destination = _held_destination(entry, user)
+	base = (
+		entry.origin or ""
+	)  # an app listed on the identity site lives on another origin: every link goes there
+
+	def at(path):
+		return f"{base}{path}" if path else None
+
 	return {
 		"key": entry.key,
 		"title": entry.public_title,
@@ -106,13 +113,13 @@ def present(entry, user: str | None = None) -> dict:
 		"logo": entry.logo,
 		"signup_policy": entry.signup_policy,
 		"held": bool(destination),
-		"open_href": destination,
-		"page_href": f"{PRODUCTS_ROUTE}/{entry.key}",
-		"get_started_href": f"{GET_STARTED_ROUTE}?product={entry.key}",
-		"signup_href": f"{SIGNUP_ROUTE}?app={entry.key}",
-		"welcome_href": WELCOME_ROUTE.format(key=entry.key),
-		"login_href": f"{LOGIN_ROUTE}?app={entry.key}",
-		"href": destination or f"{PRODUCTS_ROUTE}/{entry.key}",
+		"open_href": at(destination),
+		"page_href": at(f"{PRODUCTS_ROUTE}/{entry.key}"),
+		"get_started_href": at(f"{GET_STARTED_ROUTE}?product={entry.key}"),
+		"signup_href": at(f"{SIGNUP_ROUTE}?app={entry.key}"),
+		"welcome_href": at(WELCOME_ROUTE.format(key=entry.key)),
+		"login_href": at(f"{LOGIN_ROUTE}?app={entry.key}"),
+		"href": at(destination or f"{PRODUCTS_ROUTE}/{entry.key}"),
 		"cta": _("Open application") if destination else _("Learn more"),
 	}
 
@@ -152,11 +159,16 @@ def installed_keys() -> tuple:
 	return tuple(e.key for e in registry.installed_entries())
 
 
+def listed_keys() -> tuple:
+	"""The products the public pages list (installed here, or on an identity site the peers' apps): an announced product that is listed as live is no longer "coming soon"."""
+	return tuple(e.key for e in registry.catalogue_entries())
+
+
 def products() -> list:
 	"""The products the public site shows, in launcher order, then the announced ones (clearly marked)."""
 	user = frappe.session.user
-	shown = [present(entry, user) for entry in registry.public_entries()]
-	shown += [present_upcoming(u) for u in public_catalog.upcoming(installed_keys())]
+	shown = [present(entry, user) for entry in registry.catalogue_entries()]
+	shown += [present_upcoming(u) for u in public_catalog.upcoming(listed_keys())]
 	return shown
 
 

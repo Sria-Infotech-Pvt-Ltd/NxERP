@@ -268,3 +268,50 @@ class TestPublicSite(IntegrationTestCase):
 
 if __name__ == "__main__":
 	unittest.main()
+
+
+class TestIdentitySiteCatalogue(IntegrationTestCase):
+	"""The identity site has no app installed: its public pages list the enabled peers' apps and link to their own sites."""
+
+	PEERS = (
+		frappe._dict(app_key="helpdesk", origin="https://hd.example.test"),
+		frappe._dict(app_key="erpnext", origin="https://erp.example.test"),
+	)
+
+	def identity(self):
+		from unittest.mock import patch
+
+		conf = patch.dict(frappe.conf, {"nxerp_site_role": "identity"})
+		peers = patch.object(registry, "_peers", return_value=list(self.PEERS))
+		conf.start()
+		peers.start()
+		self.addCleanup(conf.stop)
+		self.addCleanup(peers.stop)
+
+	def test_peers_are_listed_with_links_to_their_own_sites_and_aira_stays_coming_soon(self):
+		self.identity()
+		by_key = {p["key"]: p for p in public_site.products()}
+		self.assertIn("helpdesk", by_key)
+		self.assertIn("erpnext", by_key)
+		self.assertEqual(by_key["helpdesk"]["page_href"], "https://hd.example.test/products/helpdesk")
+		self.assertTrue(by_key["erpnext"]["signup_href"].startswith("https://erp.example.test/signup?app="))
+		self.assertTrue(by_key["erpnext"]["login_href"].startswith("https://erp.example.test/login"))
+		aira = [p for p in by_key.values() if p.get("upcoming")]
+		self.assertTrue(
+			aira and all(p["open_href"] is None for p in aira), "an announced product has no link into an app"
+		)
+
+	def test_the_strict_lookups_used_by_sign_up_and_requests_are_unchanged(self):
+		self.identity()
+		self.assertEqual(
+			{e.key for e in registry.public_entries()},
+			{e.key for e in registry.installed_entries() if not e.test_only},
+		)
+
+	def test_without_a_site_role_the_catalogue_is_exactly_the_installed_products(self):
+		self.assertEqual(
+			[e.key for e in registry.catalogue_entries()], [e.key for e in registry.public_entries()]
+		)
+		self.assertTrue(
+			all(p["page_href"].startswith("/") for p in public_site.products() if not p.get("upcoming"))
+		)
