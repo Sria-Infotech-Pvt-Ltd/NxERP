@@ -33,7 +33,8 @@ contains a stack trace, a list of the apps a user lacks, or the name of a grant 
 | bare `/desk` (and `/desk/`) | `nxerp` (`routing.desk_root_redirect`, called from the auth hook) | session | not a gateway: `/nxerp/apps` is the only one. After the gate allows it, a user with the ERPNext grant is redirected (302) to where the router would send them (`/desk/home` for ERPNext only, `/nxerp/apps` for several apps) | unchanged: the gate decides first (no grant: friendly page; guest: login) | **Not redirected:** a platform administrator without the ERPNext grant (keeps the Desk shell to grant access), an unfinished setup wizard (Administrator keeps the bare root until it is done), non-GET requests, and any site with `nxerp_keep_desk_root = 1` (kill-switch, takes effect within the 60 s config cache) |
 | `/app`, `/app/*`, `/apps` | Frappe | as `/desk` | as `/desk` | as `/desk` | 301 to `/desk` (Frappe 16 behaviour, unchanged) |
 | `GET /logout` | Frappe (not overridden) | session | everyone | n/a | ends the session, then `/login` |
-| `/update-password?key=…` | Frappe (not overridden) | one-time key | holder of the emailed key | invalid or used key: Frappe's own message | n/a |
+| `/update-password?key=…` | `nxerp` (`www/update-password.*`, overrides Frappe's page; same logic, NXDESK look) | one-time key (or the old password of a signed-in user) | holder of the emailed key | invalid or used key: Frappe's own message in the same layout | n/a |
+| `/message`, `/404`, `/error` | `nxerp` (`www/message.*`, `404.*`, `error.*`, override Frappe's pages; same content, NXDESK look) | none | everyone | n/a | n/a |
 | `/v1/login` | nobody | n/a | n/a | n/a | 404. Frappe has no such route; `/login` is canonical |
 
 ## Information pages and the announced product (public, read-only)

@@ -1,0 +1,22 @@
+# Compares the shared layer with the owners (recent scan hourly, full compare nightly) and repairs drift.
+[Unit]
+Description=NXDESK shared layer reconciler
+After=network-online.target mariadb.service
+Wants=network-online.target
+
+[Service]
+User=deploy
+Group=deploy
+WorkingDirectory=/srv/apps/nxerp/frappe-bench
+EnvironmentFile=/etc/nxerp-shared/shared.env
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=SHARED_PROJECTOR_USER=shared_projector
+Environment=SHARED_RECONCILE_FULL_HOUR=3
+ExecStart=/srv/apps/nxerp/frappe-bench/env/bin/python -m nxerp.shared_service reconcile-loop
+Restart=always
+RestartSec=10
+NoNewPrivileges=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

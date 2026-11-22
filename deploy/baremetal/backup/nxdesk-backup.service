@@ -1,0 +1,7 @@
+[Unit]
+Description=NXDESK daily site backup
+
+[Service]
+Type=oneshot
+User=deploy
+ExecStart=/srv/apps/helpdesk/src/NxERP/deploy/baremetal/backup/nxdesk-backup.sh

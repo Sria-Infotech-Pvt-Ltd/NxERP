@@ -1,0 +1,9 @@
+{
+  "sources": [
+    {
+      "app_key": "erpnext",
+      "base_url": "https://nxerp.nxsys.in",
+      "key_file": "/etc/nxerp-shared/secrets/feed-erpnext.key"
+    }
+  ]
+}

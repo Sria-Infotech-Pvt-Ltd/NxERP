@@ -1,0 +1,21 @@
+# The Read API (the only reader of the shared layer). Listens on 127.0.0.1 only: never publish it, never give it a public name.
+[Unit]
+Description=NXDESK shared layer Read API
+After=network-online.target mariadb.service
+Wants=network-online.target
+
+[Service]
+User=deploy
+Group=deploy
+WorkingDirectory=/srv/apps/nxerp/frappe-bench
+EnvironmentFile=/etc/nxerp-shared/shared.env
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=SHARED_READAPI_USER=shared_readapi
+ExecStart=/srv/apps/nxerp/frappe-bench/env/bin/gunicorn --bind=127.0.0.1:8210 --workers=2 --threads=4 --worker-class=gthread --timeout=30 nxerp.shared_service.readapi:app
+Restart=always
+RestartSec=5
+NoNewPrivileges=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target
