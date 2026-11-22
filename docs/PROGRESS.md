@@ -573,3 +573,7 @@ NOT DONE: a full set-password round trip with a real emailed key (needs outgoing
 ## Server deploy guide for the owner (2026-11-21)
 
 FACT (read-only look, GO READ PROD): production code is the repository as of 2026-11-05 (commit 997ac7936); none of the sign-up, onboarding, shared-layer, command-API or themed-page work is on it. The server's own `/srv/apps/deploy-nxerp-apps.sh <sha>` updates both benches (and builds the Helpdesk SPA) but does not migrate; production Helpdesk already has `mute_emails` 0, `host_name https://helpdesk.nxsys.in` and a default outgoing Gmail account. Guide: `docs/runbooks/hostinger-deploy-steps.md` (backup, maintenance mode, deploy commit 230bb61016d8350b4ecb4e932b691131377c1a8d, migrate both sites, restart, checks, two rollbacks). NOT RUN: nothing on the server was changed by this step; the owner runs it.
+
+## Domain plan (2026-11-22)
+
+FACT (public DNS lookup, nothing changed): DNS for `nxsys.in` is at GoDaddy; `helpdesk.nxsys.in`, `nxerp.nxsys.in` and `aira.nxsys.in` already point to the server (200.234.40.52); `erp.nxsys.in` points to another server; `nxdesk.nxsys.in` and `id.nxsys.in` have no record. The server also runs an unrelated older service named `nxdesk-web`. Plan and the one record to add (`A nxdesk -> server`): `docs/runbooks/domains-and-dns.md`.
