@@ -17,7 +17,7 @@ Written 2026-11-21 from a read-only look at the server. It uses the server's own
 
 ## The commit to deploy
 
-`230bb61016d8350b4ecb4e932b691131377c1a8d` (branch `hybrid/phase-8-cutover`, already pushed). The script fetches every branch, so it does not have to be merged into `main` first.
+`7e7e6d7bbc4cf3439842bac96e052c15c9b9aaff` (branch `hybrid/phase-8-cutover`, already pushed). The script fetches every branch, so it does not have to be merged into `main` first.
 
 ## Steps
 
@@ -46,7 +46,7 @@ cd /srv/apps/nxerp/frappe-bench    && /home/deploy/.local/bin/bench --site nxerp
 **3. Deploy the code (about 10 minutes; it asks for the sudo password when it restarts the services)**
 
 ```
-/srv/apps/deploy-nxerp-apps.sh 230bb61016d8350b4ecb4e932b691131377c1a8d
+/srv/apps/deploy-nxerp-apps.sh 7e7e6d7bbc4cf3439842bac96e052c15c9b9aaff
 ```
 
 **Stop if** it prints `REAL LOCAL CHANGES ... stopping` or a build error. Nothing is migrated yet; go to "Rollback, code only" below.
