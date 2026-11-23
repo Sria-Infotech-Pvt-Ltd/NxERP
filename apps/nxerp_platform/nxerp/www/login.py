@@ -39,6 +39,20 @@ def stock_login_enabled() -> bool:
 	return bool(frappe.conf.get("nxerp_stock_login"))
 
 
+def login_brand() -> dict:
+	"""Whose login this site is. NXERP keeps its own look; every other product (Helpdesk, a future HRMS) shows its registry display name,
+	tagline and features; the identity site shows the platform. Nothing here is per-app code: a new registry entry brings its own login."""
+	entries = registry.installed_entries()
+	if registry.site_role() == "identity" or not entries:
+		return {"variant": "platform", "name": branding.PLATFORM_NAME, "logo": LOGO, "tagline": branding.TAGLINE, "summary": "", "features": ()}
+	entry = entries[0]
+	name = entry.public_title
+	if entry.key == "erpnext":
+		name = BRAND  # the ERP product is shown as NXERP: its own artwork and copy stay as designed
+	variant = "nxerp" if entry.key == "erpnext" else "product"
+	return {"variant": variant, "name": name, "logo": entry.logo, "tagline": entry.tagline, "summary": entry.summary, "features": entry.features}
+
+
 def get_context(context):
 	"""Stock context first (the framework's own authentication code), branding on top."""
 	if not stock_login_enabled():
@@ -49,12 +63,16 @@ def get_context(context):
 	if context.nx_stock:
 		return context
 
+	brand = login_brand()
+	context.nx_brand = brand
 	name = (context.get("app_name") or "").strip()
-	if not name or name.lower() in STOCK_NAMES:
-		context.app_name = BRAND
+	if brand["variant"] != "nxerp" or not name or name.lower() in STOCK_NAMES or name == BRAND:
+		context.app_name = brand["name"]
 
 	logo = context.get("logo") or ""
-	if not logo or logo.startswith("/assets/frappe/") or "nxerp" in logo.lower():
+	if brand["variant"] != "nxerp":
+		context.logo = brand["logo"]
+	elif not logo or logo.startswith("/assets/frappe/") or "nxerp" in logo.lower():
 		context.logo = LOGO
 	context.favicon = FAVICON
 
@@ -70,7 +88,7 @@ def get_context(context):
 	context.nx_theme_version = _asset_version("css", "nxerp-theme.css")
 	context.nx_lang_code = frappe.local.lang or "en"
 	context.nx_lang_name = _language_name(context.nx_lang_code)
-	context.nx_support_url = branding.support_url(BRAND)
+	context.nx_support_url = branding.support_url(context.app_name)
 	context.nx_show_social = SHOW_SOCIAL_LOGIN
 	context.nx_sso_label = ""
 	# The email-link option is not offered; the social block only renders when switched on.
@@ -80,7 +98,7 @@ def get_context(context):
 		context.provider_logins = sso
 		context.social_login = bool(sso)
 		context.nx_show_social = bool(sso)
-		context.nx_sso_label = _("Sign in with {0}").format(BRAND) if sso else ""
+		context.nx_sso_label = _("Sign in with {0}").format(branding.PLATFORM_NAME) if sso else ""
 	elif not SHOW_SOCIAL_LOGIN:
 		context.social_login = False
 		context.provider_logins = []

@@ -54,6 +54,11 @@ class AppEntry:
 	category: str = DEFAULT_CATEGORY
 	signup_policy: str = DEFAULT_SIGNUP_POLICY  # invite_only | request_access | open_portal
 	onboarding_steps: tuple = ("basics", "about")
+	# Companion apps (python app names) that get their own tile on the Desk apps screen for people who hold this entry's grant,
+	# for example India Compliance next to ERPNext. They keep their own title and logo; everything else stays hidden.
+	desk_apps: tuple = ()
+	# Where the product keeps its own brand name and logo, if it has such settings: (DocType, name field, logo field). Empty = none.
+	brand_settings: tuple = ()
 	# Where the app lives in a browser, e.g. https://hd.example.test. Empty everywhere except on an identity site, where it is
 	# filled from the app's enabled NXERP Peer by `active_entries()` (see docs/architecture/routes.md, "Cross-origin routes").
 	origin: str = ""
@@ -76,6 +81,7 @@ APPS: tuple = (
 		order=10,
 		app="erpnext",
 		owns=("erpnext", "payments", "india_compliance"),
+		desk_apps=("india_compliance",),
 		access_role="NXERP Access: ERPNext",
 		path_prefixes=("/desk", "/app"),
 		# ERPNext's own customer/supplier website model keeps working for website users
@@ -106,6 +112,7 @@ APPS: tuple = (
 		portal_prefixes=("/helpdesk",),
 		portal_route="/helpdesk/my-tickets",
 		display_name="Sria Helpdesk",
+		brand_settings=("HD Settings", "brand_name", "brand_logo"),
 		tagline="Support tickets and a shared knowledge base",
 		summary="Handle customer requests as tickets, share answers in a knowledge base and track service levels, with a portal where customers follow their own requests.",
 		features=(

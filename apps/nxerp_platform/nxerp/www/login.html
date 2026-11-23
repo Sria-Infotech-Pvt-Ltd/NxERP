@@ -60,11 +60,17 @@
 
 		<div class="nx-hero-inner">
 			<header class="nx-brand">
+				{% if nx_brand.variant == "nxerp" %}
 				<img class="nx-hero-logo" src="/assets/nxerp/nxerp_login/images/nxerp-wordmark-light.png" alt="{{ app_name | e }}">
 				<p class="nx-brand-tag">{{ _("Smarter Business. Stronger Tomorrow.") }}</p>
+				{% else %}
+				<p class="nx-hero-word">{{ app_name | e }}</p>
+				<p class="nx-brand-tag">{{ nx_brand.tagline | e }}</p>
+				{% endif %}
 			</header>
 
 			<div class="nx-hero-main">
+			{% if nx_brand.variant == "nxerp" %}
 			<p class="nx-pillars">
 				<span>{{ _("People") }}</span><span>{{ _("Process") }}</span><span>{{ _("Technology") }}</span><span>{{ _("Growth") }}</span>
 			</p>
@@ -92,6 +98,20 @@
 			</ul>
 
 			<p class="nx-tagline">{{ _("More Than ERP.") }}<br>{{ _("A Smarter Way Forward.") }}</p>
+			{% else %}
+			<h2 class="nx-headline">{{ nx_brand.tagline | e }}</h2>
+			{% if nx_brand.summary %}<p class="nx-lede">{{ nx_brand.summary | e }}</p>{% endif %}
+			{% if nx_brand.features %}
+			<ul class="nx-features">
+				{% for f in nx_brand.features %}
+				<li>
+					<span class="nx-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8.8 12 2.2 2.2 4.3-4.4"/><circle cx="12" cy="12" r="9"/></svg></span>
+					<div><strong>{{ f | e }}</strong></div>
+				</li>
+				{% endfor %}
+			</ul>
+			{% endif %}
+			{% endif %}
 			</div>
 
 			<p class="nx-copy">&copy; {{ nx_year }} {{ app_name | e }}. {{ _("All rights reserved.") }}</p>
@@ -124,7 +144,7 @@
 			{% endif %}
 		</div>
 
-		<p class="nx-panel-foot">{{ _("Powering Business Through Digital Infrastructure.") }}</p>
+		{% if nx_brand.variant == "nxerp" %}<p class="nx-panel-foot">{{ _("Powering Business Through Digital Infrastructure.") }}</p>{% endif %}
 	</main>
 
 </div>
@@ -147,14 +167,23 @@
 	(function () {
 		var button = document.getElementById("nx-theme-toggle");
 		var logo = document.querySelector(".nx-card .page-card-head .app-logo");
-		var lightLogo = "/assets/nxerp/nxerp_login/images/nxerp-wordmark-light.png";
+		if (logo && {{ (nx_brand.variant != "nxerp") | tojson }}) {
+			// no logo artwork exists for this product yet: write its name where the logo would be
+			var word = document.createElement("div");
+			word.className = "nx-card-word";
+			word.textContent = {{ app_name | tojson }};
+			logo.parentNode.insertBefore(word, logo);
+			logo.style.display = "none";
+			logo = null;
+		}
+		var lightLogo = {{ ("/assets/nxerp/nxerp_login/images/nxerp-wordmark-light.png" if nx_brand.variant != "product" else "") | tojson }};
 		if (logo && !logo.dataset.src) logo.dataset.src = logo.getAttribute("src");
 		function apply(theme) {
 			document.documentElement.setAttribute("data-theme", theme);
 			var bar = getComputedStyle(document.documentElement).getPropertyValue("--surface-base").trim();
 			var meta = document.querySelector('meta[name="theme-color"]');
 			if (meta && bar) meta.setAttribute("content", bar);
-			if (logo) logo.setAttribute("src", theme === "dark" ? lightLogo : logo.dataset.src);
+			if (logo) logo.setAttribute("src", theme === "dark" && lightLogo ? lightLogo : logo.dataset.src);
 		}
 		apply(document.documentElement.getAttribute("data-theme") || "light");
 		if (!button) return;

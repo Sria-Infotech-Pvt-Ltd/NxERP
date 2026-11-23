@@ -56,6 +56,44 @@ def open_signup():
 		frappe.db.set_single_value("Website Settings", "disable_signup", 0)
 
 
+# Values that mean "nobody chose a brand": the stock names and the NXERP defaults older versions of this app wrote everywhere.
+_UNSET_BRANDS = {"", "frappe", "helpdesk", "erpnext", "nxerp", "frappe helpdesk"}
+
+
+def _unset(value, logo=False) -> bool:
+	value = (value or "").strip().lower()
+	if logo:
+		return not value or value.startswith("/assets/frappe/") or "nxerp" in value
+	return value in _UNSET_BRANDS
+
+
+def ensure_site_branding():
+	"""Make the site say what it is. A site whose first product is not the ERP (Helpdesk, a future HRMS) is branded with that product's
+	registry display name and logo in Website Settings, System Settings and the product's own brand settings (registry `brand_settings`),
+	so the login page, the desk and the emails do not read "NXERP". Only values nobody chose (empty, stock, or the old NXERP default) are
+	replaced, so a name an administrator typed stays. Idempotent."""
+	entries = registry.installed_entries()
+	if not entries or registry.site_role() == "identity":
+		return
+	entry = entries[0]
+	if entry.key == "erpnext":
+		return
+	name = entry.public_title
+	ws = "Website Settings"
+	if _unset(frappe.db.get_single_value(ws, "app_name")):
+		frappe.db.set_single_value(ws, "app_name", name)
+	if _unset(frappe.db.get_single_value(ws, "app_logo"), logo=True):
+		frappe.db.set_single_value(ws, "app_logo", entry.logo)
+	if _unset(frappe.db.get_single_value("System Settings", "app_name")):
+		frappe.db.set_single_value("System Settings", "app_name", name)
+	if entry.brand_settings:
+		doctype, name_field, logo_field = entry.brand_settings
+		if _unset(frappe.db.get_single_value(doctype, name_field)):
+			frappe.db.set_single_value(doctype, name_field, name)
+		if _unset(frappe.db.get_single_value(doctype, logo_field), logo=True):
+			frappe.db.set_single_value(doctype, logo_field, entry.logo)
+
+
 def ensure_navbar_items():
 	"""Sync the standard navbar items (the "All applications" row) now; Frappe otherwise does it only on migrate."""
 	from frappe.core.doctype.navbar_settings.navbar_settings import sync_standard_items
@@ -68,6 +106,7 @@ def after_install():
 	ensure_feed_role()
 	ensure_platform_settings()
 	ensure_navbar_items()
+	ensure_site_branding()
 	open_signup()
 
 
@@ -75,3 +114,4 @@ def after_migrate():
 	ensure_access_roles()
 	ensure_feed_role()
 	ensure_platform_settings()
+	ensure_site_branding()

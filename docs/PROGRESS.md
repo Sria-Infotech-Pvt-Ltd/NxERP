@@ -11,6 +11,16 @@ Resume point for the next session. Update this file in every PR that changes pha
 | 3: Unified login, launcher, routing | **Complete locally and browser-verified (55/55); not pushed, no PR** |
 | 4: Helpdesk parity, CI/CD, release readiness, acceptance | **Built locally; nothing ran on GitHub; see `docs/acceptance/acceptance-report.md`** (9 BLOCKED-NEEDS-OWNER, most others PARTIAL) |
 
+## Per-app login branding and India Compliance tile (2026-11-23)
+
+Branch `hybrid/phase-8-cutover`. FACT (browser-checked on the local stack): the Helpdesk login (`hd.localhost:8180/login`) shows "Sria Helpdesk" (hero, tagline, features, card, copyright); the identity site shows "NXDESK"; the ERP site keeps its NXERP look.
+`www/login.py` `login_brand()` picks the variant from the registry, so a new entry (HRMS, ...) gets its own login with no per-app code: NXERP keeps its artwork, every other product shows its registry display name, tagline, summary and features (no logo artwork exists for Sria Helpdesk, so its name is written as text).
+`install.ensure_site_branding()` (after_install and after_migrate) sets Website Settings, System Settings and the registry-declared brand settings (`brand_settings`, HD Settings for Helpdesk) to the product name, only where the value is empty, stock or the old NXERP default.
+"Sign in with ..." on app sites now says NXDESK (the identity site).
+India Compliance: the registry entry for ERPNext declares `desk_apps=("india_compliance",)`; the launcher keeps that app's own tile for holders of the ERPNext grant. FACT: the apps screen on `erp.localhost:8180/desk` shows ERPNext and India Compliance.
+Local-only note: the running erp container had no `sites/assets/india_compliance` link (image built before the app was added), so the tile icon was broken until the link was created by hand; an image built from `deploy/apps.json` links it at build time (ASSUMPTION, not rebuilt here).
+Tests: `tests/test_login_brand.py` (6) plus add-app checklist, registry, routing, themed pages and public-site suites pass on the all-apps scratch site. Not done: logo artwork for Sria Helpdesk; the `splash_image` hook and email templates still carry NXERP defaults.
+
 ## Hybrid database programme, Phase 0: identity, ecosystem registry, worktrees (2026-11-18)
 
 Branch `hybrid/phase-0-foundation` (from `feat/nxdesk-onboarding` at `8a4910610`). Not pushed, no PR. Documentation only: no application code, deployment configuration or production was touched.

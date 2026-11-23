@@ -65,8 +65,13 @@ def extend_bootinfo(bootinfo):
 		for package in entry.owns:
 			by_package[package] = entry
 	allowed = {e.key for e in apps}
+	# companion apps keep their own tile (title and logo) for people who hold the grant of the entry that declares them
+	companions = {pkg: e.key for e in registry.installed_entries() for pkg in e.desk_apps}
 
 	for row in bootinfo.get("app_data") or []:
+		if companions.get(row.get("app_name")) in allowed:
+			row["on_apps_screen"] = True
+			continue
 		entry = by_package.get(row.get("app_name"))
 		if entry and entry.key in allowed and row.get("app_name") == entry.app:
 			row.update(
