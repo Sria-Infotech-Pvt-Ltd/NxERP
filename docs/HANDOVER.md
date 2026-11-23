@@ -29,6 +29,8 @@ One platform with one sign-in and one front page (`nxdesk.nxsys.in`). Each produ
 
 After sign-in `/nxerp/go` decides where a person lands (`/nxerp/apps` is the launcher for people with two or more apps).
 
+**India Compliance** (GST, e-invoice, e-way bill, TDS) is part of NXERP: pinned upstream release `v16.11.1` in `deploy/apps.json`, installed on the NXERP site only, covered by the ERPNext access grant. Verified on staging and with our test suites; **not yet installed on the live NXERP site** and filing against the GST portal is untested: `docs/runbooks/india-compliance.md`.
+
 ### Account and onboarding API (public, rate limited)
 
 `POST /api/method/nxerp.api.account.sign_up` (email, full name, app; 10 per hour per IP; creates a customer-level Website User and emails the set-password link), `nxerp.api.onboarding.*` (first-run wizard), `nxerp.api.access_request.*` (request and decide access). Frappe's own `update_password` and `test_password_strength` serve the set-password page.

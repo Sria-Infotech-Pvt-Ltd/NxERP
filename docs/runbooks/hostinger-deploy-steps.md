@@ -99,3 +99,7 @@ Do the same for `nxerp.nxsys.in` from its own bench, then step 5. The databases 
 ## Not part of this deploy (still to do later)
 
 The identity site `id.nxsys.in`, the shared layer, shared read in Helpdesk, the cutover tools and the removal of the old sync are built and tested but stay off. They need the plan in `hostinger-bare-metal-hosting.md` and the owner's go for each. The `nxerp` site still has no outgoing mail account.
+
+## After this deploy: India Compliance on NXERP (optional, 15 minutes)
+
+NXERP is meant to carry India Compliance (GST, e-invoicing, e-way bills). Install it on `nxerp.nxsys.in` with `docs/runbooks/india-compliance.md`, after steps 1 to 6 above are checked.

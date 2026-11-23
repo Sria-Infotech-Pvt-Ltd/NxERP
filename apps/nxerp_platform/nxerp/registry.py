@@ -75,7 +75,7 @@ APPS: tuple = (
 		route="/desk/home",  # ERPNext's own app_home; bare /desk is not a destination (routing.desk_root_redirect)
 		order=10,
 		app="erpnext",
-		owns=("erpnext", "payments"),
+		owns=("erpnext", "payments", "india_compliance"),
 		access_role="NXERP Access: ERPNext",
 		path_prefixes=("/desk", "/app"),
 		# ERPNext's own customer/supplier website model keeps working for website users

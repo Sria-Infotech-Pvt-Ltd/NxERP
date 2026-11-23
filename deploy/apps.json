@@ -12,6 +12,12 @@
     "commit": "ade850bbd6a7412e9994a9637d2c5c713771632a"
   },
   {
+    "name": "india_compliance",
+    "url": "https://github.com/resilient-tech/india-compliance",
+    "branch": "v16.11.1",
+    "commit": "68982391ab0e487ba418c1f58359b193680136ec"
+  },
+  {
     "name": "telephony",
     "url": "https://github.com/frappe/telephony",
     "branch": "develop",
