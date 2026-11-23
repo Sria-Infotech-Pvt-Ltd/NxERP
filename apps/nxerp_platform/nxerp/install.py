@@ -63,7 +63,7 @@ _UNSET_BRANDS = {"", "frappe", "helpdesk", "erpnext", "nxerp", "frappe helpdesk"
 def _unset(value, logo=False) -> bool:
 	value = (value or "").strip().lower()
 	if logo:
-		return not value or value.startswith("/assets/frappe/") or "nxerp" in value
+		return not value or value.startswith("/assets/frappe/") or "nxerp" in value or "manifest-icon" in value
 	return value in _UNSET_BRANDS
 
 

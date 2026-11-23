@@ -59,6 +59,8 @@ class AppEntry:
 	desk_apps: tuple = ()
 	# Where the product keeps its own brand name and logo, if it has such settings: (DocType, name field, logo field). Empty = none.
 	brand_settings: tuple = ()
+	# Wide logo (symbol and name) for the login card, when the product has one. Empty = its name is written as text.
+	wordmark: str = ""
 	# Where the app lives in a browser, e.g. https://hd.example.test. Empty everywhere except on an identity site, where it is
 	# filled from the app's enabled NXERP Peer by `active_entries()` (see docs/architecture/routes.md, "Cross-origin routes").
 	origin: str = ""
@@ -100,7 +102,8 @@ APPS: tuple = (
 	AppEntry(
 		key="helpdesk",
 		title="Helpdesk",
-		logo="/assets/helpdesk/desk/manifest/manifest-icon-192.maskable.png",
+		logo="/assets/nxerp/nxerp_login/images/sria-helpdesk-mark.png",
+		wordmark="/assets/nxerp/nxerp_login/images/sria-helpdesk-logo.png",
 		route="/helpdesk/home",
 		order=20,
 		app="helpdesk",

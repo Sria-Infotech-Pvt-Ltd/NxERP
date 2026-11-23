@@ -44,13 +44,13 @@ def login_brand() -> dict:
 	tagline and features; the identity site shows the platform. Nothing here is per-app code: a new registry entry brings its own login."""
 	entries = registry.installed_entries()
 	if registry.site_role() == "identity" or not entries:
-		return {"variant": "platform", "name": branding.PLATFORM_NAME, "logo": LOGO, "tagline": branding.TAGLINE, "summary": "", "features": ()}
+		return {"variant": "platform", "name": branding.PLATFORM_NAME, "logo": LOGO, "wordmark": "", "tagline": branding.TAGLINE, "summary": "", "features": ()}
 	entry = entries[0]
 	name = entry.public_title
 	if entry.key == "erpnext":
 		name = BRAND  # the ERP product is shown as NXERP: its own artwork and copy stay as designed
 	variant = "nxerp" if entry.key == "erpnext" else "product"
-	return {"variant": variant, "name": name, "logo": entry.logo, "tagline": entry.tagline, "summary": entry.summary, "features": entry.features}
+	return {"variant": variant, "name": name, "logo": entry.logo, "wordmark": entry.wordmark, "tagline": entry.tagline, "summary": entry.summary, "features": entry.features}
 
 
 def get_context(context):

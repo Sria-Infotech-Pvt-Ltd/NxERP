@@ -19,7 +19,7 @@ Branch `hybrid/phase-8-cutover`. FACT (browser-checked on the local stack): the 
 "Sign in with ..." on app sites now says NXDESK (the identity site).
 India Compliance: the registry entry for ERPNext declares `desk_apps=("india_compliance",)`; the launcher keeps that app's own tile for holders of the ERPNext grant. FACT: the apps screen on `erp.localhost:8180/desk` shows ERPNext and India Compliance.
 Local-only note: the running erp container had no `sites/assets/india_compliance` link (image built before the app was added), so the tile icon was broken until the link was created by hand; an image built from `deploy/apps.json` links it at build time (ASSUMPTION, not rebuilt here).
-Tests: `tests/test_login_brand.py` (6) plus add-app checklist, registry, routing, themed pages and public-site suites pass on the all-apps scratch site. Not done: logo artwork for Sria Helpdesk; the `splash_image` hook and email templates still carry NXERP defaults.
+Tests: `tests/test_login_brand.py` (6) plus add-app checklist, registry, routing, themed pages and public-site suites pass on the all-apps scratch site. Update: the owner supplied the Sria Helpdesk logo; it is `public/nxerp_login/images/sria-helpdesk-logo.png` (wide, login card, registry `wordmark`) and `sria-helpdesk-mark.png` (square, registry `logo`), browser-checked on `hd.localhost:8180/login`. Not done: the `splash_image` hook and email templates still carry NXERP defaults.
 
 ## Hybrid database programme, Phase 0: identity, ecosystem registry, worktrees (2026-11-18)
 

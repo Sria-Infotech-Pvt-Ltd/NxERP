@@ -168,13 +168,21 @@
 		var button = document.getElementById("nx-theme-toggle");
 		var logo = document.querySelector(".nx-card .page-card-head .app-logo");
 		if (logo && {{ (nx_brand.variant != "nxerp") | tojson }}) {
-			// no logo artwork exists for this product yet: write its name where the logo would be
+			// the product's wide logo if it has one, otherwise its name written as text
+			var wordmark = {{ nx_brand.wordmark | tojson }};
+			if (wordmark) {
+				logo.setAttribute("src", wordmark);
+				logo.dataset.src = wordmark;
+				logo.classList.add("nx-card-wordmark");
+				logo = null;
+			} else {
 			var word = document.createElement("div");
 			word.className = "nx-card-word";
 			word.textContent = {{ app_name | tojson }};
 			logo.parentNode.insertBefore(word, logo);
 			logo.style.display = "none";
 			logo = null;
+			}
 		}
 		var lightLogo = {{ ("/assets/nxerp/nxerp_login/images/nxerp-wordmark-light.png" if nx_brand.variant != "product" else "") | tojson }};
 		if (logo && !logo.dataset.src) logo.dataset.src = logo.getAttribute("src");

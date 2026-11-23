@@ -504,3 +504,5 @@ body[data-path="login"] footer { display: none !important; }
 
 .nx-hero-word { margin: 0; font-size: calc(var(--u) * 44); font-weight: 700; letter-spacing: -0.02em; color: var(--nx-on-hero-90, #fff); line-height: 1.1; }
 .nx-card-word { text-align: center; font-size: calc(var(--u) * 30); font-weight: 700; letter-spacing: -0.01em; margin: calc(var(--u) * 8) 0 calc(var(--u) * 16); color: var(--nx-text, inherit); }
+.nx-card .app-logo.nx-card-wordmark { width: min(100%, calc(var(--u) * 330)); height: auto; max-height: none; object-fit: contain; border-radius: 12px; }
+[data-theme="dark"] .nx-card .app-logo.nx-card-wordmark { background: #fff; padding: 8px 12px; }
