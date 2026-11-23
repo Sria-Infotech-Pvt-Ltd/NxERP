@@ -577,3 +577,7 @@ FACT (read-only look, GO READ PROD): production code is the repository as of 202
 ## Domain plan (2026-11-22)
 
 FACT (public DNS lookup, nothing changed): DNS for `nxsys.in` is at GoDaddy; `helpdesk.nxsys.in`, `nxerp.nxsys.in` and `aira.nxsys.in` already point to the server (200.234.40.52); `erp.nxsys.in` points to another server; `nxdesk.nxsys.in` and `id.nxsys.in` have no record. The server also runs an unrelated older service named `nxdesk-web`. Plan and the one record to add (`A nxdesk -> server`): `docs/runbooks/domains-and-dns.md`.
+
+## Local Docker guide and launcher (2026-11-23)
+
+FACT: `http://127.0.0.1:8180` answers 404 by design (the edge picks the site from the host name; with `Host: hd|id|erp.example.test` it answers 200). Added `scripts/open-nxdesk-local.ps1` and `.cmd` (open Chrome with `*.example.test` mapped to the edge) and `docs/runbooks/local-docker-setup.md` (fresh-clone guide: prerequisites, image build, env files, start order, launcher, 404 explanation, day-to-day, troubleshooting). EVIDENCE: the launcher ran and opened the front page; the stacks were checked with curl. NOT RE-RUN today: a full fresh-clone build and `create-site` from zero (steps follow `deploy/docker/compose/isolated/README.md`); the `*.localhost` option in the guide.
