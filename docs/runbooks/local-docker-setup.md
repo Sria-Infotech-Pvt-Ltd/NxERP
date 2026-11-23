@@ -66,21 +66,31 @@ for s in id hd erp; do deploy/scripts/stack.sh $s health; done
 
 `create-site` takes a few minutes per site. Each `health` line should end with `healthy`.
 
-**6. Open it**
+**6. Make the links work in a normal browser, then open it**
 
-Double-click `scripts/open-nxdesk-local.cmd` (or run `scripts/open-nxdesk-local.ps1` in PowerShell). It opens a separate Chrome window on the front page. In that window:
+Every site also answers to `<name>.localhost` (the front door was generated with those names), and Chrome resolves `*.localhost` to your own machine, so no special window is needed. Tell each site its own address, so links, redirects and emails use it:
+
+```
+for s in id hd erp; do deploy/scripts/stack.sh $s bench set-config host_name http://$s.localhost:8180; done
+```
+
+and, on the identity site, point its two connections (peers) at the app sites: in Desk of `id`, **NXERP Peer**, set `origin` to `http://hd.localhost:8180` for `helpdesk` and `http://erp.localhost:8180` for `erpnext` (the identity site needs `developer_mode` for `http` origins on a laptop). Restart the three backends once (`docker restart nxerp-id-backend-1 nxerp-hd-backend-1 nxerp-erp-backend-1`).
+
+Then open, in any normal window:
 
 | Address | What it is |
 | --- | --- |
-| `http://id.example.test:8080/` | the NXDESK front page and sign-in |
-| `http://hd.example.test:8080/` | Sria Helpdesk (`/helpdesk` for the agent screens) |
-| `http://erp.example.test:8080/` | NXERP |
+| `http://id.localhost:8180/` | the NXDESK front page and sign-in; its product tiles lead to the two app sites |
+| `http://hd.localhost:8180/` | Sria Helpdesk (`/helpdesk` for the agent screens) |
+| `http://erp.localhost:8180/` | NXERP |
 
-Sign in as `Administrator` with the `NXERP_ADMIN_PASSWORD` of that site. The names only work in that window because the launcher maps `*.example.test` to your front door.
+Sign in as `Administrator` with the `NXERP_ADMIN_PASSWORD` of that site. (`scripts/open-nxdesk-local.cmd` is the older alternative: a separate Chrome window that maps `*.example.test`; you do not need it.)
+
+**Walking the sign-up and first-run screens without the verification email** (local test sites only): fill in the sign-up form on `hd.localhost:8180/signup?app=helpdesk` (or `erp.localhost:8180/signup?app=erpnext`) with a new address, then in Git Bash run `scripts/dev-signup-link.sh hd someone@example.test` (`erp` for NXERP). It prints the set-password link the email would have carried. Open it, set a password, sign in, and open `/welcome/helpdesk` (or `/welcome/erpnext`). The script refuses to run on any site that is not a local test site.
 
 ## The one thing that confuses everyone: 404
 
-`http://127.0.0.1:8180/` (the front door's port) answers **404 Not Found on purpose**. The front door picks the site from the name in the address, and a bare IP has no name. Use the launcher, or the addresses above in the launcher's Chrome window. Checking from a terminal: `curl -H "Host: hd.example.test" http://127.0.0.1:8180/login` answers 200.
+`http://127.0.0.1:8180/` (the front door's port) answers **404 Not Found on purpose**. The front door picks the site from the name in the address, and a bare IP has no name. Use the `.localhost` addresses above. Checking from a terminal: `curl -H "Host: hd.example.test" http://127.0.0.1:8180/login` answers 200.
 
 Ports: only the front door is published, on `127.0.0.1:8180`. The databases publish nothing. No container uses port 80.
 

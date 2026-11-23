@@ -345,6 +345,19 @@ class TestRouting(IntegrationTestCase):
 		self.assertEqual(frappe.local.flags.home_page, "/nxerp/go")
 		frappe.local.flags.home_page = None
 
+	def test_the_login_answer_for_a_website_user_has_no_double_slash(self):
+		# Frappe answers home_page = "/" + flag for a Website User and = flag for a System User
+		for user, expected_answer in ((self.customer, "/nxerp/go"), (self.sysmgr, "/nxerp/go")):
+			with self.subTest(user=user):
+				frappe.local.flags.home_page = None
+				routing.on_session_creation(frappe._dict(user=user))
+				flag = frappe.local.flags.home_page
+				kind = frappe.db.get_value("User", user, "user_type")
+				answer = "/" + flag if kind == "Website User" else flag
+				self.assertEqual(answer, expected_answer)
+				self.assertFalse(answer.startswith("//"))
+		frappe.local.flags.home_page = None
+
 	# --- logins that end in a redirect (emailed link, SSO) ---------------------------------------
 
 	def redirect_after_login(self, location, signed_in=True, status=302):

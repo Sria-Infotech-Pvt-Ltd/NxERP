@@ -25,12 +25,15 @@ env_value() { [ -f "$1" ] && sed -n "s/^$2=//p" "$1" | head -n 1 | tr -d '\r' ||
 domain="$(env_value "$ENV_DIR/edge.env" NXERP_DOMAIN)"
 [[ "$domain" =~ ^[A-Za-z0-9.-]+$ ]] || fatal "NXERP_DOMAIN in $ENV_DIR/edge.env is empty or not a host name"
 
-# render STACK HOST SITE: one server block from the template (only these three tokens are replaced)
+# render STACK HOST SITE [LOCALHOST]: one server block from the template (only these tokens are replaced). LOCALHOST is the extra
+# <prefix>.localhost name every stack also answers to (Chrome resolves *.localhost to your own machine, no hosts file needed); it
+# defaults to HOST so a block never holds a stray token.
 render() {
 	local text
 	text="$(cat "$EDGE_DIR/server.block.template")"
 	text="${text//\$\{STACK\}/$1}"
 	text="${text//\$\{HOST\}/$2}"
+	text="${text//\$\{HOST_LOCAL\}/${4:-$2}}"
 	text="${text//\$\{NXERP_SITE\}/$3}"
 	printf '%s\n' "$text"
 }
@@ -57,7 +60,7 @@ while read -r name prefix tier _rest; do
 	[[ "$site" =~ ^[A-Za-z0-9.-]+$ ]] || fatal "NXERP_SITE of '$name' is not a host name"
 	{
 		printf '\n# stack %s (tier %s)\n' "$name" "$tier"
-		render "$name" "$prefix.$domain" "$site"
+		render "$name" "$prefix.$domain" "$site" "$prefix.localhost"
 	} >>"$conf"
 	stack_names+=("$name")
 	stack_hosts+=("$prefix.$domain")

@@ -1,9 +1,9 @@
-# ONE server block for ONE stack (Phase 5C). edge-gen.sh replaces ${STACK}, ${HOST} and ${NXERP_SITE} (and nothing else; nginx's own
+# ONE server block for ONE stack (Phase 5C). edge-gen.sh replaces ${STACK}, ${HOST}, ${HOST_LOCAL} and ${NXERP_SITE} (and nothing else; nginx's own
 # $variables stay) and appends the result to the generated edge file. Nothing here names an app: any number of stacks use this template.
 
 server {
   listen 8080;
-  server_name ${HOST};
+  server_name ${HOST} ${HOST_LOCAL};
   client_max_body_size 50m;
 
   set $nxerp_backend ${STACK}-backend:8000;

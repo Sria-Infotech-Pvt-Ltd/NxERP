@@ -258,7 +258,11 @@ def on_session_creation(login_manager=None):
 	Frappe has two redirect engines (research part 1). The per-request `home_page` flag is the one override
 	that survives both, so a fresh login, and every flow that asks for the home page, lands on the router.
 	"""
-	frappe.local.flags.home_page = ROUTER_ROUTE
+	# Frappe uses the flag as it is for a System User (home_page = flag) but puts its own "/" in front for a Website User
+	# (home_page = "/" + flag): a flag with a leading slash would make that "//nxerp/go", which a browser reads as another website.
+	user = getattr(login_manager, "user", None) or frappe.session.user
+	website_user = frappe.db.get_value("User", user, "user_type") == "Website User"
+	frappe.local.flags.home_page = ROUTER_ROUTE.lstrip("/") if website_user else ROUTER_ROUTE
 	frappe.local.flags.nxerp_signed_in = True  # lets `after_request` re-point a redirect issued by this login
 
 
