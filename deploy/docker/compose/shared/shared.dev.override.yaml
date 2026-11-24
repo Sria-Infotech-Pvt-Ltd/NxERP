@@ -25,6 +25,8 @@ services:
       - ${SHARED_SECRETS_DIR:-./secrets}:/run/nxerp-shared:ro
   shared-api:
     <<: *dev-source
+    ports:
+      - "127.0.0.1:${SHARED_API_HOST_PORT:-8210}:8080" # dev only: reach the Read API from the host
   shared-root-tool:
     <<: *dev-source
   shared-admin:
