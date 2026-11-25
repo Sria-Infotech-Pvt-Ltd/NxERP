@@ -129,7 +129,7 @@ def resolve_landing(user: str | None = None) -> dict:
 		return {"mode": "none", "destination": LOGIN_ROUTE, "apps": []}
 
 	apps = get_user_apps(user)
-	summary = [{"key": e.key, "title": e.title, "route": app_url(e), "logo": e.logo} for e in apps]
+	summary = [{"key": e.key, "title": e.public_title, "route": app_url(e), "logo": e.logo} for e in apps]
 
 	if len(apps) > 1:
 		return {"mode": "launcher", "destination": LAUNCHER_ROUTE, "apps": summary}

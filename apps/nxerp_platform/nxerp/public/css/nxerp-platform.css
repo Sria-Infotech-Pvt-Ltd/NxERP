@@ -74,6 +74,7 @@ html::after {
 	background: linear-gradient(90deg, transparent, var(--surface-accent-6) 50%, transparent); opacity: .7;
 }
 .nxp-logo { height: 30px; width: auto; display: block; }
+.nxp-logo-text { font-size: 1.6rem; font-weight: 800; letter-spacing: 0.02em; color: var(--nx-text, inherit); }
 .nxp-user { display: flex; align-items: center; gap: .5rem; font-size: .9rem; color: var(--ink-gray-6); }
 .nxp-me {
 	display: inline-flex; align-items: center; gap: .6rem; padding: .22rem .85rem .22rem .22rem; border-radius: 999px;

@@ -9,7 +9,7 @@ matches what is enforced.
 import frappe
 from frappe import _
 
-from nxerp import routing
+from nxerp import registry, routing
 
 no_cache = True
 
@@ -29,4 +29,5 @@ def get_context(context):
 	context.show_sidebar = False
 	context.title = _("Applications")
 	context.apps = landing["apps"]
+	context.identity_site = registry.site_role() == "identity"
 	context.full_name = frappe.utils.get_fullname(user)

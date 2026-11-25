@@ -4,7 +4,7 @@
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<meta name="robots" content="noindex" />
-	<title>{{ title }} | NXERP</title>
+	<title>{{ title }} | {{ 'NXDESK' if identity_site else 'NXERP' }}</title>
 	<link rel="icon" href="/assets/nxerp/nxerp_login/images/nxerp-favicon.png" />
 	<script>
 		(function () {
@@ -17,12 +17,12 @@
 		})();
 	</script>
 	<link rel="stylesheet" href="/assets/nxerp/css/nxerp-theme.css" />
-	<link rel="stylesheet" href="/assets/nxerp/css/nxerp-platform.css?v=8" />
+	<link rel="stylesheet" href="/assets/nxerp/css/nxerp-platform.css?v=9" />
 </head>
 <body class="nxp-body">
 	<a class="nxp-skip" href="#apps">{{ _("Skip to applications") }}</a>
 	<header class="nxp-header">
-		<img class="nxp-logo" src="/assets/nxerp/nxerp_login/images/nxerp-wordmark.png" data-light="/assets/nxerp/nxerp_login/images/nxerp-wordmark-light.png" alt="NXERP" />
+		{% if identity_site %}<span class="nxp-logo-text">NXDESK</span>{% else %}<img class="nxp-logo" src="/assets/nxerp/nxerp_login/images/nxerp-wordmark.png" data-light="/assets/nxerp/nxerp_login/images/nxerp-wordmark-light.png" alt="NXERP" />{% endif %}
 		<nav class="nxp-user" aria-label="{{ _('Account') }}">
 			<span class="nxp-me">
 				<span class="nxp-avatar" aria-hidden="true">{{ (full_name.split() | map("first") | list)[:2] | join("") | upper | e }}</span>
