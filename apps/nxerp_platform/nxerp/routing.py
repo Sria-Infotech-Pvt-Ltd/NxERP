@@ -234,6 +234,11 @@ def desk_root_redirect(user: str, path: str, method: str = "GET") -> str | None:
 		return None
 	if frappe.conf.get("nxerp_keep_desk_root") or not frappe.is_setup_complete():
 		return None
+	if registry.site_role() == "identity":
+		# the identity site owns no app, so Desk's empty root is a dead page for everyone: send people to the launcher
+		# (or the no-access page that points an administrator at user management). `/desk/*` deep links still open.
+		destination = route(user)
+		return None if destination in DESK_ROOT_PATHS else destination
 	entry, _ = registry.entry_for_path(path)
 	if entry is None or not access.can_access_app(user, entry.key):
 		return None

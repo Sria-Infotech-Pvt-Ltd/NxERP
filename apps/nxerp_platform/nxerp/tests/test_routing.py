@@ -282,6 +282,15 @@ class TestRouting(IntegrationTestCase):
 		for user in (self.agent, self.noapps, self.customer):  # not ours to decide: the gate refuses them
 			self.assertIsNone(self.desk_root(user), user)
 
+	def test_on_the_identity_site_the_desk_root_is_never_a_dead_end(self):
+		# no app is installed there, so Desk's own root is empty: everyone signed in goes through the router instead
+		for user in ("Administrator", self.sysmgr, self.both):
+			target = self.desk_root(user, nxerp_site_role="identity")
+			self.assertIn(target, ("/nxerp/apps", "/nxerp/no-access"), user)
+		self.assertIsNone(self.desk_root("Guest", nxerp_site_role="identity"))
+		self.assertIsNone(self.desk_root("Administrator", path="/desk/user", nxerp_site_role="identity"))
+		self.assertIsNone(self.desk_root("Administrator", setup_complete=False, nxerp_site_role="identity"))
+
 	def test_only_the_exact_desk_root_is_moved(self):
 		for path in (
 			"/desk/home",
