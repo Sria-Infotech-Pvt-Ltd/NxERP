@@ -13,7 +13,7 @@ env_file=/etc/nxerp-shared/shared.env
 bench=/srv/apps/nxerp/frappe-bench
 [ -r "$root_file" ] || { echo "cannot read $root_file" >&2; exit 1; }
 [ -r "$env_file" ] || { echo "missing $env_file: copy deploy/baremetal/shared.env.example and fill it in" >&2; exit 1; }
-if grep -q 'CHANGE_ME' "$env_file"; then echo "$env_file still contains CHANGE_ME" >&2; exit 1; fi
+if grep -Eq '^[^#]*=CHANGE_ME' "$env_file"; then echo "$env_file still contains CHANGE_ME" >&2; exit 1; fi
 
 set -a
 # shellcheck disable=SC1090
