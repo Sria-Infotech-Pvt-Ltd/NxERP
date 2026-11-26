@@ -23,3 +23,8 @@ def get_context(context):
 	context.page = page
 	context.slug = slug
 	context.icons = public_catalog.ICONS
+	context.contact = public_catalog.CONTACT
+	context.offices = public_catalog.OFFICES
+	context.products = public_site.products()
+	# the forms post as the visitor: Frappe wants the session's CSRF token on a POST, guests included
+	context.csrf_token = frappe.sessions.get_csrf_token()

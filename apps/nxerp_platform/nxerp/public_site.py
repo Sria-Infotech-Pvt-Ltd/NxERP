@@ -25,6 +25,9 @@ ROUTER_ROUTE = "/nxerp/go"
 
 HOME_PAGE_PATH = HOME_ROUTE.strip("/")
 
+# the small icon beside a product in the header menu (anything else gets the generic grid)
+PRODUCT_ICONS = {"erpnext": "chart", "helpdesk": "headset", "aira-hrms": "users"}
+
 
 def website_user_home_page(user: str):
 	"""Hook `get_website_user_home_page`: a guest who opens "/" sees the public Home.
@@ -64,6 +67,8 @@ def base_context(context, *, title: str, description: str, active: str = "", can
 		full_name=full_name,
 		home_href="/" if guest else HOME_ROUTE,
 		nav=nav(),
+		icons=public_catalog.ICONS,
+		contact=public_catalog.CONTACT,
 		footer_products=[{"title": p["title"], "href": p["page_href"]} for p in products()],
 		products_href=PRODUCTS_ROUTE,
 		login_href=LOGIN_ROUTE,
@@ -175,7 +180,13 @@ def products() -> list:
 def nav() -> list:
 	"""The header menus: Products from the registry (and the announced ones), the rest from `public_catalog`."""
 	items = [
-		{"title": p["title"], "desc": p["tagline"], "href": p["page_href"], "soon": bool(p.get("upcoming"))}
+		{
+			"title": p["title"],
+			"desc": p["tagline"],
+			"href": p["page_href"],
+			"soon": bool(p.get("upcoming")),
+			"icon": PRODUCT_ICONS.get(p["key"], "grid"),
+		}
 		for p in products()
 	]
 	items.append(
@@ -184,6 +195,7 @@ def nav() -> list:
 			"desc": _("Everything in one list"),
 			"href": PRODUCTS_ROUTE,
 			"soon": False,
+			"icon": "list",
 		}
 	)
 	menus = [{"label": _("Products"), "children": items}]
@@ -203,7 +215,8 @@ def product(key) -> dict | None:
 	"""An installed product, or an announced one (marked `upcoming`). Anything else is None (a 404)."""
 	if not isinstance(key, str):
 		return None
-	entry = registry.public_entry(key)
+	# the products the site LISTS: installed here, or on an identity site the apps of the enabled peers (so a listed product never 404s)
+	entry = next((e for e in registry.catalogue_entries() if e.key == key), None)
 	if entry:
 		return present(entry)
 	item = public_catalog.upcoming_entry(key, installed_keys())

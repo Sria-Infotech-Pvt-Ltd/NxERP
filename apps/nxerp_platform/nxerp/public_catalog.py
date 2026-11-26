@@ -63,7 +63,56 @@ ICONS = {
 	"lock": '<rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/>',
 	"cart": '<circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M3 4h2.5l2.2 10.5h10.3L20 7H6.4"/>',
 	"box": '<path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/>',
+	"phone": '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/>',
+	"pin": '<path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/>',
+	"send": '<path d="M21 3 10 14M21 3l-7 18-4-7-7-4 18-7Z"/>',
+	"handshake": '<path d="m11 17 2 2a1.4 1.4 0 0 0 2-2M14 14l2.5 2.5a1.4 1.4 0 0 0 2-2L15 11M8 12l3 3M3 12l5-5 4 1 3-3 6 6-3 3M3 12l3 3"/>',
+	"list": '<path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/>',
 }
+
+# Public business contact details, as published on Sria Infotech's own website (www.sriainfotech.com/contact). Presentation only.
+# ASSUMPTION to confirm with the owner: which mailbox takes general enquiries (the company site lists sales@ for the contact section and
+# hr@ next to each office). `nxerp_enquiry_email` in site config decides where submitted messages are emailed; without it they are only stored.
+CONTACT = {
+	"phone": "+91 90595 85039",
+	"phone_href": "tel:+919059585039",
+	"email": "sales@sriainfotech.com",
+	"email_href": "mailto:sales@sriainfotech.com",
+	"response": "We aim to reply within 24 hours.",
+}
+
+OFFICES = (
+	{
+		"name": "Hyderabad, Kondapur",
+		"role": "Head office",
+		"address": "303, 3rd Floor, Udaya Vensar Apartments, Rd Number 1, Hanuman Nagar, Kothaguda, Kondapur, Hyderabad, Telangana 500084, India",
+		"phone": "+91 90595 85039",
+	},
+	{
+		"name": "Hyderabad, T-Hub",
+		"role": "Office",
+		"address": "Plot No 1/C, Sy No 83/1, Raidurgam, Knowledge City Rd, Panmaktha, Hyderabad, Serilingampalle (M), Telangana 500032, India",
+		"phone": "+91 90595 85039",
+	},
+	{
+		"name": "Amaravati",
+		"role": "Office",
+		"address": "Amaravati, Andhra Pradesh 522503, India",
+		"phone": "+91 95539 55893",
+	},
+	{
+		"name": "Mulugu",
+		"role": "Office",
+		"address": "TASK Center, Mulugu, Telangana 506343, India",
+		"phone": "+91 90145 52492",
+	},
+	{
+		"name": "Pennsylvania",
+		"role": "Office, USA",
+		"address": "18 Hunters Dr, Gilbertsville, PA 19525-6601, USA",
+		"phone": "+1 614 216 7070",
+	},
+)
 
 # The information pages: slug -> content. Each block is a card: title, body, icon, and optionally a link.
 PAGES = {
@@ -103,6 +152,28 @@ PAGES = {
 				"body": "Adding an application means registering it once. The launcher, access rules and this site pick it up from there.",
 			},
 		),
+		"sections": (
+			{
+				"type": "steps",
+				"title": "From sign-up to working",
+				"items": (
+					{"title": "Create an account", "body": "Anyone can sign up with an email address and set a password from the link we send."},
+					{"title": "Ask for an application", "body": "Pick a product and send an access request. It stays pending until someone decides."},
+					{"title": "An administrator decides", "body": "Approval gives the role for that application. Refusal gives nothing."},
+					{"title": "Open it from one place", "body": "After signing in, you land in your application, or on a page listing every one you may use."},
+				),
+			},
+			{
+				"type": "faq",
+				"title": "Common questions",
+				"items": (
+					{"q": "Do I need a separate login for each application?", "a": "No. One account signs you in everywhere you have access."},
+					{"q": "Does signing up give me access to the applications?", "a": "No. Creating an account only creates the account. Access to an application is a role an administrator gives."},
+					{"q": "Are NXERP and Sria Helpdesk one program?", "a": "No. They are separate applications that keep their own data. NXDESK connects the sign-in and the way you open them."},
+					{"q": "Can customers use Sria Helpdesk?", "a": "Yes, through the customer portal, which shows only their own requests."},
+				),
+			},
+		),
 		"cta": {"label": "Explore products", "href": "/products"},
 	},
 	"security": {
@@ -139,6 +210,30 @@ PAGES = {
 				"icon": "key",
 				"title": "Safe sign-in redirects",
 				"body": "After signing in, a person is sent only to a place on this site that their access allows.",
+			},
+		),
+		"sections": (
+			{
+				"type": "table",
+				"title": "What is checked, and where",
+				"head": ("Area", "How it works"),
+				"rows": (
+					("Sign-in", "One account. A password is set from an emailed link."),
+					("Application access", "A role per application, checked on the server for every page and data call."),
+					("Direct links", "Opening a link by hand gets the same check as a click. Hiding a button is never the control."),
+					("Customers", "The customer portal only. No internal desk and no internal ticket data."),
+					("Access requests", "Created as pending, decided by an administrator, and recorded."),
+					("Refused requests", "Logged with a short hashed reference. The log holds no email address and no name."),
+				),
+			},
+			{
+				"type": "faq",
+				"title": "Questions about access",
+				"items": (
+					{"q": "What happens when someone leaves?", "a": "An administrator removes their roles or disables the account. The change applies on their next request."},
+					{"q": "Who can approve access?", "a": "Administrators of the platform."},
+					{"q": "Where do I report a problem?", "a": "Write to us from the contact page and say which application it concerns."},
+				),
 			},
 		),
 		"cta": {"label": "How the platform works", "href": "/platform"},
@@ -185,6 +280,18 @@ PAGES = {
 				"pill": "Coming soon",
 			},
 		),
+		"sections": (
+			{
+				"type": "faq",
+				"title": "Choosing where to start",
+				"items": (
+					{"q": "We run accounts and stock today. Where do we begin?", "a": "NXERP covers accounting, selling, buying, stock and manufacturing. Request access, then set up your company."},
+					{"q": "We need to handle customer requests.", "a": "Sria Helpdesk gives your team tickets, a knowledge base and service levels, and your customers a portal."},
+					{"q": "What about HR?", "a": "AIRA HRMS is announced and not installed yet. It is listed so you can see what is planned."},
+					{"q": "Can I start with one and add another later?", "a": "Yes. Each application is requested on its own and opens from the same sign-in."},
+				),
+			},
+		),
 		"cta": {"label": "See all products", "href": "/products"},
 	},
 	"roadmap": {
@@ -217,6 +324,27 @@ PAGES = {
 				"pill": "Coming soon",
 			},
 		),
+		"sections": (
+			{
+				"type": "table",
+				"title": "At a glance",
+				"head": ("Product", "Status", "Covers"),
+				"rows": (
+					("NXERP", "Available", "Accounting, selling, buying, stock, manufacturing, projects and assets. India compliance (GST) is added on the NXERP site."),
+					("Sria Helpdesk", "Available", "Tickets with teams and assignment, knowledge base, service levels and a customer portal."),
+					("AIRA HRMS", "Coming soon", "People records, attendance and leave, workforce reporting. Not installed on this site."),
+				),
+			},
+			{
+				"type": "steps",
+				"title": "How a product joins the platform",
+				"items": (
+					{"title": "It is announced", "body": "Listed here and on the products page as coming soon, with no sign-up and no sign-in."},
+					{"title": "It is installed and registered", "body": "Registered once, so the launcher, access rules and this site know about it."},
+					{"title": "It becomes available", "body": "The announcement is replaced by the product, and people can request access."},
+				),
+			},
+		),
 		"cta": {"label": "Get in touch", "href": "/get-in-touch"},
 	},
 	"company": {
@@ -239,6 +367,28 @@ PAGES = {
 				"title": "Careful by default",
 				"body": "Access is explicit, changes are reviewed, and nothing is presented as available until it is installed.",
 			},
+		),
+		"sections": (
+			{
+				"type": "story",
+				"title": "About Sria Infotech",
+				"paragraphs": (
+					"Sria Infotech is a technology services company based in Hyderabad, India. It helps organisations make better use of technology through consulting, implementation, integration and support.",
+					"NXDESK grew out of that work: a shared sign-in and launcher for the business applications a team already runs, so people open what they need from one place.",
+				),
+			},
+			{
+				"type": "steps",
+				"title": "How we work with you",
+				"items": (
+					{"title": "We listen first", "body": "We start with what your team needs, not with a product list."},
+					{"title": "We keep it clear", "body": "Plain explanations of what is installed, what it does and what it does not."},
+					{"title": "We choose practical solutions", "body": "The simplest set-up that does the job, using open foundations."},
+					{"title": "We stay after go-live", "body": "Support and changes as your systems and your team evolve."},
+				),
+			},
+			{"type": "products", "title": "What runs on NXDESK today"},
+			{"type": "offices", "title": "Our offices"},
 		),
 		"cta": {"label": "Get in touch", "href": "/get-in-touch"},
 	},
@@ -263,6 +413,18 @@ PAGES = {
 				"body": "Look after the day-to-day for teams that run the platform.",
 			},
 		),
+		"sections": (
+			{
+				"type": "steps",
+				"title": "How a partnership starts",
+				"items": (
+					{"title": "Tell us about your team", "body": "What you do, which applications you work with and where you are based."},
+					{"title": "We reply", "body": "Someone from Sria Infotech writes back to talk through fit and next steps."},
+					{"title": "We scope it together", "body": "We agree what you will implement, integrate or support, and how we will work."},
+				),
+			},
+			{"type": "form", "kind": "Partnership", "title": "Tell us about your team", "company": True},
+		),
 		"cta": {"label": "Get in touch", "href": "/get-in-touch"},
 	},
 	"get-in-touch": {
@@ -270,6 +432,11 @@ PAGES = {
 		"title": "Get in touch",
 		"lead": "Questions about the platform, a product or working together? Write to us and we will reply.",
 		"blocks": (),
+		"sections": (
+			{"type": "contact", "title": "Reach us directly"},
+			{"type": "form", "kind": "General", "title": "Send us a message", "company": False},
+			{"type": "offices", "title": "Our offices"},
+		),
 		"cta": None,
 	},
 }
@@ -279,18 +446,18 @@ NAV_STATIC = (
 	{
 		"label": "Platform",
 		"children": (
-			{"title": "Overview", "desc": "One sign-in, access by role", "href": "/platform"},
-			{"title": "Access and security", "desc": "Decided on the server", "href": "/security"},
-			{"title": "Roadmap", "desc": "Available and coming soon", "href": "/roadmap"},
+			{"title": "Overview", "desc": "One sign-in, access by role", "href": "/platform", "icon": "layers"},
+			{"title": "Access and security", "desc": "Decided on the server", "href": "/security", "icon": "shield"},
+			{"title": "Roadmap", "desc": "Available and coming soon", "href": "/roadmap", "icon": "list"},
 		),
 	},
 	{"label": "Solutions", "href": "/solutions"},
 	{
 		"label": "Company",
 		"children": (
-			{"title": "About", "desc": "Who builds NXDESK", "href": "/company"},
-			{"title": "Partners", "desc": "Work with us", "href": "/partners"},
-			{"title": "Get in touch", "desc": "Write to us", "href": "/get-in-touch"},
+			{"title": "About", "desc": "Who builds NXDESK", "href": "/company", "icon": "building"},
+			{"title": "Partners", "desc": "Work with us", "href": "/partners", "icon": "handshake"},
+			{"title": "Get in touch", "desc": "Write to us", "href": "/get-in-touch", "icon": "mail"},
 		),
 	},
 )

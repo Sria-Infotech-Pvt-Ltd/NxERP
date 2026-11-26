@@ -16,13 +16,13 @@
 			<div class="nxp-menu-panel" id="nxp-menu-{{ loop.index }}" hidden>
 				<ul>
 					{% for child in item.children %}
-					<li><a class="nxp-menu-item" href="{{ child.href | e }}"><span class="nxp-menu-title">{{ child.title | e }}{% if child.soon %}<span class="nxp-soon">{{ _("Coming soon") }}</span>{% endif %}</span><span class="nxp-menu-desc">{{ child.desc | e }}</span></a></li>
+					<li><a class="nxp-menu-item" href="{{ child.href | e }}">{% if child.icon %}<span class="nxp-menu-icon"><svg viewBox="0 0 24 24" aria-hidden="true">{{ nx.icons[child.icon] }}</svg></span>{% endif %}<span class="nxp-menu-text"><span class="nxp-menu-title">{{ child.title | e }}{% if child.soon %}<span class="nxp-soon">{{ _("Coming soon") }}</span>{% endif %}</span><span class="nxp-menu-desc">{{ child.desc | e }}</span></span></a></li>
 					{% endfor %}
 				</ul>
 			</div>
 		</div>
 		{% else %}
-		<a class="nxp-navlink" href="{{ item.href | e }}">{{ item.label | e }}</a>
+		<a class="nxp-navlink" href="{{ item.href | e }}"{% if nx.active and item.href == "/" ~ nx.active %} aria-current="page"{% endif %}>{{ item.label | e }}</a>
 		{% endif %}
 		{% endfor %}
 	</nav>

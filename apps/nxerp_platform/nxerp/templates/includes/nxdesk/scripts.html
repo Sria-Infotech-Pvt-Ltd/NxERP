@@ -20,6 +20,12 @@
 			});
 		}
 
+		// a stronger shadow once the page has scrolled under the sticky header
+		var header = document.querySelector(".nxp-header");
+		function onScroll() { if (header) header.classList.toggle("is-scrolled", window.scrollY > 8); }
+		window.addEventListener("scroll", onScroll, { passive: true });
+		onScroll();
+
 		// grouped menus (wide screens) and the menu panel (small screens)
 		var menus = Array.prototype.slice.call(document.querySelectorAll(".nxp-menu"));
 		function closeMenus(except) {

@@ -13,21 +13,7 @@
 			<p class="nxp-sub">{{ page.lead | e }}</p>
 		</div>
 
-		{% if slug == "get-in-touch" %}
-		<section class="nxp-contact">
-			<div class="nxp-card nxp-card--center">
-				<span class="nxp-icon"><svg viewBox="0 0 24 24" aria-hidden="true">{{ icons.mail }}</svg></span>
-				{% if nx.support_url %}
-				<h2 class="nxp-h3">{{ _("Write to us") }}</h2>
-				<p>{{ _("Your message opens in a new window. Tell us which product or question it is about.") }}</p>
-				<p class="nxp-actions nxp-actions--cta"><a class="nxp-cta nxp-cta--primary" href="{{ nx.support_url | e }}" target="_blank" rel="noopener noreferrer">{{ _("Contact us") }}</a></p>
-				{% else %}
-				<h2 class="nxp-h3">{{ _("Contact details are not set up yet") }}</h2>
-				<p>{{ _("An administrator can add them in the site settings.") }}</p>
-				{% endif %}
-			</div>
-		</section>
-		{% elif page.blocks %}
+		{% if page.blocks %}
 		<section>
 			<ul class="nxp-cards{% if page.blocks | length == 5 %} nxp-cards--5{% endif %}">
 				{% for b in page.blocks %}
@@ -44,6 +30,87 @@
 		</section>
 		{% endif %}
 
+		{% for sec in page.sections or () %}
+		<section class="nxp-block" aria-labelledby="sec-{{ loop.index }}">
+			<div class="nxp-section-head"><h2 class="nxp-h2" id="sec-{{ loop.index }}">{{ sec.title | e }}</h2></div>
+
+			{% if sec.type == "steps" %}
+			<ol class="nxp-flow">
+				{% for it in sec["items"] %}
+				<li style="--i: {{ loop.index0 }}"><div class="nxp-card"><span class="nxp-step-no" aria-hidden="true">{{ loop.index }}</span><h3>{{ it.title | e }}</h3><p>{{ it.body | e }}</p></div></li>
+				{% endfor %}
+			</ol>
+
+			{% elif sec.type == "faq" %}
+			<div class="nxp-faq">
+				{% for it in sec["items"] %}
+				<details class="nxp-qa"><summary>{{ it.q | e }}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>{{ it.a | e }}</p></details>
+				{% endfor %}
+			</div>
+
+			{% elif sec.type == "table" %}
+			<div class="nxp-table-wrap"><table class="nxp-table">
+				<thead><tr>{% for h in sec.head %}<th scope="col">{{ h | e }}</th>{% endfor %}</tr></thead>
+				<tbody>
+					{% for row in sec.rows %}
+					<tr>
+						{% for cell in row %}
+						{% if loop.first %}<th scope="row">{{ cell | e }}</th>
+						{% elif cell in ("Available", "Coming soon") %}<td><span class="nxp-soon nxp-soon--flat{% if cell == 'Available' %} nxp-soon--on{% endif %}">{{ cell | e }}</span></td>
+						{% else %}<td>{{ cell | e }}</td>{% endif %}
+						{% endfor %}
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table></div>
+
+			{% elif sec.type == "story" %}
+			<div class="nxp-card nxp-prose">{% for para in sec.paragraphs %}<p>{{ para | e }}</p>{% endfor %}</div>
+
+			{% elif sec.type == "products" %}
+			<ul class="nxp-grid nxp-grid--3">
+				{% for p in products %}<li style="--i: {{ loop.index0 }}">{% include "nxerp/templates/includes/nxdesk/tile.html" %}</li>{% endfor %}
+			</ul>
+
+			{% elif sec.type == "contact" %}
+			<ul class="nxp-cards">
+				<li style="--i: 0"><a class="nxp-card nxp-card--link" href="{{ contact.phone_href | e }}"><span class="nxp-icon"><svg viewBox="0 0 24 24" aria-hidden="true">{{ icons.phone }}</svg></span><h3>{{ _("Call us") }}</h3><p>{{ contact.phone | e }}</p></a></li>
+				<li style="--i: 1"><a class="nxp-card nxp-card--link" href="{{ contact.email_href | e }}"><span class="nxp-icon"><svg viewBox="0 0 24 24" aria-hidden="true">{{ icons.mail }}</svg></span><h3>{{ _("Email us") }}</h3><p>{{ contact.email | e }}</p></a></li>
+				<li style="--i: 2"><div class="nxp-card"><span class="nxp-icon"><svg viewBox="0 0 24 24" aria-hidden="true">{{ icons.clock }}</svg></span><h3>{{ _("Response time") }}</h3><p>{{ contact.response | e }}</p></div></li>
+			</ul>
+
+			{% elif sec.type == "offices" %}
+			<ul class="nxp-cards nxp-offices">
+				{% for o in offices %}
+				<li style="--i: {{ loop.index0 }}"><div class="nxp-card">
+					<span class="nxp-icon"><svg viewBox="0 0 24 24" aria-hidden="true">{{ icons.pin }}</svg></span>
+					<h3>{{ o.name | e }}<span class="nxp-soon nxp-soon--on">{{ o.role | e }}</span></h3>
+					<p>{{ o.address | e }}</p>
+					<p class="nxp-office-links"><a class="nxp-link" href="tel:{{ o.phone | replace(' ', '') | e }}">{{ o.phone | e }}</a><a class="nxp-link" href="https://www.google.com/maps/search/?api=1&amp;query={{ o.address | urlencode }}" target="_blank" rel="noopener noreferrer">{{ _("Open in Maps") }}</a></p>
+				</div></li>
+				{% endfor %}
+			</ul>
+
+			{% elif sec.type == "form" %}
+			<form class="nxp-card nxp-form" id="nxp-enquiry" novalidate data-kind="{{ sec.kind | e }}" data-page="{{ slug | e }}" data-csrf="{{ csrf_token | e }}">
+				<div class="nxp-form-row">
+					<label class="nxp-field"><span>{{ _("Full name") }} <b aria-hidden="true">*</b></span><input name="full_name" type="text" autocomplete="name" maxlength="80" required /></label>
+					<label class="nxp-field"><span>{{ _("Email") }} <b aria-hidden="true">*</b></span><input name="email" type="email" autocomplete="email" required /></label>
+				</div>
+				<div class="nxp-form-row">
+					<label class="nxp-field"><span>{{ _("Phone") }}</span><input name="phone" type="tel" autocomplete="tel" maxlength="30" /></label>
+					{% if sec.company %}<label class="nxp-field"><span>{{ _("Company") }}</span><input name="company" type="text" autocomplete="organization" maxlength="120" /></label>{% endif %}
+				</div>
+				<label class="nxp-field"><span>{{ _("Message") }} <b aria-hidden="true">*</b></span><textarea name="message" rows="5" maxlength="2000" required></textarea></label>
+				<input class="nxp-hp" name="website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" />
+				<p class="nxp-form-note">{{ _("We use your details only to reply to this message.") }}</p>
+				<p class="nxp-form-status" id="nxp-enquiry-status" role="status" aria-live="polite"></p>
+				<p class="nxp-actions"><button class="nxp-cta nxp-cta--primary" type="submit">{{ _("Send message") }}</button></p>
+			</form>
+			{% endif %}
+		</section>
+		{% endfor %}
+
 		{% if page.cta %}
 		<section class="nxp-band">
 			<p class="nxp-actions nxp-actions--cta"><a class="nxp-cta nxp-cta--primary" href="{{ page.cta.href | e }}">{{ page.cta.label | e }}</a></p>
@@ -52,5 +119,38 @@
 	</main>
 	{% include "nxerp/templates/includes/nxdesk/footer.html" %}
 	{% include "nxerp/templates/includes/nxdesk/scripts.html" %}
+	{% if page.sections %}
+	<script>
+		(function () {
+			var form = document.getElementById("nxp-enquiry");
+			if (!form) return;
+			var status = document.getElementById("nxp-enquiry-status");
+			var button = form.querySelector("button[type=submit]");
+			function say(kind, text) { status.className = "nxp-form-status" + (kind ? " nxp-form-status--" + kind : ""); status.textContent = text; }
+			form.addEventListener("submit", function (e) {
+				e.preventDefault();
+				var data = {};
+				new FormData(form).forEach(function (v, k) { data[k] = v; });
+				if (!data.full_name.trim() || !/^\S+@\S+\.\S+$/.test(data.email.trim()) || !data.message.trim()) {
+					say("error", {{ _("Please fill in your name, a valid email and a message.") | tojson }});
+					return;
+				}
+				data.kind = form.dataset.kind; data.page = form.dataset.page;
+				button.disabled = true; say("", {{ _("Sending") | tojson }});
+				fetch("/api/method/nxerp.api.enquiry.submit", {
+					method: "POST", credentials: "same-origin",
+					headers: { "Content-Type": "application/json", "Accept": "application/json", "X-Frappe-CSRF-Token": form.dataset.csrf },
+					body: JSON.stringify(data)
+				}).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, body: j }; }); }).then(function (res) {
+					if (res.ok) { form.reset(); say("ok", (res.body && res.body.message && res.body.message.message) || {{ _("Thanks. We have your message and will reply.") | tojson }}); }
+					else { say("error", {{ _("We could not send that. Please try again, or email us.") | tojson }}); }
+				}).catch(function () {
+					say("error", {{ _("We could not send that. Please try again, or email us.") | tojson }});
+				}).then(function () { button.disabled = false; });
+			});
+		})();
+	</script>
+	{% endif %}
+
 </body>
 </html>

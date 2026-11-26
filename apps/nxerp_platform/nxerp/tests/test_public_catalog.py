@@ -95,6 +95,49 @@ class TestPublicCatalog(IntegrationTestCase):
 			for block in page["blocks"]:
 				self.assertIn(block["icon"], public_catalog.ICONS)
 
-	def test_the_contact_page_uses_the_configured_link_only(self):
+	def test_the_contact_page_shows_contact_details_offices_and_a_working_form(self):
 		html = self.get("/get-in-touch").text
-		self.assertTrue("Contact us" in html or "Contact details are not set up yet" in html)
+		self.assertIn(public_catalog.CONTACT["phone"], html)
+		self.assertIn(public_catalog.CONTACT["email"], html)
+		for office in public_catalog.OFFICES:
+			self.assertIn(office["name"], html)
+		self.assertIn('id="nxp-enquiry"', html)
+		self.assertIn("nxerp.api.enquiry.submit", html)
+
+	def test_every_page_has_content_beyond_its_intro(self):
+		for slug in SLUGS:
+			page = public_catalog.PAGES[slug]
+			self.assertTrue(page["blocks"] or page.get("sections"), slug)
+			html = self.get(f"/{slug}").text
+			main = html.split("<main", 1)[1].split("</main>", 1)[0]
+			self.assertGreater(len(re.sub(r"<[^>]+>", " ", main)), 700, slug)
+
+	def test_section_types_are_known_and_icons_exist(self):
+		known = {"steps", "faq", "table", "story", "products", "contact", "offices", "form"}
+		for slug, page in public_catalog.PAGES.items():
+			for sec in page.get("sections", ()):
+				self.assertIn(sec["type"], known, slug)
+				self.assertTrue(sec["title"], slug)
+		for group in public_catalog.NAV_STATIC:
+			for child in group.get("children", ()):
+				self.assertIn(child["icon"], public_catalog.ICONS, child["title"])
+
+	def test_section_copy_makes_no_unprovable_claims(self):
+		text = repr([p.get("sections", ()) for p in public_catalog.PAGES.values()]).lower()
+		for word in ("award", "certified", "iso 27001", "uptime", "trusted by", "best-in-class", "gold partner", "!"):
+			self.assertNotIn(word, text, word)
+
+	def test_the_enquiry_form_stores_a_message_and_the_honeypot_stores_nothing(self):
+		from nxerp.api import enquiry
+
+		before = frappe.db.count("NXERP Enquiry")
+		out = enquiry.submit("Test Person", "user@example.test", "Hello from a test", kind="Partnership", company="Example")
+		self.assertIn("message", out)
+		self.assertEqual(frappe.db.count("NXERP Enquiry"), before + 1)
+		enquiry.submit("Bot", "bot@example.test", "spam", website="http://spam.example.test")
+		self.assertEqual(frappe.db.count("NXERP Enquiry"), before + 1)
+		with self.assertRaises(frappe.ValidationError):
+			enquiry.submit("No Mail", "not-an-email", "Hello")
+		with self.assertRaises(frappe.ValidationError):
+			enquiry.submit("", "user@example.test", "Hello")
+		frappe.db.rollback()

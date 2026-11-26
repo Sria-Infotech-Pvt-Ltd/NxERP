@@ -1,6 +1,11 @@
 {#- The public footer: three link columns and a note. Reads `nx`. -#}
 <footer class="nxp-footer nxp-footer--rich">
 	<div class="nxp-foot-cols">
+		<div class="nxp-foot-brand">
+			<p class="nxp-foot-logo"><span class="nxp-wordmark-mark" aria-hidden="true"></span>{{ nx.name | e }}</p>
+			<p class="nxp-foot-tag">{{ nx.tagline | e }}</p>
+			<p class="nxp-foot-contact"><a class="nxp-foot-link" href="{{ nx.contact.phone_href | e }}">{{ nx.contact.phone | e }}</a><a class="nxp-foot-link" href="{{ nx.contact.email_href | e }}">{{ nx.contact.email | e }}</a></p>
+		</div>
 		<div>
 			<p class="nxp-foot-head">{{ _("Products") }}</p>
 			{% for p in nx.footer_products %}<a class="nxp-foot-link" href="{{ p.href | e }}">{{ p.title | e }}</a>{% endfor %}

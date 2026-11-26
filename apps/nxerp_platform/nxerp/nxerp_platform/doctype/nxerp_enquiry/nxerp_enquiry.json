@@ -1,0 +1,117 @@
+{
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "module": "NXERP Platform",
+ "actions": [],
+ "links": [],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "owner": "Administrator",
+ "modified_by": "Administrator",
+ "creation": "2026-11-26 09:00:00.000000",
+ "modified": "2026-11-26 09:00:00.000000",
+ "name": "NXERP Enquiry",
+ "autoname": "format:NXENQ-{#####}",
+ "title_field": "full_name",
+ "field_order": [
+  "kind",
+  "status",
+  "column_break_who",
+  "full_name",
+  "email",
+  "phone",
+  "company",
+  "section_break_message",
+  "message",
+  "source_page"
+ ],
+ "fields": [
+  {
+   "fieldname": "kind",
+   "fieldtype": "Select",
+   "label": "Kind",
+   "options": "General\nPartnership",
+   "default": "General",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "New\nHandled",
+   "default": "New",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "column_break_who",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "full_name",
+   "fieldtype": "Data",
+   "label": "Full name",
+   "reqd": 1,
+   "in_list_view": 1,
+   "set_only_once": 1,
+   "length": 80
+  },
+  {
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "label": "Email",
+   "options": "Email",
+   "reqd": 1,
+   "in_list_view": 1,
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "phone",
+   "fieldtype": "Data",
+   "label": "Phone",
+   "set_only_once": 1,
+   "length": 30
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Data",
+   "label": "Company",
+   "set_only_once": 1,
+   "length": 120
+  },
+  {
+   "fieldname": "section_break_message",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "message",
+   "fieldtype": "Text",
+   "label": "Message",
+   "reqd": 1,
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "source_page",
+   "fieldtype": "Data",
+   "label": "Sent from page",
+   "read_only": 1,
+   "length": 60
+  }
+ ],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "report": 1,
+   "export": 1,
+   "delete": 1,
+   "share": 0,
+   "email": 0,
+   "print": 0
+  }
+ ]
+}
